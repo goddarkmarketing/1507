@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local source assets (processed copies live in /public)
+/??/
+/?????/
+line_oa_chat_*.jpg
