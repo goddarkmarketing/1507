@@ -186,7 +186,7 @@ export function BookingForm() {
     } else {
       toast.success("Payment successful (mock) — e-Voucher issued");
     }
-    router.push(`/booking/voucher/${booking.bookingNumber}`);
+    router.push(`/booking/voucher/?n=${booking.bookingNumber}`);
   };
 
   const isCharter =

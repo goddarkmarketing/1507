@@ -17,6 +17,7 @@ import { SiteLogo } from "@/components/shared/site-logo";
 import { getLocation } from "@/lib/data/locations";
 import { vehicles } from "@/lib/data/vehicles";
 import { siteConfig } from "@/lib/site-config";
+import { assetPath } from "@/lib/utils";
 import type { Booking } from "@/lib/types";
 
 interface EVoucherProps {
@@ -157,7 +158,7 @@ export function EVoucher({ booking }: EVoucherProps) {
                 <div className="flex items-center gap-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`/banks/${booking.payment.bankSymbol}.png`}
+                    src={assetPath(`/banks/${booking.payment.bankSymbol}.png`)}
                     alt={booking.payment.bankSymbol}
                     className="size-8 rounded object-contain"
                   />

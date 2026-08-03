@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Star, XIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, assetPath } from "@/lib/utils";
 
 /** Synced from /รีวิว — update count when folder changes */
 const REVIEW_COUNT = 76;
 const reviewImages = Array.from(
   { length: REVIEW_COUNT },
-  (_, i) => `/reviews/review-${i + 1}.jpg`
+  (_, i) => assetPath(`/reviews/review-${i + 1}.jpg`)
 );
 
 function StarTrack({
