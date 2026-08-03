@@ -6,6 +6,7 @@ export default function BookingPage() {
   return (
     <>
       <PageHeader
+        compact
         title="Book Your Transfer"
         subtitle="One-way, round-trip, multi-route, multi-day & charter — all in one booking."
       />

@@ -202,21 +202,24 @@ export function BookingForm() {
           ? "Confirm PromptPay payment"
           : "Confirm Booking";
 
+  const fieldClass = "h-10 text-base md:h-8 md:text-sm";
+  const selectTriggerClass = cn("w-full min-w-0", fieldClass);
+
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 lg:grid-cols-3 lg:px-8">
-      <div className="space-y-6 lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Booking Type</CardTitle>
-            <CardDescription>
+    <div className="mx-auto grid max-w-7xl gap-5 px-3 py-4 pb-32 sm:gap-8 sm:px-4 sm:py-8 md:pb-8 lg:grid-cols-3 lg:px-8">
+      <div className="space-y-4 sm:space-y-6 lg:col-span-2">
+        <Card className="md:[--card-spacing:--spacing(4)]" size="sm">
+          <CardHeader className="gap-1">
+            <CardTitle className="text-base sm:text-lg">Booking Type</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               All booking types in one reservation — add routes, days, or charter as needed.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4">
             <RadioGroup
               value={draft.type}
               onValueChange={(v) => v && setBookingType(v as BookingType)}
-              className="grid grid-cols-2 gap-3 lg:grid-cols-3"
+              className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3"
             >
               {bookingTypes.map((type) => {
                 const selected = draft.type === type.value;
@@ -225,7 +228,7 @@ export function BookingForm() {
                     key={type.value}
                     htmlFor={`booking-type-${type.value}`}
                     className={cn(
-                      "flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-colors",
+                      "flex cursor-pointer items-start gap-2 rounded-xl border p-2.5 transition-colors sm:gap-3 sm:p-3.5",
                       selected
                         ? "border-primary bg-primary/5 ring-1 ring-primary/30"
                         : "border-border hover:border-primary/40 hover:bg-muted/40"
@@ -237,10 +240,10 @@ export function BookingForm() {
                       className="mt-0.5"
                     />
                     <span className="min-w-0 space-y-0.5">
-                      <span className="block text-sm font-semibold leading-none">
+                      <span className="block text-[13px] font-semibold leading-tight sm:text-sm sm:leading-none">
                         {type.label}
                       </span>
-                      <span className="block text-xs leading-snug text-muted-foreground">
+                      <span className="block text-[11px] leading-snug text-muted-foreground sm:text-xs">
                         {type.desc}
                       </span>
                     </span>
@@ -248,15 +251,15 @@ export function BookingForm() {
                 );
               })}
             </RadioGroup>
-            <p className="rounded-lg bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+            <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground sm:text-sm">
               {bookingTypes.find((t) => t.value === draft.type)?.detail}
             </p>
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-base font-semibold sm:text-lg">
               {isCharter ? "Charter Details" : "Route Details"}
             </h2>
             {(draft.type === "multi-route" || draft.type === "multi-day") && (
@@ -268,9 +271,9 @@ export function BookingForm() {
           </div>
 
           {draft.legs.map((leg, index) => (
-            <Card key={leg.id}>
-              <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-base">
+            <Card key={leg.id} size="sm">
+              <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
+                <CardTitle className="text-sm sm:text-base">
                   {isCharter ? "Charter" : "Route"} {index + 1}
                 </CardTitle>
                 {draft.legs.length > 1 && (
@@ -283,17 +286,20 @@ export function BookingForm() {
                   </Button>
                 )}
               </CardHeader>
-              <CardContent className="grid gap-4 sm:grid-cols-2">
+              <CardContent className="grid grid-cols-2 gap-3 sm:gap-4">
                 {!isCharter && (
                   <>
-                    <div className="space-y-2">
+                    <div className="col-span-2 space-y-1.5 sm:space-y-2">
                       <Label>Pickup Location</Label>
                       <Select
                         value={leg.fromId}
                         onValueChange={(v) => v && updateLeg(leg.id, { fromId: v })}
                       >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
+                        <SelectTrigger className={selectTriggerClass}>
+                          <SelectValue placeholder="Pickup Location">
+                            {locations.find((l) => l.id === leg.fromId)?.name ??
+                              "Pickup Location"}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {locations.map((loc) => (
@@ -304,14 +310,17 @@ export function BookingForm() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
+                    <div className="col-span-2 space-y-1.5 sm:space-y-2">
                       <Label>Drop-off Location</Label>
                       <Select
                         value={leg.toId}
                         onValueChange={(v) => v && updateLeg(leg.id, { toId: v })}
                       >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
+                        <SelectTrigger className={selectTriggerClass}>
+                          <SelectValue placeholder="Drop-off Location">
+                            {locations.find((l) => l.id === leg.toId)?.name ??
+                              "Drop-off Location"}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {locations.map((loc) => (
@@ -325,26 +334,28 @@ export function BookingForm() {
                   </>
                 )}
 
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   <Label>Date</Label>
                   <Input
                     type="date"
+                    className={fieldClass}
                     value={leg.date}
                     min={new Date().toISOString().split("T")[0]}
                     onChange={(e) => updateLeg(leg.id, { date: e.target.value })}
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   <Label>Pickup Time</Label>
                   <Input
                     type="time"
+                    className={fieldClass}
                     value={leg.time}
                     onChange={(e) => updateLeg(leg.id, { time: e.target.value })}
                   />
                 </div>
 
-                <div className="space-y-2 sm:col-span-2">
+                <div className="col-span-2 space-y-1.5 sm:space-y-2">
                   <Label>Vehicle</Label>
                   <Select
                     value={leg.vehicleCode}
@@ -355,8 +366,17 @@ export function BookingForm() {
                       })
                     }
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
+                    <SelectTrigger className={selectTriggerClass}>
+                      <SelectValue placeholder="Select Vehicle">
+                        {(() => {
+                          const v = vehicles.find(
+                            (item) => item.code === leg.vehicleCode
+                          );
+                          return v
+                            ? `${v.code} — ${v.name}`
+                            : "Select Vehicle";
+                        })()}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {vehicles.map((v) => (
@@ -368,9 +388,9 @@ export function BookingForm() {
                   </Select>
                 </div>
 
-                <div className="sm:col-span-2 flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3">
+                <div className="col-span-2 flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5 sm:px-4 sm:py-3">
                   <span className="text-sm text-muted-foreground">Leg price</span>
-                  <span className="text-lg font-bold">
+                  <span className="text-base font-bold sm:text-lg">
                     ฿{getLegPrice(leg).toLocaleString()}
                   </span>
                 </div>
@@ -379,52 +399,62 @@ export function BookingForm() {
           ))}
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Customer Details</CardTitle>
+        <Card size="sm">
+          <CardHeader className="gap-1">
+            <CardTitle className="text-base sm:text-lg">Customer Details</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+          <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+            <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="name">Full Name *</Label>
               <Input
                 id="name"
+                className={fieldClass}
                 value={draft.customerName}
                 onChange={(e) => setCustomer("customerName", e.target.value)}
                 placeholder="John Smith"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="phone">Phone *</Label>
               <Input
                 id="phone"
+                className={fieldClass}
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 value={draft.customerPhone}
                 onChange={(e) => setCustomer("customerPhone", e.target.value)}
                 placeholder="+66 ..."
               />
             </div>
-            <div className="space-y-2 sm:col-span-2">
+            <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
               <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
+                className={fieldClass}
                 type="email"
+                inputMode="email"
+                autoComplete="email"
                 value={draft.customerEmail}
                 onChange={(e) => setCustomer("customerEmail", e.target.value)}
                 placeholder="email@example.com"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="flight">Flight Number (optional)</Label>
               <Input
                 id="flight"
+                className={fieldClass}
                 value={draft.flightNumber}
                 onChange={(e) => setCustomer("flightNumber", e.target.value)}
                 placeholder="FD1234"
               />
             </div>
-            <div className="space-y-2 sm:col-span-2">
+            <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
               <Label htmlFor="notes">Special Requests</Label>
               <Textarea
                 id="notes"
+                className="min-h-20 text-base md:text-sm"
                 value={draft.notes}
                 onChange={(e) => setCustomer("notes", e.target.value)}
                 placeholder="Child seat, extra stops, etc."
@@ -433,10 +463,10 @@ export function BookingForm() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment</CardTitle>
-            <CardDescription>
+        <Card size="sm">
+          <CardHeader className="gap-1">
+            <CardTitle className="text-base sm:text-lg">Payment</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               Choose how to pay — bank details, QR, and card fields are mock demo data
             </CardDescription>
           </CardHeader>
@@ -458,12 +488,14 @@ export function BookingForm() {
       </div>
 
       <div className="lg:sticky lg:top-24 lg:self-start">
-        <Card>
-          <CardHeader>
-            <CardTitle>Booking Summary</CardTitle>
-            <CardDescription>Review before confirming</CardDescription>
+        <Card className="md:[--card-spacing:--spacing(4)]" size="sm">
+          <CardHeader className="gap-1">
+            <CardTitle className="text-base sm:text-lg">Booking Summary</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
+              Review before confirming
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4">
             <Badge variant="secondary" className="capitalize">
               {draft.type.replace("-", " ")}
             </Badge>
@@ -493,8 +525,8 @@ export function BookingForm() {
             <Separator />
 
             <div className="flex items-center justify-between">
-              <span className="text-lg font-semibold">Total</span>
-              <span className="text-2xl font-bold text-primary">
+              <span className="text-base font-semibold sm:text-lg">Total</span>
+              <span className="text-xl font-bold text-primary sm:text-2xl">
                 ฿{total.toLocaleString("en-US")}
               </span>
             </div>
@@ -511,7 +543,7 @@ export function BookingForm() {
             )}
 
             <Button
-              className="w-full"
+              className="hidden w-full lg:inline-flex"
               size="lg"
               onClick={handleConfirm}
               disabled={paying}
@@ -519,11 +551,31 @@ export function BookingForm() {
               {paying ? "Processing..." : confirmLabel}
             </Button>
 
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="hidden text-center text-xs text-muted-foreground lg:block">
               Demo payment — no real charge · e-Voucher issued after confirmation
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Sticky confirm bar on small screens — above mobile bottom nav */}
+      <div className="fixed inset-x-0 bottom-[4.75rem] z-40 border-t border-border/70 bg-background/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-background/90 md:bottom-0 lg:hidden">
+        <div className="mx-auto flex max-w-7xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] leading-none text-muted-foreground">Total</p>
+            <p className="truncate text-lg font-bold text-primary">
+              ฿{total.toLocaleString("en-US")}
+            </p>
+          </div>
+          <Button
+            className="shrink-0 px-5"
+            size="lg"
+            onClick={handleConfirm}
+            disabled={paying}
+          >
+            {paying ? "Processing..." : "Confirm"}
+          </Button>
+        </div>
       </div>
     </div>
   );
