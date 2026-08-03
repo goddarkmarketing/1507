@@ -1,4 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+﻿# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
 /node_modules
@@ -43,4 +43,8 @@ next-env.d.ts
 # Local source assets (processed copies live in /public)
 /??/
 /?????/
+
+# Local source assets (processed copies live in /public)
+รถ/
+รีวิว/
 line_oa_chat_*.jpg
