@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
+import { PublicImage } from "@/components/shared/public-image";
 import Link from "next/link";
 import { ArrowRight, Clock, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -80,7 +80,7 @@ export function TravelInfoPageContent() {
             >
               <Card className="h-full gap-0 overflow-hidden pt-0 transition-shadow hover:shadow-md">
                 <div className="relative aspect-[16/10] bg-muted/40">
-                  <Image
+                  <PublicImage
                     src={guide.coverImage}
                     alt=""
                     fill

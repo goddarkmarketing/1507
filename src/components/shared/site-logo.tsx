@@ -1,5 +1,4 @@
-import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { cn, assetPath } from "@/lib/utils";
 
 interface SiteLogoProps {
   className?: string;
@@ -16,12 +15,14 @@ export function SiteLogo({
   const width = Math.round(height * (612 / 242));
 
   return (
-    <Image
-      src="/logo.png"
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={assetPath("/logo.png")}
       alt="Krabi Links Taxi"
       width={width}
       height={height}
-      priority={priority}
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
       className={cn("h-auto w-auto object-contain", className)}
       style={{ height, width: "auto" }}
     />

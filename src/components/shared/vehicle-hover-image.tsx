@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { PublicImage } from "@/components/shared/public-image";
 import { cn } from "@/lib/utils";
 
 /** Car PNG with hover pop-out beyond the card edge */
@@ -20,7 +20,7 @@ export function VehicleHoverImage({
         className
       )}
     >
-      <Image
+      <PublicImage
         src={src}
         alt={alt}
         fill

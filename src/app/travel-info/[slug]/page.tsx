@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { PublicImage } from "@/components/shared/public-image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Clock, Lightbulb } from "lucide-react";
@@ -71,7 +71,7 @@ export default async function TravelInfoDetailPage({
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 text-left sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12 lg:px-8">
         <div className="min-w-0">
           <div className="relative mb-8 aspect-[16/9] overflow-hidden rounded-2xl bg-muted/40">
-            <Image
+            <PublicImage
               src={guide.coverImage}
               alt=""
               fill
@@ -181,7 +181,7 @@ export default async function TravelInfoDetailPage({
                   <Card className="gap-0 overflow-hidden py-0 transition-shadow hover:shadow-md">
                     <div className="flex min-h-[108px]">
                       <div className="relative w-28 shrink-0 bg-muted/40 sm:w-32">
-                        <Image
+                        <PublicImage
                           src={item.coverImage}
                           alt=""
                           fill

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
+import { PublicImage } from "@/components/shared/public-image";
 import { ArrowRight, Clock, Ship } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -109,7 +109,7 @@ export function BoatSchedulesContent() {
                     <tr key={row.id} className="border-b last:border-0">
                       <td className="px-4 py-3">
                         <div className="relative size-14 overflow-hidden rounded-lg bg-muted">
-                          <Image
+                          <PublicImage
                             src={row.image}
                             alt=""
                             fill
@@ -171,7 +171,7 @@ export function BoatSchedulesContent() {
                 <Card key={row.id} className="overflow-hidden py-0">
                   <div className="flex gap-0">
                     <div className="relative aspect-square w-28 shrink-0 bg-muted sm:w-32">
-                      <Image
+                      <PublicImage
                         src={row.image}
                         alt=""
                         fill

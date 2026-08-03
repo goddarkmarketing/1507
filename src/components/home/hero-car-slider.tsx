@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
+import { PublicImage } from "@/components/shared/public-image";
 import { cn } from "@/lib/utils";
 
 const heroCars = [
@@ -47,7 +47,7 @@ export function HeroCarSlider() {
           className="absolute left-0 z-10 flex h-full w-[32%] items-center justify-center transition-transform duration-500 ease-out hover:scale-[1.02]"
         >
           <div className="relative h-[48%] w-full opacity-40">
-            <Image
+            <PublicImage
               src={heroCars[prev].src}
               alt={heroCars[prev].alt}
               fill
@@ -63,7 +63,7 @@ export function HeroCarSlider() {
           className="relative z-20 flex h-full w-[64%] items-center justify-center animate-car-focus"
         >
           <div className="relative h-full w-full">
-            <Image
+            <PublicImage
               src={heroCars[index].src}
               alt={heroCars[index].alt}
               fill
@@ -82,7 +82,7 @@ export function HeroCarSlider() {
           className="absolute right-0 z-10 flex h-full w-[32%] items-center justify-center transition-transform duration-500 ease-out hover:scale-[1.02]"
         >
           <div className="relative h-[48%] w-full opacity-40">
-            <Image
+            <PublicImage
               src={heroCars[next].src}
               alt={heroCars[next].alt}
               fill

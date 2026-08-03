@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import Image from "next/image";
+import { PublicImage } from "@/components/shared/public-image";
 import {
   Building2,
   CreditCard,
@@ -175,7 +175,7 @@ export function PaymentSection({
                 className="mt-1"
               />
               {opt.value === "promptpay" ? (
-                <Image
+                <PublicImage
                   src={mockPromptPay.icon}
                   alt="PromptPay"
                   width={28}
@@ -233,7 +233,7 @@ export function PaymentSection({
                         : "hover:border-primary/40"
                     )}
                   >
-                    <Image
+                    <PublicImage
                       src={acc.icon}
                       alt={acc.bank}
                       width={40}
@@ -413,7 +413,7 @@ export function PaymentSection({
       {method === "promptpay" && (
         <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
           <div className="flex items-center gap-2">
-            <Image
+            <PublicImage
               src={mockPromptPay.icon}
               alt="PromptPay"
               width={32}
