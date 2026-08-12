@@ -28,7 +28,9 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        # Use npm install (not npm ci) because npm ci is very strict about
+        # package-lock.json/package.json sync and can fail in CI.
+        run: npm install --no-fund --no-audit
 
       - name: Build static site
         run: npm run build
