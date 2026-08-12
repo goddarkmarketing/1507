@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { Toaster } from "@/components/ui/sonner";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { MobileBottomBar } from "@/components/layout/mobile-bottom-bar";
+import { Inter, Noto_Sans_Thai } from "next/font/google";
 import { siteConfig } from "@/lib/site-config";
 import "./globals.css";
 
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
+});
+
+const notoThai = Noto_Sans_Thai({
+  variable: "--font-thai",
+  subsets: ["thai"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -29,14 +31,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col font-sans">
-        <Header />
-        <main className="flex-1 pb-20 md:pb-0">{children}</main>
-        <Footer />
-        <MobileBottomBar />
-        <Toaster richColors position="top-center" />
-      </body>
+    <html
+      className={`${inter.variable} ${notoThai.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>
   );
 }

@@ -1,5 +1,7 @@
-import { HomePage } from "@/components/home/home-page";
+import { redirect } from "next/navigation";
+import { routing } from "@/i18n/routing";
 
-export default function Page() {
-  return <HomePage />;
+/** Static-export root → default locale (no middleware on GitHub Pages). */
+export default function RootPage() {
+  redirect(`/${routing.defaultLocale}/`);
 }

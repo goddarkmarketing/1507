@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowRight, Luggage, Search, Users } from "lucide-react";
 import { VehicleCard } from "@/components/shared/vehicle-card";
 import { VehicleHoverImage } from "@/components/shared/vehicle-hover-image";
@@ -24,19 +25,18 @@ import {
 import { cn } from "@/lib/utils";
 import type { RentalCategory } from "@/lib/types";
 
-const sectionFilters = [
-  { id: "all", label: "All" },
-  { id: "rental", label: "Car Rental" },
-  { id: "transfer", label: "Transfer" },
-] as const;
+const sectionFilterIds = ["all", "rental", "transfer"] as const;
+const capacityFilterIds = ["all", "1-3", "1-4", "1-8", "1-20"] as const;
 
-const capacityFilters = [
-  { id: "all", label: "All seats" },
-  { id: "1-3", label: "1–3" },
-  { id: "1-4", label: "1–4" },
-  { id: "1-8", label: "1–8" },
-  { id: "1-20", label: "Group / Bus" },
-] as const;
+const rentalCatKey: Record<
+  RentalCategory,
+  "catMini" | "catEconomy" | "catCompact" | "catFull"
+> = {
+  "Mini Car": "catMini",
+  Economy: "catEconomy",
+  Compact: "catCompact",
+  "Full Size": "catFull",
+};
 
 function matchesCapacity(passengers: string, filterId: string) {
   if (filterId === "all") return true;
@@ -70,37 +70,53 @@ function FilterChip({
 }
 
 export function FleetPageContent() {
+  const t = useTranslations("FleetUi");
   const [query, setQuery] = useState("");
   const [section, setSection] =
-    useState<(typeof sectionFilters)[number]["id"]>("all");
+    useState<(typeof sectionFilterIds)[number]>("all");
   const [rentalCategory, setRentalCategory] = useState<RentalCategory | "all">(
     "all"
   );
   const [capacity, setCapacity] =
-    useState<(typeof capacityFilters)[number]["id"]>("all");
+    useState<(typeof capacityFilterIds)[number]>("all");
 
   const q = query.trim().toLowerCase();
+  const onRequest = t("onRequest");
+
+  const sectionLabel = (id: (typeof sectionFilterIds)[number]) => {
+    if (id === "all") return t("filterAll");
+    if (id === "rental") return t("filterRental");
+    return t("filterTransfer");
+  };
+
+  const capacityLabel = (id: (typeof capacityFilterIds)[number]) => {
+    if (id === "all") return t("seatsAll");
+    if (id === "1-20") return t("seatsGroup");
+    return id.replace("-", "–");
+  };
 
   const filteredRentals = useMemo(() => {
     return rentalPackages.filter((pkg) => {
       const categoryMatch =
         rentalCategory === "all" || pkg.category === rentalCategory;
+      const catLabel = t(rentalCatKey[pkg.category]).toLowerCase();
       const textMatch =
         !q ||
         pkg.model.toLowerCase().includes(q) ||
         pkg.category.toLowerCase().includes(q) ||
+        catLabel.includes(q) ||
         pkg.engine.toLowerCase().includes(q);
       return categoryMatch && textMatch;
     });
-  }, [q, rentalCategory]);
+  }, [q, rentalCategory, t]);
 
   const filteredTransfers = useMemo(() => {
     return vehicles.filter((v) => {
       const textMatch =
         !q ||
-        v.name.toLowerCase().includes(q) ||
         v.code.toLowerCase().includes(q) ||
-        v.amenities.some((a) => a.toLowerCase().includes(q));
+        v.passengers.toLowerCase().includes(q) ||
+        v.amenityKeys.some((a) => a.toLowerCase().includes(q));
       return textMatch && matchesCapacity(v.passengers, capacity);
     });
   }, [q, capacity]);
@@ -123,19 +139,19 @@ export function FleetPageContent() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search model, category, code…"
+            placeholder={t("search")}
             className="h-9 pl-8"
-            aria-label="Search fleet"
+            aria-label={t("search")}
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {sectionFilters.map((f) => (
+          {sectionFilterIds.map((id) => (
             <FilterChip
-              key={f.id}
-              active={section === f.id}
-              onClick={() => setSection(f.id)}
+              key={id}
+              active={section === id}
+              onClick={() => setSection(id)}
             >
-              {f.label}
+              {sectionLabel(id)}
             </FilterChip>
           ))}
         </div>
@@ -145,9 +161,9 @@ export function FleetPageContent() {
         <section>
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Car Rental Packages</h2>
+              <h2 className="text-2xl font-bold">{t("rentalTitle")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Daily rates by duration — Mini Car, Economy, Compact & Full Size
+                {t("rentalSubtitle")}
               </p>
             </div>
             <div className="relative z-30 flex flex-wrap gap-2">
@@ -155,7 +171,7 @@ export function FleetPageContent() {
                 active={rentalCategory === "all"}
                 onClick={() => setRentalCategory("all")}
               >
-                All categories
+                {t("allCategories")}
               </FilterChip>
               {rentalCategories.map((category) => (
                 <FilterChip
@@ -163,7 +179,7 @@ export function FleetPageContent() {
                   active={rentalCategory === category}
                   onClick={() => setRentalCategory(category)}
                 >
-                  {category}
+                  {t(rentalCatKey[category])}
                 </FilterChip>
               ))}
             </div>
@@ -173,7 +189,9 @@ export function FleetPageContent() {
             <div className="space-y-10">
               {rentalByCategory.map(({ category, packages }) => (
                 <div key={category}>
-                  <h3 className="mb-4 text-lg font-semibold">{category}</h3>
+                  <h3 className="mb-4 text-lg font-semibold">
+                    {t(rentalCatKey[category])}
+                  </h3>
                   <div className="grid grid-cols-1 gap-4 overflow-visible pt-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                     {packages.map((pkg) => (
                       <Card
@@ -187,7 +205,9 @@ export function FleetPageContent() {
                         <div className="flex flex-1 flex-col overflow-hidden rounded-b-xl">
                           <CardHeader className="space-y-2 px-4 pb-2 pt-4 sm:px-6">
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline">{pkg.category}</Badge>
+                              <Badge variant="outline">
+                                {t(rentalCatKey[pkg.category])}
+                              </Badge>
                             </div>
                             <CardTitle className="text-base leading-snug sm:text-lg">
                               {pkg.model}
@@ -198,48 +218,49 @@ export function FleetPageContent() {
                             <CardDescription className="flex flex-wrap gap-x-3 gap-y-1 pt-1 text-xs sm:text-sm">
                               <span className="inline-flex items-center gap-1">
                                 <Users className="size-3.5 shrink-0" />
-                                {pkg.seats} seats
+                                {pkg.seats} {t("seats")}
                               </span>
                               <span className="inline-flex items-center gap-1">
                                 <Luggage className="size-3.5 shrink-0" />
-                                {pkg.largeBags} large bag
-                                {pkg.largeBags > 1 ? "s" : ""}
+                                {pkg.largeBags} {t("bags")}
                               </span>
-                              <span>{pkg.doors} doors</span>
+                              <span>
+                                {pkg.doors} {t("doors")}
+                              </span>
                             </CardDescription>
                           </CardHeader>
                           <CardContent className="flex flex-1 flex-col gap-3 px-4 pb-4 sm:px-6">
                             <div className="grid grid-cols-2 gap-2 text-sm sm:gap-2.5">
                               <div className="rounded-lg bg-muted/60 px-2.5 py-2 sm:px-3">
                                 <p className="text-[11px] text-muted-foreground">
-                                  1–3 days
+                                  {t("days1to3")}
                                 </p>
                                 <p className="text-sm font-semibold sm:text-base">
-                                  {formatRate(pkg.rates.days1to3)}
+                                  {formatRate(pkg.rates.days1to3, onRequest)}
                                 </p>
                               </div>
                               <div className="rounded-lg bg-muted/60 px-2.5 py-2 sm:px-3">
                                 <p className="text-[11px] text-muted-foreground">
-                                  4–6 days
+                                  {t("days4to6")}
                                 </p>
                                 <p className="text-sm font-semibold sm:text-base">
-                                  {formatRate(pkg.rates.days4to6)}
+                                  {formatRate(pkg.rates.days4to6, onRequest)}
                                 </p>
                               </div>
                               <div className="rounded-lg bg-muted/60 px-2.5 py-2 sm:px-3">
                                 <p className="text-[11px] text-muted-foreground">
-                                  7–20 days
+                                  {t("days7to20")}
                                 </p>
                                 <p className="text-sm font-semibold sm:text-base">
-                                  {formatRate(pkg.rates.days7to20)}
+                                  {formatRate(pkg.rates.days7to20, onRequest)}
                                 </p>
                               </div>
                               <div className="rounded-lg bg-muted/60 px-2.5 py-2 sm:px-3">
                                 <p className="text-[11px] text-muted-foreground">
-                                  21–30 days
+                                  {t("days21to30")}
                                 </p>
                                 <p className="text-sm font-semibold sm:text-base">
-                                  {formatRate(pkg.rates.days21to30)}
+                                  {formatRate(pkg.rates.days21to30, onRequest)}
                                 </p>
                               </div>
                             </div>
@@ -250,7 +271,7 @@ export function FleetPageContent() {
                               href="/contact"
                             >
                               <span className="truncate">
-                                Inquire {pkg.model}
+                                {t("inquire", { model: pkg.model })}
                               </span>
                               <ArrowRight className="size-3.5 shrink-0" />
                             </ButtonLink>
@@ -264,7 +285,7 @@ export function FleetPageContent() {
             </div>
           ) : (
             <p className="rounded-xl bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">
-              No rental packages match your filters.
+              {t("emptyRental")}
             </p>
           )}
         </section>
@@ -276,20 +297,19 @@ export function FleetPageContent() {
         <section>
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Transfer Vehicles</h2>
+              <h2 className="text-2xl font-bold">{t("transferTitle")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Private transfer classes for airport, hotel, pier and
-                inter-province routes
+                {t("transferSubtitle")}
               </p>
             </div>
             <div className="relative z-30 flex flex-wrap gap-2">
-              {capacityFilters.map((f) => (
+              {capacityFilterIds.map((id) => (
                 <FilterChip
-                  key={f.id}
-                  active={capacity === f.id}
-                  onClick={() => setCapacity(f.id)}
+                  key={id}
+                  active={capacity === id}
+                  onClick={() => setCapacity(id)}
                 >
-                  {f.label}
+                  {capacityLabel(id)}
                 </FilterChip>
               ))}
             </div>
@@ -303,7 +323,7 @@ export function FleetPageContent() {
             </div>
           ) : (
             <p className="rounded-xl bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">
-              No transfer vehicles match your filters.
+              {t("emptyTransfer")}
             </p>
           )}
         </section>

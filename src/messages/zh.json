@@ -1,0 +1,1036 @@
+{
+  "LocaleSwitcher": {
+    "label": "语言",
+    "en": "EN",
+    "th": "TH",
+    "zh": "中文"
+  },
+  "Nav": {
+    "home": "首页",
+    "transfers": "接送服务",
+    "travel": "旅游",
+    "airportTransfer": "机场接送",
+    "hotelTransfer": "酒店接送",
+    "pierTransfer": "码头接送",
+    "beachTransfer": "海滩接送",
+    "cityTransfer": "市区接送",
+    "attractionTransfer": "景点接送",
+    "interProvince": "跨府接送",
+    "fleet": "车队",
+    "priceList": "价格表",
+    "tours": "一日游",
+    "boatSchedules": "船班时刻",
+    "travelInfo": "旅游资讯",
+    "articles": "文章",
+    "faq": "常见问题",
+    "reviews": "评价",
+    "contact": "联系我们",
+    "booking": "预订",
+    "bookNow": "立即预订",
+    "services": "服务"
+  },
+  "MobileNav": {
+    "home": "首页",
+    "fleet": "车队",
+    "book": "预订",
+    "prices": "价格",
+    "call": "电话"
+  },
+  "Footer": {
+    "services": "服务",
+    "travel": "旅游",
+    "contact": "联系",
+    "rights": "版权所有"
+  },
+  "Common": {
+    "callNow": "立即致电",
+    "chatOnLine": "LINE 聊天",
+    "viewAll": "查看全部",
+    "learnMore": "了解更多",
+    "startBooking": "开始预订",
+    "allFaq": "全部问题",
+    "allReviews": "全部评价",
+    "loading": "加载中...",
+    "book": "预订",
+    "explore": "探索",
+    "read": "阅读",
+    "min": "分钟",
+    "bookVehicle": "预订 {name}",
+    "allArticles": "全部文章"
+  },
+  "Home": {
+    "privateTransfer": "私人接送服务",
+    "startFrom": "起价",
+    "heroBody": "从甲米机场私人接送至酒店、海滩、码头及邻近府份。往返预订享特别优惠 —",
+    "discount": "回程减免 5%",
+    "onReturn": "。",
+    "bullet1": "即时估价",
+    "bullet2": "价格全包（含过路费与停车费）",
+    "bullet3": "专业司机",
+    "bullet4": "电子凭证含二维码",
+    "servicesTitle": "接送服务",
+    "servicesSubtitle": "覆盖泰国南部的专业上门接送",
+    "serviceCardDesc": "可靠接送，即时电子凭证",
+    "contactTitle": "联系我们",
+    "contactBody": "预订接送或咨询定制路线。随时电话、LINE 或邮件联系我们。",
+    "whyTitle": "为什么选择 Krabi Links Taxi？",
+    "feature1Title": "完整路线网络",
+    "feature1Desc": "连接泰国南部机场、码头、酒店、海滩与景点。",
+    "feature2Title": "真实车队照片",
+    "feature2Desc": "7 种车型，从经济型轿车到中巴，规格齐全。",
+    "feature3Title": "透明定价",
+    "feature3Desc": "预订前即可看到准确价格 — 无隐藏费用，含过路费。",
+    "feature4Title": "一次预订，多种行程",
+    "feature4Desc": "单程、往返、多路线、多日及包车可在同一订单完成。",
+    "ctaTitle": "准备好探索泰国南部了吗？",
+    "ctaBody": "立即预订接送，即时获取含二维码的电子凭证。",
+    "faqTitle": "常见问题",
+    "faqSubtitle": "预订前的快速解答",
+    "slogan": "值得信赖的泰国南部接送网络",
+    "fleetSubtitle": "{count} 种车型，满足各种人数需求",
+    "fleetSearch": "搜索车型...",
+    "fleetEmpty": "没有符合筛选条件的车型。",
+    "fleetFilterAll": "全部",
+    "fleetFilter13": "1–3 座",
+    "fleetFilter14": "1–4 座",
+    "fleetFilter18": "1–8 座",
+    "fleetFilterGroup": "团体 / 巴士",
+    "articlesTitle": "旅游文章",
+    "articlesSubtitle": "机场、海滩、码头与跨府接送指南",
+    "travelHubsTitle": "旅游资讯中心",
+    "travelHubsSubtitle": "一日游、船班与目的地贴士 — 然后预订接送",
+    "toursDesc": "皮皮岛、四岛、宏岛等一日游。",
+    "boatsDesc": "渡轮、快艇与长尾船班次（示例数据）。",
+    "travelInfoDesc": "奥南海滩、莱利、皮皮岛与甲米–普吉指南。",
+    "reviewMarqueeTitle": "客户评价",
+    "reviewHintMobile": "滑动或点箭头 · 点照片放大",
+    "reviewHintDesktop": "悬停暂停 · 点击放大"
+  },
+  "PriceChecker": {
+    "title": "价格查询",
+    "subtitle": "选择上车点、目的地和车型，即时查看价格",
+    "oneWay": "单程",
+    "roundTrip": "往返",
+    "from": "上车点",
+    "to": "目的地",
+    "vehicle": "车型",
+    "estimated": "预估价格",
+    "km": "{km} 公里",
+    "mins": "约 {mins} 分钟",
+    "tolls": "含过路费与停车费",
+    "meetGreet": "举牌迎接 · 机场免费等候（60 分钟）",
+    "bookNow": "立即预订"
+  },
+  "Booking": {
+    "title": "预订接送",
+    "subtitle": "单程、往返、多路线、多日及包车 — 一次完成预订。",
+    "confirm": "确认",
+    "typeTitle": "预订类型",
+    "typeSubtitle": "一次预订完成所有类型 — 可添加路线、日期或包车",
+    "routeDetails": "路线详情",
+    "charterDetails": "包车详情",
+    "addRoute": "添加路线",
+    "routeN": "路线 {n}",
+    "charterN": "包车 {n}",
+    "pickup": "上车点",
+    "dropoff": "下车点",
+    "date": "日期",
+    "pickupTime": "上车时间",
+    "vehicle": "车型",
+    "selectVehicle": "选择车型",
+    "legPrice": "本段价格",
+    "customerTitle": "客户信息",
+    "fullName": "姓名 *",
+    "phone": "电话 *",
+    "email": "邮箱 *",
+    "flightOptional": "航班号（可选）",
+    "specialRequests": "特殊要求",
+    "phName": "张三",
+    "phPhone": "+66 ...",
+    "phEmail": "email@example.com",
+    "phFlight": "FD1234",
+    "phNotes": "儿童座椅、额外停靠等",
+    "paymentTitle": "付款",
+    "paymentSubtitle": "选择付款方式 — 银行、二维码与卡片字段为演示数据",
+    "summaryTitle": "预订摘要",
+    "summarySubtitle": "确认前请核对",
+    "total": "合计",
+    "paymentMethod": "付款方式：",
+    "bankTransfer": "银行转账",
+    "card": "信用卡 / 借记卡",
+    "promptpay": "PromptPay",
+    "confirmBooking": "确认预订",
+    "confirmBank": "确认预订（待核对转账）",
+    "confirmCard": "刷卡并确认",
+    "confirmPromptPay": "确认 PromptPay 付款",
+    "processing": "处理中...",
+    "demoNote": "演示付款 — 不真实扣款 · 确认后签发电子凭证",
+    "at": "于",
+    "toastCustomer": "请填写完整客户信息",
+    "toastPayment": "请选择付款方式",
+    "toastFail": "无法确认预订，请检查信息",
+    "types": {
+      "one-way": {
+        "label": "单程",
+        "desc": "单次接送",
+        "detail": "点对点单次接送。"
+      },
+      "round-trip": {
+        "label": "往返",
+        "desc": "含回程",
+        "detail": "系统自动创建反向回程。"
+      },
+      "multi-route": {
+        "label": "多路线",
+        "desc": "多个目的地",
+        "detail": "可按行程需要添加多段路线。"
+      },
+      "multi-day": {
+        "label": "多日",
+        "desc": "不同日期",
+        "detail": "在同一订单安排不同日期的接送。"
+      },
+      "daily-charter": {
+        "label": "包天",
+        "desc": "全天 8 小时",
+        "detail": "全天包车（8 小时）— 选择车型与开始时间。"
+      },
+      "hourly-charter": {
+        "label": "包时",
+        "desc": "最少 3 小时",
+        "detail": "最少 3 小时 — 包车时段内可灵活停靠。"
+      }
+    }
+  },
+  "Pages": {
+    "fleet": "我们的车队",
+    "priceList": "价格表",
+    "faq": "常见问题",
+    "reviews": "客户评价",
+    "contact": "联系我们",
+    "articles": "旅游文章",
+    "tours": "一日游",
+    "boatSchedules": "船班时刻",
+    "travelInfo": "旅游资讯",
+    "fleetSubtitle": "8 种车型，含真实照片与完整规格",
+    "priceListSubtitle": "接送与日租透明价格",
+    "reviewsSubtitle": "来自泰国南部旅客的真实反馈",
+    "contactSubtitle": "电话、LINE 或邮件 — 我们乐意协助规划行程",
+    "articlesSubtitle": "机场、海滩、码头与跨府接送指南",
+    "toursSubtitle": "甲米周边一日游与海岛体验",
+    "boatSchedulesSubtitle": "渡轮与快艇班次（示例数据）",
+    "travelInfoSubtitle": "泰国南部热门目的地实用贴士"
+  },
+  "Site": {
+    "slogan": "值得信赖的泰国南部接送网络",
+    "tagline": "泰国南部旅游与交通平台"
+  },
+  "Faq": {
+    "pageTitle": "常见问题与政策",
+    "pageSubtitle": "关于预订、付款与服务标准的一切信息",
+    "sectionTitle": "常见问题",
+    "policiesTitle": "服务政策",
+    "items": {
+      "1": {
+        "q": "如何预订接送？",
+        "a": "选择上车点与下车点、车型、日期和时间，填写预订表单。您将立即收到含二维码的电子凭证。"
+      },
+      "2": {
+        "q": "可以在一笔订单中预订多条路线吗？",
+        "a": "可以。系统支持单程、往返、多路线、多日及包车 — 均可在同一订单完成。"
+      },
+      "3": {
+        "q": "如果航班延误怎么办？",
+        "a": "我们会跟踪航班动态。机场接机自实际落地时间起含 60 分钟免费等候。"
+      },
+      "4": {
+        "q": "接受哪些付款方式？",
+        "a": "在线预订可使用银行转账、信用卡/借记卡和 PromptPay（演示为模拟数据）。也可提前安排向司机支付泰铢现金。"
+      },
+      "5": {
+        "q": "取消政策是什么？",
+        "a": "接送前 24 小时以上可免费取消。24 小时内取消可能收取 50%。爽约不予退款。"
+      },
+      "6": {
+        "q": "提供儿童座椅吗？",
+        "a": "提供，可按需申请且不另收费。预订时请注明儿童年龄/体重。"
+      },
+      "7": {
+        "q": "价格是否全包？",
+        "a": "是。报价含过路费、停车费、油费与司机服务。仅超时等候或您额外要求的项目另计。"
+      },
+      "8": {
+        "q": "如何收到电子凭证？",
+        "a": "确认预订后立即显示含二维码的电子凭证，之后也可在预订页再次打开。上车时出示给司机。"
+      }
+    },
+    "policies": {
+      "waiting": {
+        "title": "等候时间",
+        "content": "机场接机含 60 分钟免费等候。酒店/码头接送含 15 分钟。超时等候每 30 分钟 200 泰铢。"
+      },
+      "flight-delay": {
+        "title": "航班延误",
+        "content": "我们跟踪航班号并自动调整接机时间。延误 2 小时内不另收费。"
+      },
+      "child-seat": {
+        "title": "儿童座椅",
+        "content": "免费提供婴儿、幼儿与增高座椅。请在预订时申请。"
+      },
+      "pets": {
+        "title": "宠物",
+        "content": "SUV 与面包车欢迎携带笼装小型宠物。可能收取 300 泰铢清洁费。"
+      },
+      "ferry": {
+        "title": "渡轮衔接",
+        "content": "码头接送含送至渡轮码头。船票可作为附加服务安排。"
+      },
+      "toll": {
+        "title": "过路费与停车费",
+        "content": "机场/码头过路费与停车费均已包含在报价中。"
+      },
+      "payment": {
+        "title": "付款",
+        "content": "可在线刷卡/转账，或向司机支付泰铢现金。除非另有说明，价格均为全包。"
+      },
+      "cancellation": {
+        "title": "取消",
+        "content": "接送前 24+ 小时免费取消。24 小时内收取 50%。爽约不退款。"
+      },
+      "refund": {
+        "title": "退款",
+        "content": "获批退款将在 5–7 个工作日内退回原支付方式。"
+      }
+    }
+  },
+  "Reviews": {
+    "pageTitle": "客户评价",
+    "pageSubtitle": "来自泰国南部旅客的真实反馈",
+    "items": {
+      "1": {
+        "country": "英国",
+        "comment": "从甲米机场到奥南海滩接送顺利。司机举牌等候，车辆干净舒适。",
+        "route": "KBV 机场 → 奥南海滩"
+      },
+      "2": {
+        "country": "德国",
+        "comment": "预订往返莱利海滩。沟通出色，往返都很准时。",
+        "route": "KBV 机场 ↔ 莱利海滩"
+      },
+      "3": {
+        "country": "日本",
+        "comment": "6 人家庭 VIP 商务车很完美。孩子们喜欢冷毛巾和小吃！",
+        "route": "KBV 机场 → Centara Grand"
+      },
+      "4": {
+        "country": "意大利",
+        "comment": "跨府到普吉性价比高。因堵车略有延误，但司机及时告知。",
+        "route": "甲米 → 普吉机场"
+      },
+      "5": {
+        "country": "澳大利亚",
+        "comment": "酒店到码头接送非常准时。司机帮忙搬行李，时间刚好赶上皮皮岛渡轮。",
+        "route": "奥南酒店 → 奥南码头"
+      },
+      "6": {
+        "country": "法国",
+        "comment": "预订经码头到莱利的海滩接送。LINE 更新清晰，行李空间充足。",
+        "route": "甲米市区 → 莱利码头"
+      },
+      "7": {
+        "country": "泰国",
+        "comment": "多日包车游甲米。预订方便、价格公道、司机总是准时。",
+        "route": "包车 · 甲米"
+      }
+    }
+  },
+  "Transfer": {
+    "fromEco": "经济轿车起",
+    "book": "预订",
+    "bookRoute": "预订此路线",
+    "popularRoutes": "热门路线",
+    "popularRoutesHint": "经济轿车参考价，最终价格视车型与日期而定。",
+    "route": "路线",
+    "distance": "距离",
+    "duration": "时长",
+    "fromPrice": "起价 (ECO)",
+    "recommended": "推荐车型",
+    "recommendedBody": "按人数与行李选择合适车型。",
+    "ctaTitle": "准备好预订{title}了吗？",
+    "ctaBody": "预订后立即获得带二维码的电子凭证。",
+    "howTitle": "预订流程",
+    "howSubtitle": "三步完成：报价、确认、上车。",
+    "step1Title": "选择路线",
+    "step1Body": "选择上车点、下车点、日期和车型。",
+    "step2Title": "确认并付款",
+    "step2Body": "安全付款并获得带二维码的电子凭证。",
+    "step3Title": "与司机会合",
+    "step3Body": "上车前发送司机信息，安心出行。",
+    "includedTitle": "服务包含",
+    "otherServices": "其他接送服务",
+    "viewPrices": "查看价目表",
+    "startBooking": "开始预订",
+    "km": "{n} 公里",
+    "approxMin": "约 {n} 分钟",
+    "tipLabel": "出行提示",
+    "categories": {
+      "airport": "机场",
+      "hotel": "酒店",
+      "pier": "码头",
+      "beach": "海滩",
+      "city": "城区",
+      "attraction": "景点",
+      "inter-province": "跨省"
+    },
+    "faqTitle": "本服务常见问题",
+    "faqSubtitle": "预订前的快速解答。",
+    "reviewsTitle": "旅客怎么说",
+    "allReviews": "全部评价",
+    "allFaq": "全部问题",
+    "includedBadge": "已包含"
+  },
+  "TransferPages": {
+    "airport-transfer": {
+      "title": "机场接送",
+      "subtitle": "往返甲米及泰南机场的私人接送",
+      "intro": "按航班时间接机，可选接机举牌、行李空间充足，直达酒店、海滩或码头。",
+      "tip": "预订时填写航班号，便于我们跟踪延误并调整接机时间。",
+      "benefit1": "航班跟踪与弹性候机时间",
+      "benefit2": "可按需到达厅接机举牌",
+      "benefit3": "行李空间充足 — 轿车到面包车可选",
+      "faq": {
+        "1": {
+          "q": "航班延误怎么办？",
+          "a": "机场接机我们会跟踪航班，并自实际落地起提供约 60 分钟免费等候。"
+        },
+        "2": {
+          "q": "提供接机举牌吗？",
+          "a": "可以。预订时填写航班号并申请接机服务，司机可在到达厅举牌等候。"
+        },
+        "3": {
+          "q": "可以带多少行李？",
+          "a": "经济轿车大约可放 3 件中号行李。行李较多或家庭出行请选择 SUV、面包车或 VIP。"
+        },
+        "4": {
+          "q": "普吉机场也能接吗？",
+          "a": "可以。覆盖甲米（KBV）及部分泰南机场（含普吉），私人点对点固定价。"
+        },
+        "5": {
+          "q": "机场接送如何付款？",
+          "a": "预订时可在线通过银行转账、银行卡或 PromptPay 付款。如需向司机付现金，请提前说明。"
+        },
+        "6": {
+          "q": "什么时候能收到司机信息？",
+          "a": "司机姓名、电话与车辆信息会在上车前发送，通常在行程前 24 小时内。"
+        }
+      }
+    },
+    "hotel-transfer": {
+      "title": "酒店接送",
+      "subtitle": "度假村、酒店与甲米要点之间的上门接送",
+      "intro": "私人用车直达酒店大堂或别墅门口 — 不拼车、不绕路。",
+      "tip": "在备注中填写酒店名称或地图定位，下车更顺畅。",
+      "benefit1": "上门接送",
+      "benefit2": "适合深夜入住与清晨退房",
+      "benefit3": "提供高级与 VIP 车型",
+      "faq": {
+        "1": {
+          "q": "会送到酒店大堂吗？",
+          "a": "会送到大堂或别墅门口。请在备注中填写酒店名称或地图定位。"
+        },
+        "2": {
+          "q": "可以预订深夜或清晨接送吗？",
+          "a": "可以。私人接送支持早班出发与深夜入住，预订时选择日期和时间即可。"
+        },
+        "3": {
+          "q": "是拼车吗？",
+          "a": "不是。每次预订都是您的专车，不会额外停靠其他酒店。"
+        },
+        "4": {
+          "q": "住度假村选什么车？",
+          "a": "情侣适合高级轿车或 Signature；家庭与大件行李建议 VIP 面包车。"
+        },
+        "5": {
+          "q": "预订后可以更改酒店落客点吗？",
+          "a": "若新酒店距离相近可以。请尽快通过 LINE 提供订单号联系我们。"
+        },
+        "6": {
+          "q": "入住延误时司机会等候吗？",
+          "a": "酒店短时等候没问题。若延误较长，请通过 LINE 告知以便司机调整。"
+        }
+      }
+    },
+    "pier-transfer": {
+      "title": "码头接送",
+      "subtitle": "准时衔接渡轮与快艇码头",
+      "intro": "按时抵达皮皮岛、莱利等岛屿出发码头，司机熟悉船班时间。",
+      "tip": "建议在奥南或市区开船前至少提前 45–60 分钟预订。",
+      "benefit1": "按船班时间安排接送",
+      "benefit2": "协助行李至码头入口",
+      "benefit3": "可从机场、酒店或海滩衔接",
+      "faq": {
+        "1": {
+          "q": "应提前多久到码头？",
+          "a": "建议在奥南或甲米镇开船前 45–60 分钟到达，旺季尤其如此。"
+        },
+        "2": {
+          "q": "司机会在码头帮忙搬行李吗？",
+          "a": "会协助行李至码头入口，方便您办理登船。"
+        },
+        "3": {
+          "q": "能衔接皮皮岛、莱利的船班吗？",
+          "a": "可以。热门落客点包括奥南码头，并可衔接前往皮皮与莱利的船班。"
+        },
+        "4": {
+          "q": "在哪里查看船班时间？",
+          "a": "请查看船班时刻页面了解渡轮与快艇参考时间，再预订匹配的码头接送。"
+        },
+        "5": {
+          "q": "船班取消怎么办？",
+          "a": "请立即联系我们。可改期接送，或在船公司调整时间后协助更改落客安排。"
+        },
+        "6": {
+          "q": "可以同一天酒店→码头→酒店吗？",
+          "a": "可以。在一笔订单中添加多段行程，或分别预订去程与回程并对齐时间。"
+        }
+      }
+    },
+    "beach-transfer": {
+      "title": "海滩接送",
+      "subtitle": "直达奥南、莱利、芭东海滩等沿海区域",
+      "intro": "无需在路边拦出租车 — 从机场或酒店直达海滩，私人固定价格。",
+      "tip": "前往莱利可能需从码头短程乘船，预订时可咨询。",
+      "benefit1": "私人固定价，无计价器意外",
+      "benefit2": "送到海滩与度假村落客点",
+      "benefit3": "提供家庭与团体车型",
+      "faq": {
+        "1": {
+          "q": "到海滩是固定价格吗？",
+          "a": "是。私人海滩接送按所选车型固定计价，无路边计价器意外。"
+        },
+        "2": {
+          "q": "去莱利怎么走？",
+          "a": "多数客人送到莱利码头区域后换乘短程长尾船。预订时可告知我们以便安排时间。"
+        },
+        "3": {
+          "q": "可以送到海滨度假村吗？",
+          "a": "可以。送到海滨酒店及约定上下客点，覆盖奥南、莱利衔接与沿海区域。"
+        },
+        "4": {
+          "q": "有孩子且行李多怎么办？",
+          "a": "请选择 SUV 或面包车。可提前在备注或 LINE 申请儿童座椅。"
+        },
+        "5": {
+          "q": "也能去较安静的海滩吗？",
+          "a": "道路可达即可。请在备注填写海滩或度假村名称，我们会确认合适落客点。"
+        },
+        "6": {
+          "q": "海滩往返会更便宜吗？",
+          "a": "往返预订通常比两笔单程略有优惠。可用价格查询工具比较。"
+        }
+      }
+    },
+    "city-transfer": {
+      "title": "城区接送",
+      "subtitle": "泰南城镇之间的舒适出行",
+      "intro": "甲米镇、董里、素叻他尼等 — 私人用车适合办事、酒店往返与日间移动。",
+      "tip": "多站点行程请在备注中写明各站。",
+      "benefit1": "点对点或按需多站停靠",
+      "benefit2": "空调舒适，适合较长城区路程",
+      "benefit3": "轿车到面包车覆盖家庭与行李",
+      "faq": {
+        "1": {
+          "q": "城里可以多站停靠吗？",
+          "a": "可以按需安排。请在备注列出各站，便于规划时间与报价。"
+        },
+        "2": {
+          "q": "去董里、素叻他尼可以吗？",
+          "a": "可以。城区接送覆盖甲米镇及部分泰南城镇的点对点行程。"
+        },
+        "3": {
+          "q": "车上有空调吗？",
+          "a": "所有接送车辆均配备空调，适合白天炎热与较长城区路程。"
+        },
+        "4": {
+          "q": "可以当天预订城区接送吗？",
+          "a": "多数情况下可以，视车辆空档而定。请尽早在线预订，紧急行程可 LINE 联系。"
+        },
+        "5": {
+          "q": "可以在城里包车等候几小时吗？",
+          "a": "如需等候或按小时用车，请选择按小时包车，或在预订时注明等候时间以便报价。"
+        },
+        "6": {
+          "q": "可以从汽车站或火车站接吗？",
+          "a": "可以，若地点在我们的列表中。在预订表单选择车站为上车或下车点即可。"
+        }
+      }
+    },
+    "attraction-transfer": {
+      "title": "景点接送",
+      "subtitle": "寺庙、翡翠池、温泉与观景台专线",
+      "intro": "私人接送到甲米热门景点，可提供等候返程的一日游选项。",
+      "tip": "如需同一辆车返程，请选择等候返回。",
+      "benefit1": "热门公园与寺庙路线",
+      "benefit2": "一日游等候返回选项",
+      "benefit3": "面包车适合小团体与装备",
+      "faq": {
+        "1": {
+          "q": "参观时司机可以等候吗？",
+          "a": "可以。预订时选择等候返回，同一辆车可在翡翠池、寺庙或温泉结束后送回。"
+        },
+        "2": {
+          "q": "覆盖哪些景点？",
+          "a": "热门包括翡翠池、虎穴寺、温泉，以及甲米其他公园与观景点。"
+        },
+        "3": {
+          "q": "一日游更适合面包车吗？",
+          "a": "4 人以上或游泳后衣物潮湿时，面包车或 VIP 比轿车更舒适。"
+        },
+        "4": {
+          "q": "车费含门票吗？",
+          "a": "不含。接送仅含交通。公园与寺庙门票现场支付，除非另订行程套餐。"
+        },
+        "5": {
+          "q": "一天可以去多个景点吗？",
+          "a": "可以。在备注列出停靠顺序，或预订多段行程/日包车完成观光环线。"
+        },
+        "6": {
+          "q": "早上去景点建议几点出发？",
+          "a": "热门景点如翡翠池建议早出发，避开酷热与人潮 — 预订时可帮您建议上车时间。"
+        }
+      }
+    },
+    "inter-province-transfer": {
+      "title": "跨省接送",
+      "subtitle": "泰南省份之间的长途私人接送",
+      "intro": "甲米–普吉、董里、素叻他尼等 — SUV、面包车或巴士，舒适走高速。",
+      "tip": "周末长途易满位 — 早班车请尽早预订。",
+      "benefit1": "适合高速的 SUV、面包车与巴士",
+      "benefit2": "跨省行程固定价格",
+      "benefit3": "适合带行李与装备的团体",
+      "faq": {
+        "1": {
+          "q": "长途高速选什么车？",
+          "a": "舒适选 SUV 或面包车；大团体与行李多可选 VIP 或巴士（甲米–普吉、素叻等）。"
+        },
+        "2": {
+          "q": "跨省是固定价格吗？",
+          "a": "是。按所选车型提供私人固定价，付款前确认。"
+        },
+        "3": {
+          "q": "周末要提前多久订？",
+          "a": "周末与节假日易满位，建议尽量提前至少一天预订早班出发。"
+        },
+        "4": {
+          "q": "高速费包含吗？",
+          "a": "报价通常包含行程相关的标准过路费与停车费，除非预订时另有说明。"
+        },
+        "5": {
+          "q": "长途可以中途休息吗？",
+          "a": "长途高速可短暂停车上厕所或买零食。请在备注写明希望的休息安排。"
+        },
+        "6": {
+          "q": "甲米到普吉可以送到酒店吗？",
+          "a": "可以。选择普吉酒店或机场作为下车点 — 私人点对点，非拼车巴士。"
+        }
+      }
+    }
+  },
+  "Vehicles": {
+    "amenities": {
+      "ac": "空调",
+      "water": "瓶装水",
+      "charger": "手机充电器",
+      "legroom": "宽敞腿部空间",
+      "groupSeating": "团体座位",
+      "leather": "真皮座椅",
+      "wifi": "Wi-Fi",
+      "snacks": "小食",
+      "meetGreet": "举牌迎接",
+      "luxury": "豪华轿车",
+      "premium": "高端配置",
+      "priority": "优先服务",
+      "captain": "船长座椅",
+      "privacy": "隐私玻璃",
+      "usb": "USB 充电",
+      "drinks": "冷饮",
+      "groupTravel": "适合团体出行",
+      "tourGuide": "导游空间"
+    },
+    "bags": "{n} 件行李",
+    "largeCargo": "大容量行李区",
+    "pax": "{n} 人",
+    "bags3": "3 件行李",
+    "bags4": "4 件行李",
+    "bags6": "6 件行李",
+    "bags8": "8 件行李",
+    "bags10": "10 件行李",
+    "ECO": {
+      "name": "经济型轿车",
+      "luggage": "3 件行李"
+    },
+    "PREM": {
+      "name": "高级轿车",
+      "luggage": "4 件行李"
+    },
+    "SUV": {
+      "name": "SUV",
+      "luggage": "6 件行李"
+    },
+    "VAN": {
+      "name": "标准商务车",
+      "luggage": "8 件行李"
+    },
+    "VIP": {
+      "name": "VIP 商务车",
+      "luggage": "8 件行李"
+    },
+    "SIG": {
+      "name": "尊享级",
+      "luggage": "4 件行李"
+    },
+    "EXE": {
+      "name": "行政商务车",
+      "luggage": "10 件行李"
+    },
+    "BUS": {
+      "name": "中巴",
+      "luggage": "大容量行李区"
+    }
+  },
+  "Contact": {
+    "title": "联系我们",
+    "subtitle": "有问题吗？我们的团队随时协助您的泰国南部行程。",
+    "sendTitle": "发送消息",
+    "sendSubtitle": "通常在 24 小时内回复",
+    "name": "姓名",
+    "email": "邮箱",
+    "subject": "主题",
+    "message": "留言",
+    "phName": "您的姓名",
+    "phEmail": "email@example.com",
+    "phSubject": "我们能帮您什么？",
+    "phMessage": "告诉我们您的旅行计划...",
+    "send": "发送消息",
+    "toastOk": "消息已发送！我们将在 24 小时内回复。",
+    "getInTouch": "联系方式",
+    "phone": "电话",
+    "address": "地址",
+    "lineTitle": "LINE 官方账号",
+    "lineSubtitle": "与我们聊天以获得快速支持"
+  },
+  "FleetUi": {
+    "filterAll": "全部",
+    "filterRental": "租车",
+    "filterTransfer": "接送",
+    "seatsAll": "全部座位",
+    "seatsGroup": "团体 / 巴士",
+    "search": "搜索车型、类别、代码…",
+    "rentalTitle": "租车套餐",
+    "rentalSubtitle": "按租期的日租金 — 迷你、经济、紧凑、全尺寸",
+    "allCategories": "全部分类",
+    "catMini": "迷你车",
+    "catEconomy": "经济型",
+    "catCompact": "紧凑型",
+    "catFull": "全尺寸",
+    "seats": "座",
+    "bags": "大件行李",
+    "doors": "门",
+    "inquire": "咨询 {model}",
+    "emptyRental": "没有符合筛选的租车套餐。",
+    "transferTitle": "接送车型",
+    "transferSubtitle": "适合各种人数的私人接送车辆",
+    "emptyTransfer": "没有符合筛选的接送车型。",
+    "onRequest": "询价",
+    "days1to3": "1–3 天",
+    "days4to6": "4–6 天",
+    "days7to10": "7–10 天",
+    "days7to20": "7–20 天",
+    "days11to14": "11–14 天",
+    "days15to20": "15–20 天",
+    "days21to30": "21–30 天"
+  },
+  "PriceList": {
+    "filterAll": "全部",
+    "filterRental": "租车",
+    "filterTransfer": "接送",
+    "search": "搜索车型、路线、类别…",
+    "rentalTitle": "租车套餐",
+    "rentalSubtitle": "按租期的日租金（泰铢）— 全部自动挡",
+    "pricePerDay": "每日价格",
+    "category": "类别",
+    "model": "车型",
+    "details": "详情",
+    "capacity": "容量",
+    "capacityLine": "{seats} 座 / {bags} 大件行李 / {doors} 门",
+    "modelsCount": "{n} 款车型",
+    "fromPerDay": "起 ฿{price}/天",
+    "notes": "备注：价格为按租期的每日泰铢价。Hyundai H-1 容量因布局而异。",
+    "transferTitle": "接送路线",
+    "transferSubtitle": "泰国南部点对点私人接送",
+    "allRoutes": "全部路线",
+    "route": "路线",
+    "emptyRental": "没有符合筛选的租车套餐。",
+    "emptyTransfer": "没有符合筛选的接送路线。",
+    "bookNow": "立即预订",
+    "catAirport": "机场",
+    "catHotel": "酒店",
+    "catPier": "码头",
+    "catBeach": "海滩",
+    "catCity": "市区",
+    "catAttraction": "景点",
+    "catInter": "跨府"
+  },
+  "Payment": {
+    "bankTransfer": "银行转账",
+    "bankTransferDesc": "转账至公司账户后上传凭证。",
+    "card": "信用卡 / 借记卡",
+    "cardDesc": "Visa、Mastercard — 演示付款。",
+    "promptpay": "PromptPay",
+    "promptpayDesc": "扫描二维码或支付至 PromptPay ID。",
+    "transferIntro": "请将 ฿{amount} 转入以下任一账户。",
+    "referenceNote": "转账备注请填写此参考号：{ref}",
+    "afterConfirm": "确认后生成",
+    "selectAccount": "选择转账账户 *",
+    "accountName": "账户名",
+    "accountNumber": "账号",
+    "branch": "分行",
+    "attachProof": "上传转账凭证 *",
+    "proofHint": "请上传清晰的转账凭证照片或 PDF。",
+    "uploadSlip": "上传转账凭证",
+    "fileTypes": "JPG、PNG、WEBP 或 PDF",
+    "pdfAttached": "已附加 PDF — 可在电子凭证页打开。",
+    "cardMockNote": "卡片付款 — 演示字段",
+    "cardNumber": "卡号",
+    "nameOnCard": "持卡人姓名",
+    "expiry": "有效期",
+    "cvv": "CVV",
+    "scanQr": "扫描 PromptPay 二维码支付 ฿{amount}",
+    "promptpayId": "PromptPay",
+    "demoQrNote": "演示二维码 — 非真实 PromptPay 数据",
+    "copy": "复制",
+    "copied": "已复制",
+    "copiedToast": "已复制{label}",
+    "copyFail": "无法复制",
+    "toastBank": "请选择您转账的银行账户",
+    "toastProof": "请上传转账凭证",
+    "toastCard": "请填写完整卡片信息（演示）",
+    "toastProofOk": "转账凭证已上传",
+    "toastProofFail": "无法读取文件，请尝试更小的图片或 PDF。",
+    "toastProofSize": "文件过大，最大 1.5 MB。"
+  },
+  "Voucher": {
+    "pending": "电子凭证 · 待付款",
+    "confirmed": "电子凭证已确认",
+    "bookingHash": "预订 #{n}",
+    "confirmedOn": "确认于 {date}",
+    "support": "客服支持",
+    "legs": "{n} 段行程",
+    "legN": "第 {n} 段",
+    "pickup": "上车点",
+    "dropoff": "下车点",
+    "dateTime": "日期与时间",
+    "at": "于",
+    "vehicle": "车型",
+    "driverSoon": "司机信息将在上车前 24 小时发送",
+    "flight": "航班",
+    "notes": "备注",
+    "payment": "付款",
+    "method": "方式",
+    "status": "状态",
+    "statusPaid": "已付款（演示）",
+    "statusAwaiting": "等待银行转账核实",
+    "account": "账户",
+    "transferProof": "转账凭证",
+    "downloadPdf": "下载 PDF 凭证",
+    "totalDue": "应付总额",
+    "totalPaid": "已付总额",
+    "print": "打印凭证",
+    "newBooking": "新预订",
+    "loading": "正在加载凭证...",
+    "notFoundTitle": "未找到凭证",
+    "notFoundBody": "在浏览器存储中找不到此预订。请重新预订以生成凭证。",
+    "makeNew": "重新预订"
+  },
+  "Listing": {
+    "searchArticles": "搜索文章…",
+    "searchTours": "搜索一日游、岛屿、地区…",
+    "searchTravel": "搜索目的地、贴士…",
+    "all": "全部",
+    "min": "分钟",
+    "minRead": "分钟阅读",
+    "read": "阅读",
+    "readGuide": "阅读指南",
+    "details": "详情",
+    "from": "起价",
+    "emptyArticles": "没有匹配的文章。",
+    "emptyTours": "没有匹配的一日游。",
+    "emptyTravel": "没有匹配的指南。",
+    "ctaArticles": "阅读后需要接送吗？",
+    "ctaTours": "需要去码头的接送吗？",
+    "pierTransfer": "码头接送",
+    "inquireTour": "咨询一日游",
+    "allArticles": "全部文章",
+    "allTours": "全部一日游",
+    "allTravel": "全部旅游资讯",
+    "relatedArticles": "相关文章",
+    "relatedTours": "相关一日游",
+    "bookRoute": "准备好预订这条路线了吗？",
+    "startBooking": "开始预订",
+    "highlights": "亮点",
+    "includes": "通常包含",
+    "bookTransfer": "预订接送",
+    "inquire": "咨询",
+    "quickTips": "快速贴士",
+    "planTransfer": "接下来安排接送",
+    "moreGuides": "更多指南",
+    "boatType": "船型",
+    "allBoats": "全部船只",
+    "ferry": "渡轮",
+    "speedboat": "快艇",
+    "longtail": "长尾船",
+    "route": "路线",
+    "allRoutes": "全部路线",
+    "departures": "出发班次",
+    "duration": "时长",
+    "transferTo": "接送至 {pier}",
+    "landTransfer": "前往码头的陆路接送",
+    "emptyBoats": "没有匹配的船班。",
+    "mockBanner": "示例船班时刻供规划参考 — 实际时间可能不同。",
+    "ctaArticlesBody": "查看实时价格，预订私人用车并立即获得电子凭证。",
+    "bookRouteBody": "即时报价，并获取带二维码的电子凭证。"
+  },
+  "Articles": {
+    "categories": {
+      "Airport": "机场",
+      "Beach": "海滩",
+      "Pier": "码头",
+      "Inter Province": "跨府"
+    },
+    "items": {
+      "krabi-airport-transfer-guide": {
+        "title": "甲米机场接送指南：顺利抵达 KBV",
+        "excerpt": "落地甲米国际机场后会经历什么、举牌迎接如何运作，以及如何预订含电子凭证的私人接送。",
+        "p1": "抵达甲米国际机场（KBV）是您泰国南部行程的开始。私人机场接送可跳过出租车排队，直达酒店、海滩或码头。",
+        "p2": "使用 Krabi Links Taxi，司机跟踪航班，机场接机含免费等候。预订后立即获得含二维码的电子凭证 — 在会合点出示即可。",
+        "p3": "从 KBV 热门路线包括奥南海滩、莱利、Centara Grand 和甲米市区。情侣可选经济型轿车，家庭与行李较多可选商务车。",
+        "p4": "提示：预订时提供航班号和酒店名称，方便司机准备名牌并避开晚高峰规划路线。"
+      },
+      "ao-nang-railay-beach-transfer": {
+        "title": "奥南与莱利海滩接送贴士",
+        "excerpt": "如何用私家车、码头与合适车型，在奥南、莱利及附近度假村之间便捷往返。",
+        "p1": "奥南是许多甲米海滩住宿的枢纽，莱利则需经短途码头衔接。提前安排接送能让一天更轻松。",
+        "p2": "从机场或甲米市区预订直达奥南海滩或酒店。前往莱利时，我们可送您到码头并协助衔接船班。",
+        "p3": "若携带浮潜装备或大件行李，SUV 或标准商务车比轿车更宽敞。往返预订也能节省退房日时间。",
+        "p4": "傍晚从海滩返回可能较忙 — 请尽早预订上车时间，尤其在周末和公共假期。"
+      },
+      "pier-transfer-to-phi-phi": {
+        "title": "前往皮皮岛的码头接送：旅客须知",
+        "excerpt": "酒店到码头接送、渡轮时间与行李的实用清单，助您顺利前往皮皮岛。",
+        "p1": "海岛行程从陆地开始。可靠的码头接送从酒店或机场出发，让您从容抵达奥南码头或其他出发点。",
+        "p2": "预留值机与登船缓冲时间。旺季建议至少提前 45–60 分钟到达码头。",
+        "p3": "私人商务车适合同乘一班渡轮的团体。家庭可在预订时免费申请儿童座椅。",
+        "p4": "海岛行程结束后预订回程码头接机，船靠岸时司机已在等候 — 尤其适合天黑后到达。"
+      },
+      "krabi-to-phuket-inter-province": {
+        "title": "甲米至普吉跨府接送",
+        "excerpt": "比较甲米–普吉走廊的舒适度与时间、车型选择，以及何时私人接送优于拼车。",
+        "p1": "甲米–普吉是泰国南部最受欢迎的跨府接送之一。私家车提供门到门服务，无需多次停靠。",
+        "p2": "常见行程连接 KBV 或甲米市区与普吉机场或芭东。车程取决于路况以及是否从机场或市区出发。",
+        "p3": "较长路程可选 VIP 商务车或中巴，空间更舒适。价格含过路费与停车费，除非另加等候时间。",
+        "p4": "若飞入一府、飞出另一府，可预订往返 — 一笔订单覆盖两段行程并使用同一电子凭证流程。"
+      }
+    }
+  },
+  "Admin": {
+    "loading": "加载中…",
+    "loginTitle": "管理员登录",
+    "loginHint": "演示账号：{user} / {pass}",
+    "username": "用户名",
+    "password": "密码",
+    "signIn": "登录",
+    "loginError": "用户名或密码错误",
+    "logout": "退出",
+    "backToSite": "返回网站",
+    "panelTitle": "运营后台",
+    "opsLabel": "后台 · 演示",
+    "nav": {
+      "dashboard": "仪表盘",
+      "bookings": "订单",
+      "payments": "支付",
+      "schedule": "日程",
+      "drivers": "司机",
+      "customers": "客户"
+    },
+    "dashboardTitle": "仪表盘",
+    "dashboardSubtitle": "接送、支付与司机的实时概览。",
+    "resetDemo": "重置演示数据",
+    "statOpen": "进行中订单",
+    "statPayReview": "待核验支付",
+    "statToday": "今日行程",
+    "statDrivers": "在线司机",
+    "statRevenue": "已收款",
+    "recentBookings": "最近订单",
+    "viewAll": "查看全部",
+    "bookingsTitle": "订单",
+    "bookingsSubtitle": "搜索、更新状态并分配司机。",
+    "searchBookings": "搜索订单号、姓名、电话…",
+    "filterAll": "全部状态",
+    "colBooking": "订单",
+    "colCustomer": "客户",
+    "colRoute": "路线",
+    "colWhen": "上车时间",
+    "colStatus": "状态",
+    "colAmount": "金额",
+    "colContact": "联系方式",
+    "colBookings": "订单数",
+    "colSpent": "消费",
+    "emptyBookings": "没有匹配的订单。",
+    "detailTitle": "订单详情",
+    "flight": "航班",
+    "payment": "支付",
+    "opsStatus": "运营状态",
+    "assignDriver": "分配司机",
+    "unassigned": "未分配",
+    "adminNotes": "管理员备注",
+    "cancelBooking": "取消订单",
+    "selectBooking": "请从列表选择订单。",
+    "toastUpdated": "已更新",
+    "toastCancelled": "订单已取消",
+    "paymentsTitle": "支付",
+    "paymentsSubtitle": "核验银行转账并查看已付款订单。",
+    "pendingPayments": "待核验",
+    "emptyPayments": "暂无待核验支付。",
+    "recentPaid": "最近已付",
+    "approve": "通过",
+    "reject": "拒绝",
+    "toastPaymentOk": "支付已确认",
+    "toastPaymentReject": "支付已拒绝 · 订单取消",
+    "scheduleTitle": "日程",
+    "scheduleSubtitle": "按上车日期与时间查看行程。",
+    "prevDay": "上一天",
+    "nextDay": "下一天",
+    "emptySchedule": "当天无行程。",
+    "driver": "司机",
+    "driversTitle": "司机",
+    "driversSubtitle": "司机与可用状态。",
+    "online": "在线",
+    "offline": "离线",
+    "vehicles": "可驾车型",
+    "openJobs": "进行中任务",
+    "setOnline": "设为在线",
+    "setOffline": "设为离线",
+    "customersTitle": "客户",
+    "customersSubtitle": "来自演示与网站预订的客人。",
+    "ops": {
+      "new": "新建",
+      "payment_review": "待核验支付",
+      "assigned": "已分配",
+      "in_progress": "进行中",
+      "completed": "已完成",
+      "cancelled": "已取消"
+    },
+    "navGroupOps": "运营",
+    "navGroupTeam": "人员"
+  }
+}

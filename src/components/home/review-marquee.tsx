@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Star, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn, assetPath } from "@/lib/utils";
 
 /** Synced from /รีวิว — update count when folder changes */
@@ -193,6 +194,7 @@ function MobileReviewSlider({
 }
 
 export function ReviewMarquee() {
+  const t = useTranslations("Home");
   const mid = Math.ceil(reviewImages.length / 2);
   const topRow = reviewImages.slice(0, mid);
   const bottomRow = reviewImages.slice(mid);
@@ -212,10 +214,10 @@ export function ReviewMarquee() {
   return (
     <section className="relative overflow-x-clip border-b bg-background py-10 sm:py-14">
       <div className="mb-4 px-4 text-center sm:mb-5 sm:px-6">
-        <h2 className="text-2xl font-bold sm:text-3xl">Customer Reviews</h2>
+        <h2 className="text-2xl font-bold sm:text-3xl">{t("reviewMarqueeTitle")}</h2>
         <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-          <span className="md:hidden">Swipe or tap arrows · tap photo to enlarge</span>
-          <span className="hidden md:inline">Hover to pause · click to enlarge</span>
+          <span className="md:hidden">{t("reviewHintMobile")}</span>
+          <span className="hidden md:inline">{t("reviewHintDesktop")}</span>
         </p>
       </div>
 

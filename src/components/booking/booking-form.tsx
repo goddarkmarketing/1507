@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -31,53 +33,23 @@ import { locations } from "@/lib/data/locations";
 import { vehicles } from "@/lib/data/vehicles";
 import { useBookingStore } from "@/lib/booking/store";
 import { getLocation } from "@/lib/data/locations";
+import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
 import type { BookingType } from "@/lib/types";
 
-const bookingTypes: {
-  value: BookingType;
-  label: string;
-  desc: string;
-  detail: string;
-}[] = [
-  {
-    value: "one-way",
-    label: "One Way",
-    desc: "Single transfer",
-    detail: "Single point-to-point transfer.",
-  },
-  {
-    value: "round-trip",
-    label: "Round Trip",
-    desc: "Return journey included",
-    detail: "We'll automatically create a return leg with reversed route.",
-  },
-  {
-    value: "multi-route",
-    label: "Multi Route",
-    desc: "Multiple destinations",
-    detail: "Add as many route legs as you need for your journey.",
-  },
-  {
-    value: "multi-day",
-    label: "Multi Day",
-    desc: "Different dates",
-    detail: "Schedule transfers on different dates within one booking.",
-  },
-  {
-    value: "daily-charter",
-    label: "Daily Charter",
-    desc: "8 hours full day",
-    detail: "Full day charter (8 hours) — choose your vehicle and start time.",
-  },
-  {
-    value: "hourly-charter",
-    label: "Hourly Charter",
-    desc: "Min 3 hours",
-    detail: "Minimum 3 hours — flexible stops within your charter period.",
-  },
+const bookingTypeValues: BookingType[] = [
+  "one-way",
+  "round-trip",
+  "multi-route",
+  "multi-day",
+  "daily-charter",
+  "hourly-charter",
 ];
 
 export function BookingForm() {
+  const t = useTranslations("Booking");
+  const tPay = useTranslations("Payment");
+  const locName = useLocationName();
+  const { name: vehicleName, selectLabel, luggage } = useVehicleCopy();
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -140,20 +112,20 @@ export function BookingForm() {
 
   const handleConfirm = async () => {
     if (!draft.customerName || !draft.customerEmail || !draft.customerPhone) {
-      toast.error("Please complete all customer details");
+      toast.error(t("toastCustomer"));
       return;
     }
     if (!draft.paymentMethod) {
-      toast.error("Please select a payment method");
+      toast.error(t("toastPayment"));
       return;
     }
     if (draft.paymentMethod === "bank-transfer") {
       if (!draft.transferBankSymbol) {
-        toast.error("Please select the bank account you transferred to");
+        toast.error(tPay("toastBank"));
         return;
       }
       if (!draft.transferProof) {
-        toast.error("Please attach your transfer proof");
+        toast.error(tPay("toastProof"));
         return;
       }
     }
@@ -165,7 +137,7 @@ export function BookingForm() {
         draft.card.expiry.length < 4 ||
         draft.card.cvv.length < 3
       ) {
-        toast.error("Please complete all card details (mock)");
+        toast.error(tPay("toastCard"));
         return;
       }
     }
@@ -177,14 +149,14 @@ export function BookingForm() {
     setPaying(false);
 
     if (!booking) {
-      toast.error("Could not confirm booking. Please check your details.");
+      toast.error(t("toastFail"));
       return;
     }
 
     if (booking.payment?.status === "awaiting-transfer") {
-      toast.success("Booking submitted — awaiting transfer verification");
+      toast.success(t("confirmBank"));
     } else {
-      toast.success("Payment successful (mock) — e-Voucher issued");
+      toast.success(t("confirmCard"));
     }
     router.push(`/booking/voucher/?n=${booking.bookingNumber}`);
   };
@@ -195,12 +167,12 @@ export function BookingForm() {
 
   const confirmLabel =
     draft.paymentMethod === "bank-transfer"
-      ? "Confirm booking (awaiting transfer)"
+      ? t("confirmBank")
       : draft.paymentMethod === "card"
-        ? "Pay by card & confirm"
+        ? t("confirmCard")
         : draft.paymentMethod === "promptpay"
-          ? "Confirm PromptPay payment"
-          : "Confirm Booking";
+          ? t("confirmPromptPay")
+          : t("confirmBooking");
 
   const fieldClass = "h-10 text-base md:h-8 md:text-sm";
   const selectTriggerClass = cn("w-full min-w-0", fieldClass);
@@ -210,9 +182,9 @@ export function BookingForm() {
       <div className="space-y-4 sm:space-y-6 lg:col-span-2">
         <Card className="md:[--card-spacing:--spacing(4)]" size="sm">
           <CardHeader className="gap-1">
-            <CardTitle className="text-base sm:text-lg">Booking Type</CardTitle>
+            <CardTitle className="text-base sm:text-lg">{t("typeTitle")}</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              All booking types in one reservation — add routes, days, or charter as needed.
+              {t("typeSubtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 sm:space-y-4">
@@ -221,12 +193,12 @@ export function BookingForm() {
               onValueChange={(v) => v && setBookingType(v as BookingType)}
               className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3"
             >
-              {bookingTypes.map((type) => {
-                const selected = draft.type === type.value;
+              {bookingTypeValues.map((typeValue) => {
+                const selected = draft.type === typeValue;
                 return (
                   <Label
-                    key={type.value}
-                    htmlFor={`booking-type-${type.value}`}
+                    key={typeValue}
+                    htmlFor={`booking-type-${typeValue}`}
                     className={cn(
                       "flex cursor-pointer items-start gap-2 rounded-xl border p-2.5 transition-colors sm:gap-3 sm:p-3.5",
                       selected
@@ -235,16 +207,16 @@ export function BookingForm() {
                     )}
                   >
                     <RadioGroupItem
-                      id={`booking-type-${type.value}`}
-                      value={type.value}
+                      id={`booking-type-${typeValue}`}
+                      value={typeValue}
                       className="mt-0.5"
                     />
                     <span className="min-w-0 space-y-0.5">
                       <span className="block text-[13px] font-semibold leading-tight sm:text-sm sm:leading-none">
-                        {type.label}
+                        {t(`types.${typeValue}.label`)}
                       </span>
                       <span className="block text-[11px] leading-snug text-muted-foreground sm:text-xs">
-                        {type.desc}
+                        {t(`types.${typeValue}.desc`)}
                       </span>
                     </span>
                   </Label>
@@ -252,7 +224,7 @@ export function BookingForm() {
               })}
             </RadioGroup>
             <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground sm:text-sm">
-              {bookingTypes.find((t) => t.value === draft.type)?.detail}
+              {t(`types.${draft.type}.detail`)}
             </p>
           </CardContent>
         </Card>
@@ -260,12 +232,12 @@ export function BookingForm() {
         <div className="space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-base font-semibold sm:text-lg">
-              {isCharter ? "Charter Details" : "Route Details"}
+              {isCharter ? t("charterDetails") : t("routeDetails")}
             </h2>
             {(draft.type === "multi-route" || draft.type === "multi-day") && (
               <Button variant="outline" size="sm" onClick={addLeg}>
                 <Plus className="size-4" />
-                Add Route
+                {t("addRoute")}
               </Button>
             )}
           </div>
@@ -274,7 +246,9 @@ export function BookingForm() {
             <Card key={leg.id} size="sm">
               <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
                 <CardTitle className="text-sm sm:text-base">
-                  {isCharter ? "Charter" : "Route"} {index + 1}
+                  {isCharter
+                    ? t("charterN", { n: index + 1 })
+                    : t("routeN", { n: index + 1 })}
                 </CardTitle>
                 {draft.legs.length > 1 && (
                   <Button
@@ -290,42 +264,42 @@ export function BookingForm() {
                 {!isCharter && (
                   <>
                     <div className="col-span-2 space-y-1.5 sm:space-y-2">
-                      <Label>Pickup Location</Label>
+                      <Label>{t("pickup")}</Label>
                       <Select
                         value={leg.fromId}
                         onValueChange={(v) => v && updateLeg(leg.id, { fromId: v })}
                       >
                         <SelectTrigger className={selectTriggerClass}>
-                          <SelectValue placeholder="Pickup Location">
-                            {locations.find((l) => l.id === leg.fromId)?.name ??
-                              "Pickup Location"}
+                          <SelectValue placeholder={t("pickup")}>
+                            {locName(locations.find((l) => l.id === leg.fromId)) ||
+                              t("pickup")}
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {locations.map((loc) => (
                             <SelectItem key={loc.id} value={loc.id}>
-                              {loc.name}
+                              {locName(loc)}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="col-span-2 space-y-1.5 sm:space-y-2">
-                      <Label>Drop-off Location</Label>
+                      <Label>{t("dropoff")}</Label>
                       <Select
                         value={leg.toId}
                         onValueChange={(v) => v && updateLeg(leg.id, { toId: v })}
                       >
                         <SelectTrigger className={selectTriggerClass}>
-                          <SelectValue placeholder="Drop-off Location">
-                            {locations.find((l) => l.id === leg.toId)?.name ??
-                              "Drop-off Location"}
+                          <SelectValue placeholder={t("dropoff")}>
+                            {locName(locations.find((l) => l.id === leg.toId)) ||
+                              t("dropoff")}
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {locations.map((loc) => (
                             <SelectItem key={loc.id} value={loc.id}>
-                              {loc.name}
+                              {locName(loc)}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -335,7 +309,7 @@ export function BookingForm() {
                 )}
 
                 <div className="space-y-1.5 sm:space-y-2">
-                  <Label>Date</Label>
+                  <Label>{t("date")}</Label>
                   <Input
                     type="date"
                     className={fieldClass}
@@ -346,7 +320,7 @@ export function BookingForm() {
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
-                  <Label>Pickup Time</Label>
+                  <Label>{t("pickupTime")}</Label>
                   <Input
                     type="time"
                     className={fieldClass}
@@ -356,7 +330,7 @@ export function BookingForm() {
                 </div>
 
                 <div className="col-span-2 space-y-1.5 sm:space-y-2">
-                  <Label>Vehicle</Label>
+                  <Label>{t("vehicle")}</Label>
                   <Select
                     value={leg.vehicleCode}
                     onValueChange={(v) =>
@@ -367,21 +341,19 @@ export function BookingForm() {
                     }
                   >
                     <SelectTrigger className={selectTriggerClass}>
-                      <SelectValue placeholder="Select Vehicle">
+                      <SelectValue placeholder={t("selectVehicle")}>
                         {(() => {
                           const v = vehicles.find(
                             (item) => item.code === leg.vehicleCode
                           );
-                          return v
-                            ? `${v.code} — ${v.name}`
-                            : "Select Vehicle";
+                          return v ? selectLabel(v) : t("selectVehicle");
                         })()}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {vehicles.map((v) => (
                         <SelectItem key={v.code} value={v.code}>
-                          {v.code} — {v.name} ({v.passengers} pax, {v.luggage})
+                          {selectLabel(v)} · {luggage(v.code)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -389,7 +361,7 @@ export function BookingForm() {
                 </div>
 
                 <div className="col-span-2 flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5 sm:px-4 sm:py-3">
-                  <span className="text-sm text-muted-foreground">Leg price</span>
+                  <span className="text-sm text-muted-foreground">{t("legPrice")}</span>
                   <span className="text-base font-bold sm:text-lg">
                     ฿{getLegPrice(leg).toLocaleString()}
                   </span>
@@ -401,21 +373,21 @@ export function BookingForm() {
 
         <Card size="sm">
           <CardHeader className="gap-1">
-            <CardTitle className="text-base sm:text-lg">Customer Details</CardTitle>
+            <CardTitle className="text-base sm:text-lg">{t("customerTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
+              <Label htmlFor="name">{t("fullName")}</Label>
               <Input
                 id="name"
                 className={fieldClass}
                 value={draft.customerName}
                 onChange={(e) => setCustomer("customerName", e.target.value)}
-                placeholder="John Smith"
+                placeholder={t("phName")}
               />
             </div>
             <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="phone">Phone *</Label>
+              <Label htmlFor="phone">{t("phone")}</Label>
               <Input
                 id="phone"
                 className={fieldClass}
@@ -424,11 +396,11 @@ export function BookingForm() {
                 autoComplete="tel"
                 value={draft.customerPhone}
                 onChange={(e) => setCustomer("customerPhone", e.target.value)}
-                placeholder="+66 ..."
+                placeholder={t("phPhone")}
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input
                 id="email"
                 className={fieldClass}
@@ -437,27 +409,27 @@ export function BookingForm() {
                 autoComplete="email"
                 value={draft.customerEmail}
                 onChange={(e) => setCustomer("customerEmail", e.target.value)}
-                placeholder="email@example.com"
+                placeholder={t("phEmail")}
               />
             </div>
             <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="flight">Flight Number (optional)</Label>
+              <Label htmlFor="flight">{t("flightOptional")}</Label>
               <Input
                 id="flight"
                 className={fieldClass}
                 value={draft.flightNumber}
                 onChange={(e) => setCustomer("flightNumber", e.target.value)}
-                placeholder="FD1234"
+                placeholder={t("phFlight")}
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
-              <Label htmlFor="notes">Special Requests</Label>
+              <Label htmlFor="notes">{t("specialRequests")}</Label>
               <Textarea
                 id="notes"
                 className="min-h-20 text-base md:text-sm"
                 value={draft.notes}
                 onChange={(e) => setCustomer("notes", e.target.value)}
-                placeholder="Child seat, extra stops, etc."
+                placeholder={t("phNotes")}
               />
             </div>
           </CardContent>
@@ -465,9 +437,9 @@ export function BookingForm() {
 
         <Card size="sm">
           <CardHeader className="gap-1">
-            <CardTitle className="text-base sm:text-lg">Payment</CardTitle>
+            <CardTitle className="text-base sm:text-lg">{t("paymentTitle")}</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Choose how to pay — bank details, QR, and card fields are mock demo data
+              {t("paymentSubtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -490,9 +462,9 @@ export function BookingForm() {
       <div className="lg:sticky lg:top-24 lg:self-start">
         <Card className="md:[--card-spacing:--spacing(4)]" size="sm">
           <CardHeader className="gap-1">
-            <CardTitle className="text-base sm:text-lg">Booking Summary</CardTitle>
+            <CardTitle className="text-base sm:text-lg">{t("summaryTitle")}</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Review before confirming
+              {t("summarySubtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 sm:space-y-4">
@@ -508,11 +480,12 @@ export function BookingForm() {
                 <div key={leg.id} className="space-y-1 text-sm">
                   <p className="font-medium">
                     {isCharter
-                      ? `Charter ${i + 1}`
-                      : `${from?.name.split("(")[0].trim()} → ${to?.name.split("(")[0].trim()}`}
+                      ? t("charterN", { n: i + 1 })
+                      : `${locName(from).split("(")[0].trim()} → ${locName(to).split("(")[0].trim()}`}
                   </p>
                   <p className="text-muted-foreground">
-                    {leg.date} at {leg.time} · {vehicle?.name}
+                    {leg.date} {t("at")} {leg.time} ·{" "}
+                    {vehicle ? vehicleName(vehicle.code) : ""}
                   </p>
                   <p className="font-medium">
                     ฿{getLegPrice(leg).toLocaleString("en-US")}
@@ -525,7 +498,7 @@ export function BookingForm() {
             <Separator />
 
             <div className="flex items-center justify-between">
-              <span className="text-base font-semibold sm:text-lg">Total</span>
+              <span className="text-base font-semibold sm:text-lg">{t("total")}</span>
               <span className="text-xl font-bold text-primary sm:text-2xl">
                 ฿{total.toLocaleString("en-US")}
               </span>
@@ -533,11 +506,11 @@ export function BookingForm() {
 
             {draft.paymentMethod && (
               <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                Payment method:{" "}
+                {t("paymentMethod")}{" "}
                 <span className="font-medium text-foreground">
-                  {draft.paymentMethod === "bank-transfer" && "Bank Transfer"}
-                  {draft.paymentMethod === "card" && "Credit / Debit Card"}
-                  {draft.paymentMethod === "promptpay" && "PromptPay"}
+                  {draft.paymentMethod === "bank-transfer" && t("bankTransfer")}
+                  {draft.paymentMethod === "card" && t("card")}
+                  {draft.paymentMethod === "promptpay" && t("promptpay")}
                 </span>
               </p>
             )}
@@ -548,11 +521,11 @@ export function BookingForm() {
               onClick={handleConfirm}
               disabled={paying}
             >
-              {paying ? "Processing..." : confirmLabel}
+              {paying ? t("processing") : confirmLabel}
             </Button>
 
             <p className="hidden text-center text-xs text-muted-foreground lg:block">
-              Demo payment — no real charge · e-Voucher issued after confirmation
+              {t("demoNote")}
             </p>
           </CardContent>
         </Card>
@@ -562,7 +535,7 @@ export function BookingForm() {
       <div className="fixed inset-x-0 bottom-[4.75rem] z-40 border-t border-border/70 bg-background/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-background/90 md:bottom-0 lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] leading-none text-muted-foreground">Total</p>
+            <p className="text-[11px] leading-none text-muted-foreground">{t("total")}</p>
             <p className="truncate text-lg font-bold text-primary">
               ฿{total.toLocaleString("en-US")}
             </p>
@@ -573,7 +546,7 @@ export function BookingForm() {
             onClick={handleConfirm}
             disabled={paying}
           >
-            {paying ? "Processing..." : "Confirm"}
+            {paying ? t("processing") : t("confirm")}
           </Button>
         </div>
       </div>

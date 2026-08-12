@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { PublicImage } from "@/components/shared/public-image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowRight, Clock, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils";
 import type { TravelGuideCategory } from "@/lib/types";
 
 export function TravelInfoPageContent() {
+  const t = useTranslations("Listing");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<TravelGuideCategory | "All">("All");
 
@@ -46,9 +48,9 @@ export function TravelInfoPageContent() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search destinations, tips…"
+            placeholder={t("searchTravel")}
             className="h-9 pl-8"
-            aria-label="Search travel info"
+            aria-label={t("searchTravel")}
           />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -64,7 +66,7 @@ export function TravelInfoPageContent() {
                   : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
               )}
             >
-              {item}
+              {item === "All" ? t("all") : item}
             </button>
           ))}
         </div>
@@ -101,7 +103,7 @@ export function TravelInfoPageContent() {
                     <span>{guide.region}</span>
                     <span className="inline-flex items-center gap-1">
                       <Clock className="size-3" />
-                      {guide.readMinutes} min
+                      {guide.readMinutes} {t("min")}
                     </span>
                   </CardDescription>
                 </CardHeader>
@@ -110,7 +112,7 @@ export function TravelInfoPageContent() {
                     {guide.excerpt}
                   </p>
                   <span className="inline-flex items-center gap-1 text-sm font-medium text-amber-700">
-                    Read guide <ArrowRight className="size-3.5" />
+                    {t("readGuide")} <ArrowRight className="size-3.5" />
                   </span>
                 </CardContent>
               </Card>
@@ -119,7 +121,7 @@ export function TravelInfoPageContent() {
         </div>
       ) : (
         <p className="rounded-xl bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">
-          No guides match your filters.
+          {t("emptyTravel")}
         </p>
       )}
     </div>

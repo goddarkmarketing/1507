@@ -79,10 +79,8 @@ export interface Location {
 
 export interface Vehicle {
   code: VehicleCode;
-  name: string;
   passengers: string;
-  luggage: string;
-  amenities: string[];
+  amenityKeys: string[];
   priceMultiplier: number;
   image: string;
 }

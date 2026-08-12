@@ -1,0 +1,1036 @@
+{
+  "LocaleSwitcher": {
+    "label": "Language",
+    "en": "EN",
+    "th": "TH",
+    "zh": "中文"
+  },
+  "Nav": {
+    "home": "Home",
+    "transfers": "Transfers",
+    "travel": "Travel",
+    "airportTransfer": "Airport Transfer",
+    "hotelTransfer": "Hotel Transfer",
+    "pierTransfer": "Pier Transfer",
+    "beachTransfer": "Beach Transfer",
+    "cityTransfer": "City Transfer",
+    "attractionTransfer": "Attraction Transfer",
+    "interProvince": "Inter Province",
+    "fleet": "Fleet",
+    "priceList": "Price List",
+    "tours": "Tours",
+    "boatSchedules": "Boat Schedules",
+    "travelInfo": "Travel Info",
+    "articles": "Articles",
+    "faq": "FAQ",
+    "reviews": "Reviews",
+    "contact": "Contact",
+    "booking": "Booking",
+    "bookNow": "Book Now",
+    "services": "Services"
+  },
+  "MobileNav": {
+    "home": "Home",
+    "fleet": "Fleet",
+    "book": "Book",
+    "prices": "Prices",
+    "call": "Call"
+  },
+  "Footer": {
+    "services": "Services",
+    "travel": "Travel",
+    "contact": "Contact",
+    "rights": "All rights reserved."
+  },
+  "Common": {
+    "callNow": "Call Now",
+    "chatOnLine": "Chat on LINE",
+    "viewAll": "View All",
+    "learnMore": "Learn More",
+    "startBooking": "Start Booking",
+    "allFaq": "All FAQ",
+    "allReviews": "All Reviews",
+    "loading": "Loading...",
+    "book": "Book",
+    "explore": "Explore",
+    "read": "Read",
+    "min": "min",
+    "bookVehicle": "Book {name}",
+    "allArticles": "All Articles"
+  },
+  "Home": {
+    "privateTransfer": "Private Transfer Service",
+    "startFrom": "START",
+    "heroBody": "Private transfer from Krabi Airport to hotels, beaches, piers and nearby provinces. Special promotion if you book round trip —",
+    "discount": "Discount 5%",
+    "onReturn": "on return trips.",
+    "bullet1": "Instant price estimate",
+    "bullet2": "All-inclusive (tolls & parking)",
+    "bullet3": "Professional drivers",
+    "bullet4": "e-Voucher with QR code",
+    "servicesTitle": "Transfer Services",
+    "servicesSubtitle": "Professional door-to-door service across Southern Thailand",
+    "serviceCardDesc": "Reliable transfers with instant e-Voucher",
+    "contactTitle": "Contact Us",
+    "contactBody": "Book a transfer or ask about a custom route. Call, LINE, or email us anytime.",
+    "whyTitle": "Why Krabi Links Taxi?",
+    "feature1Title": "Complete Route Network",
+    "feature1Desc": "Every airport, pier, hotel, beach & attraction connected across Southern Thailand.",
+    "feature2Title": "Real Fleet Photos",
+    "feature2Desc": "7 vehicle classes from Economy Sedan to Mini Bus with full specifications.",
+    "feature3Title": "Transparent Pricing",
+    "feature3Desc": "See exact prices before you book — no hidden fees, tolls included.",
+    "feature4Title": "One Booking, All Trips",
+    "feature4Desc": "One-way, round-trip, multi-route, multi-day & charter in a single reservation.",
+    "ctaTitle": "Ready to explore Southern Thailand?",
+    "ctaBody": "Book your transfer now and get an instant e-Voucher with QR code.",
+    "faqTitle": "FAQ",
+    "faqSubtitle": "Quick answers before you book",
+    "slogan": "Your Trusted Southern Thailand Transfer Network",
+    "fleetSubtitle": "{count} vehicle classes for every group size",
+    "fleetSearch": "Search vehicles...",
+    "fleetEmpty": "No vehicles match your filters.",
+    "fleetFilterAll": "All",
+    "fleetFilter13": "1–3 seats",
+    "fleetFilter14": "1–4 seats",
+    "fleetFilter18": "1–8 seats",
+    "fleetFilterGroup": "Group / Bus",
+    "articlesTitle": "Travel Articles",
+    "articlesSubtitle": "Guides for airport, beach, pier, and inter-province transfers",
+    "travelHubsTitle": "Travel Intelligence",
+    "travelHubsSubtitle": "Tours, boat times, and destination tips — then book your transfer",
+    "toursDesc": "Day trips to Phi Phi, 4 Islands, Hong Island, and more.",
+    "boatsDesc": "Mock ferry, speedboat, and longtail departure times.",
+    "travelInfoDesc": "Guides for Ao Nang, Railay, Phi Phi, and Krabi–Phuket.",
+    "reviewMarqueeTitle": "Customer Reviews",
+    "reviewHintMobile": "Swipe or tap arrows · tap photo to enlarge",
+    "reviewHintDesktop": "Hover to pause · click to enlarge"
+  },
+  "PriceChecker": {
+    "title": "Price Checker",
+    "subtitle": "Select pickup, destination and vehicle to see the price instantly",
+    "oneWay": "One Way",
+    "roundTrip": "Round Trip",
+    "from": "Starting Point",
+    "to": "Destination",
+    "vehicle": "Vehicle",
+    "estimated": "Estimated Price",
+    "km": "{km} km",
+    "mins": "~{mins} min",
+    "tolls": "Tolls & parking included",
+    "meetGreet": "Meet & greet · Free waiting at airport (60 min)",
+    "bookNow": "Book Now"
+  },
+  "Booking": {
+    "title": "Book Your Transfer",
+    "subtitle": "One-way, round-trip, multi-route, multi-day & charter — all in one booking.",
+    "confirm": "Confirm",
+    "typeTitle": "Booking Type",
+    "typeSubtitle": "All booking types in one reservation — add routes, days, or charter as needed.",
+    "routeDetails": "Route Details",
+    "charterDetails": "Charter Details",
+    "addRoute": "Add Route",
+    "routeN": "Route {n}",
+    "charterN": "Charter {n}",
+    "pickup": "Pickup Location",
+    "dropoff": "Drop-off Location",
+    "date": "Date",
+    "pickupTime": "Pickup Time",
+    "vehicle": "Vehicle",
+    "selectVehicle": "Select Vehicle",
+    "legPrice": "Leg price",
+    "customerTitle": "Customer Details",
+    "fullName": "Full Name *",
+    "phone": "Phone *",
+    "email": "Email *",
+    "flightOptional": "Flight Number (optional)",
+    "specialRequests": "Special Requests",
+    "phName": "John Smith",
+    "phPhone": "+66 ...",
+    "phEmail": "email@example.com",
+    "phFlight": "FD1234",
+    "phNotes": "Child seat, extra stops, etc.",
+    "paymentTitle": "Payment",
+    "paymentSubtitle": "Choose how to pay — bank details, QR, and card fields are mock demo data",
+    "summaryTitle": "Booking Summary",
+    "summarySubtitle": "Review before confirming",
+    "total": "Total",
+    "paymentMethod": "Payment method:",
+    "bankTransfer": "Bank Transfer",
+    "card": "Credit / Debit Card",
+    "promptpay": "PromptPay",
+    "confirmBooking": "Confirm Booking",
+    "confirmBank": "Confirm booking (awaiting transfer)",
+    "confirmCard": "Pay by card & confirm",
+    "confirmPromptPay": "Confirm PromptPay payment",
+    "processing": "Processing...",
+    "demoNote": "Demo payment — no real charge · e-Voucher issued after confirmation",
+    "at": "at",
+    "toastCustomer": "Please complete all customer details",
+    "toastPayment": "Please select a payment method",
+    "toastFail": "Could not confirm booking. Please check your details.",
+    "types": {
+      "one-way": {
+        "label": "One Way",
+        "desc": "Single transfer",
+        "detail": "Single point-to-point transfer."
+      },
+      "round-trip": {
+        "label": "Round Trip",
+        "desc": "Return journey included",
+        "detail": "We'll automatically create a return leg with reversed route."
+      },
+      "multi-route": {
+        "label": "Multi Route",
+        "desc": "Multiple destinations",
+        "detail": "Add as many route legs as you need for your journey."
+      },
+      "multi-day": {
+        "label": "Multi Day",
+        "desc": "Different dates",
+        "detail": "Schedule transfers on different dates within one booking."
+      },
+      "daily-charter": {
+        "label": "Daily Charter",
+        "desc": "8 hours full day",
+        "detail": "Full day charter (8 hours) — choose your vehicle and start time."
+      },
+      "hourly-charter": {
+        "label": "Hourly Charter",
+        "desc": "Min 3 hours",
+        "detail": "Minimum 3 hours — flexible stops within your charter period."
+      }
+    }
+  },
+  "Pages": {
+    "fleet": "Our Fleet",
+    "priceList": "Price List",
+    "faq": "FAQ",
+    "reviews": "Customer Reviews",
+    "contact": "Contact Us",
+    "articles": "Travel Articles",
+    "tours": "Tours",
+    "boatSchedules": "Boat Schedules",
+    "travelInfo": "Travel Info",
+    "fleetSubtitle": "8 vehicle classes with real photos and full specifications",
+    "priceListSubtitle": "Transparent rates for transfers and daily rental",
+    "reviewsSubtitle": "Real feedback from travelers across Southern Thailand",
+    "contactSubtitle": "Have questions? Our team is ready to help with your Southern Thailand travel plans.",
+    "articlesSubtitle": "Guides for airport, beach, pier, and inter-province transfers",
+    "toursSubtitle": "Day trips and island experiences around Krabi",
+    "boatSchedulesSubtitle": "Mock ferry and speedboat departure times",
+    "travelInfoSubtitle": "Practical tips for popular Southern Thailand destinations"
+  },
+  "Site": {
+    "slogan": "Your Trusted Southern Thailand Transfer Network",
+    "tagline": "Southern Thailand Travel & Transportation Platform"
+  },
+  "Faq": {
+    "pageTitle": "FAQ & Policies",
+    "pageSubtitle": "Everything you need to know about booking, payments, and our service standards.",
+    "sectionTitle": "Frequently Asked Questions",
+    "policiesTitle": "Service Policies",
+    "items": {
+      "1": {
+        "q": "How do I book a transfer?",
+        "a": "Select your pickup and drop-off locations, choose your vehicle, date and time, then complete the booking form. You'll receive an e-Voucher with QR code instantly."
+      },
+      "2": {
+        "q": "Can I book multiple routes in one booking?",
+        "a": "Yes. Our booking system supports one-way, round-trip, multi-route, multi-day, and charter bookings — all in a single reservation."
+      },
+      "3": {
+        "q": "What if my flight is delayed?",
+        "a": "We monitor flight schedules. For airport pickups, we include 60 minutes of free waiting time from your actual landing time."
+      },
+      "4": {
+        "q": "What payment methods do you accept?",
+        "a": "We accept bank transfer, credit/debit cards, and PromptPay during online booking (demo uses mock payment data). You can also pay the driver in cash (THB) if arranged in advance."
+      },
+      "5": {
+        "q": "What is your cancellation policy?",
+        "a": "Free cancellation up to 24 hours before pickup. Cancellations within 24 hours may incur a 50% charge. No-shows are non-refundable."
+      },
+      "6": {
+        "q": "Do you provide child seats?",
+        "a": "Yes, child seats are available upon request at no extra charge. Please specify the age/weight of children when booking."
+      },
+      "7": {
+        "q": "Are prices all-inclusive?",
+        "a": "Yes. Quoted prices include tolls, parking, fuel, and driver service. Extra charges only apply for overtime waiting or optional add-ons you request."
+      },
+      "8": {
+        "q": "How do I receive my e-Voucher?",
+        "a": "After confirming your booking, an e-Voucher with QR code is shown instantly and can be reopened anytime from your booking page. Show it to the driver at pickup."
+      }
+    },
+    "policies": {
+      "waiting": {
+        "title": "Waiting Time",
+        "content": "Airport pickups include 60 minutes free waiting. Hotel/pier pickups include 15 minutes free waiting. Additional waiting is charged at 200 THB per 30 minutes."
+      },
+      "flight-delay": {
+        "title": "Flight Delay",
+        "content": "We track your flight number and adjust pickup time automatically. No extra charge for delays up to 2 hours."
+      },
+      "child-seat": {
+        "title": "Child Seat",
+        "content": "Infant, toddler, and booster seats available free of charge. Request during booking."
+      },
+      "pets": {
+        "title": "Pets",
+        "content": "Small pets in carriers are welcome in SUV and Van categories. Additional cleaning fee of 300 THB may apply."
+      },
+      "ferry": {
+        "title": "Ferry Connections",
+        "content": "Pier transfers include drop-off at the ferry terminal. Ferry tickets can be arranged as an add-on service."
+      },
+      "toll": {
+        "title": "Toll & Parking",
+        "content": "All toll fees and parking charges at airports/piers are included in the quoted price."
+      },
+      "payment": {
+        "title": "Payment",
+        "content": "Pay online via card/transfer or cash to driver in THB. Prices are all-inclusive unless stated otherwise."
+      },
+      "cancellation": {
+        "title": "Cancellation",
+        "content": "Free cancellation 24+ hours before pickup. Within 24 hours: 50% charge. No-show: no refund."
+      },
+      "refund": {
+        "title": "Refund",
+        "content": "Approved refunds are processed within 5–7 business days to the original payment method."
+      }
+    }
+  },
+  "Reviews": {
+    "pageTitle": "Customer Reviews",
+    "pageSubtitle": "Real feedback from travelers across Southern Thailand.",
+    "items": {
+      "1": {
+        "country": "United Kingdom",
+        "comment": "Smooth transfer from Krabi Airport to Ao Nang. Driver was waiting with a sign, car was clean and comfortable.",
+        "route": "KBV Airport → Ao Nang Beach"
+      },
+      "2": {
+        "country": "Germany",
+        "comment": "Booked round-trip to Railay Beach. Excellent communication and punctual service both ways.",
+        "route": "KBV Airport ↔ Railay Beach"
+      },
+      "3": {
+        "country": "Japan",
+        "comment": "VIP van for our family of 6 was perfect. Kids loved the cold towels and snacks!",
+        "route": "KBV Airport → Centara Grand"
+      },
+      "4": {
+        "country": "Italy",
+        "comment": "Good value inter-province transfer to Phuket. Slightly delayed due to traffic but driver kept us informed.",
+        "route": "Krabi → Phuket Airport"
+      },
+      "5": {
+        "country": "Australia",
+        "comment": "Hotel pickup to the pier was spot on. Driver helped with bags and timed everything for our Phi Phi ferry.",
+        "route": "Ao Nang Hotel → Ao Nang Pier"
+      },
+      "6": {
+        "country": "France",
+        "comment": "Booked a beach transfer to Railay via the pier. Clear updates on LINE and a clean van for our luggage.",
+        "route": "Krabi Town → Railay Pier"
+      },
+      "7": {
+        "country": "Thailand",
+        "comment": "Used them for multi-day trips around Krabi. Easy booking, fair price, and drivers always on time.",
+        "route": "Daily Charter · Krabi"
+      }
+    }
+  },
+  "Transfer": {
+    "fromEco": "Economy Sedan from",
+    "book": "Book",
+    "bookRoute": "Book this route",
+    "popularRoutes": "Popular routes",
+    "popularRoutesHint": "Sample fares for Economy Sedan. Final price depends on vehicle and date.",
+    "route": "Route",
+    "distance": "Distance",
+    "duration": "Duration",
+    "fromPrice": "From (ECO)",
+    "recommended": "Recommended vehicles",
+    "recommendedBody": "Pick a vehicle that fits your group size and luggage.",
+    "ctaTitle": "Ready to book {title}?",
+    "ctaBody": "Get an instant e-Voucher with QR code after booking.",
+    "howTitle": "How booking works",
+    "howSubtitle": "Three simple steps from quote to pickup.",
+    "step1Title": "Choose your route",
+    "step1Body": "Select pickup, drop-off, date, and vehicle.",
+    "step2Title": "Confirm & pay",
+    "step2Body": "Pay securely and receive your e-Voucher with QR.",
+    "step3Title": "Meet your driver",
+    "step3Body": "Driver details arrive before pickup. Relax and ride.",
+    "includedTitle": "What’s included",
+    "otherServices": "Other transfer services",
+    "viewPrices": "View price list",
+    "startBooking": "Start booking",
+    "km": "{n} km",
+    "approxMin": "~{n} min",
+    "tipLabel": "Good to know",
+    "categories": {
+      "airport": "Airport",
+      "hotel": "Hotel",
+      "pier": "Pier",
+      "beach": "Beach",
+      "city": "City",
+      "attraction": "Attraction",
+      "inter-province": "Inter province"
+    },
+    "faqTitle": "FAQ for this service",
+    "faqSubtitle": "Quick answers before you book.",
+    "reviewsTitle": "What travelers say",
+    "allReviews": "All reviews",
+    "allFaq": "All FAQ",
+    "includedBadge": "Included"
+  },
+  "TransferPages": {
+    "airport-transfer": {
+      "title": "Airport Transfer",
+      "subtitle": "Private transfers to and from Krabi and Southern Thailand airports",
+      "intro": "Flight-timed pickups with meet & greet options, luggage space, and direct rides to hotels, beaches, and piers.",
+      "tip": "Share your flight number when booking so we can track delays and adjust pickup time.",
+      "benefit1": "Flight monitoring and flexible waiting time",
+      "benefit2": "Meet & greet at arrivals on request",
+      "benefit3": "Space for suitcases — sedan to van options",
+      "faq": {
+        "1": {
+          "q": "What if my flight is delayed?",
+          "a": "We monitor flights for airport pickups and include about 60 minutes of free waiting from your actual landing time."
+        },
+        "2": {
+          "q": "Do you offer meet & greet?",
+          "a": "Yes. Add your flight number when booking and request meet & greet — the driver can wait with a name sign at arrivals."
+        },
+        "3": {
+          "q": "How much luggage can I bring?",
+          "a": "Economy sedans fit about 3 medium bags. For more luggage or a family, choose SUV, van, or VIP van on the booking form."
+        },
+        "4": {
+          "q": "Can you pick up at Phuket Airport too?",
+          "a": "Yes. We cover Krabi (KBV) and selected Southern Thailand airports including Phuket, with private point-to-point fares."
+        },
+        "5": {
+          "q": "How do I pay for airport transfer?",
+          "a": "Pay online by bank transfer, card, or PromptPay when you book. Cash to the driver can be arranged in advance if needed."
+        },
+        "6": {
+          "q": "When do I get driver details?",
+          "a": "Driver name, phone, and car details are shared before pickup — usually within 24 hours of your transfer time."
+        }
+      }
+    },
+    "hotel-transfer": {
+      "title": "Hotel Transfer",
+      "subtitle": "Door-to-door rides between resorts, hotels, and key Krabi spots",
+      "intro": "Private car to your hotel lobby or villa gate — no shared vans, no extra stops.",
+      "tip": "Add your hotel name or pin in the booking notes for smoother drop-off.",
+      "benefit1": "Door-to-door pickup and drop-off",
+      "benefit2": "Ideal for late check-ins and early departures",
+      "benefit3": "Premium and VIP options for special stays",
+      "faq": {
+        "1": {
+          "q": "Will you drop me at the hotel lobby?",
+          "a": "Yes. Transfers are door-to-door to the lobby or villa gate. Add the hotel name or map pin in your booking notes."
+        },
+        "2": {
+          "q": "Can I book a late-night hotel pickup?",
+          "a": "Yes. Private transfers run for early departures and late check-ins — choose your date and time when you book."
+        },
+        "3": {
+          "q": "Is this a shared shuttle?",
+          "a": "No. Every booking is a private car for your group only, with no extra hotel stops."
+        },
+        "4": {
+          "q": "Which vehicle is best for a resort stay?",
+          "a": "Premium sedan or Signature Class suits couples; VIP van is ideal for families and extra luggage."
+        },
+        "5": {
+          "q": "Can I change the hotel drop-off after booking?",
+          "a": "Yes, if the new hotel is nearby. Message us on LINE with your booking number as early as possible."
+        },
+        "6": {
+          "q": "Do you wait if check-in is delayed?",
+          "a": "Short waits at the hotel are fine. For longer delays, tell us on LINE so the driver can adjust."
+        }
+      }
+    },
+    "pier-transfer": {
+      "title": "Pier Transfer",
+      "subtitle": "Reliable connections to ferry and speedboat piers",
+      "intro": "Arrive on time for Phi Phi, Railay, and island departures with drivers who know pier schedules.",
+      "tip": "Book at least 45–60 minutes before ferry departure from Ao Nang or town.",
+      "benefit1": "Timed to boat and ferry departures",
+      "benefit2": "Help with bags to the pier entrance",
+      "benefit3": "Links from airport, hotel, or beach",
+      "faq": {
+        "1": {
+          "q": "How early should I arrive before the ferry?",
+          "a": "Plan to reach the pier 45–60 minutes before departure from Ao Nang or Krabi Town, especially in peak season."
+        },
+        "2": {
+          "q": "Can the driver help with bags at the pier?",
+          "a": "Yes. Drivers assist with luggage to the pier entrance so you can check in for your boat more easily."
+        },
+        "3": {
+          "q": "Do you connect to Phi Phi and Railay boats?",
+          "a": "Yes. Popular drops include Ao Nang Pier and links toward Phi Phi and Railay boat services."
+        },
+        "4": {
+          "q": "Where can I check boat times?",
+          "a": "See our Boat Schedules page for sample ferry and speedboat times, then book your pier transfer to match."
+        },
+        "5": {
+          "q": "What if my boat is cancelled?",
+          "a": "Contact us right away. We can reschedule the transfer or help adjust the drop-off when boat operators change times."
+        },
+        "6": {
+          "q": "Can I book hotel → pier → hotel the same day?",
+          "a": "Yes. Add both legs in one booking as multi-route, or book two one-way transfers with matching times."
+        }
+      }
+    },
+    "beach-transfer": {
+      "title": "Beach Transfer",
+      "subtitle": "Direct rides to Ao Nang, Railay, Patong, and coastal areas",
+      "intro": "Skip taxis at the curb — go straight from airport or hotel to the beach with a fixed private fare.",
+      "tip": "Railay access may include a short boat hop from the pier; ask us when you book.",
+      "benefit1": "Fixed private fare, no meter surprises",
+      "benefit2": "Beach and resort drop-off points",
+      "benefit3": "Family and group vehicles available",
+      "faq": {
+        "1": {
+          "q": "Is the fare fixed to the beach?",
+          "a": "Yes. Private beach transfers use a fixed fare for your vehicle — no meter surprises at the curb."
+        },
+        "2": {
+          "q": "How do I get to Railay Beach?",
+          "a": "Most guests ride to the Railay pier area, then take a short shared longtail. Tell us when you book if you need pier timing help."
+        },
+        "3": {
+          "q": "Can you drop at beach resorts?",
+          "a": "Yes. We drop at beachfront hotels and agreed beach access points across Ao Nang, Railay links, and coastal areas."
+        },
+        "4": {
+          "q": "What if I have kids and lots of bags?",
+          "a": "Choose SUV or van for extra space. Child seats can be requested in advance via booking notes or LINE."
+        },
+        "5": {
+          "q": "Do you go to quieter beaches as well?",
+          "a": "Yes, where road access allows. Add the beach or resort name in notes and we’ll confirm the best drop-off point."
+        },
+        "6": {
+          "q": "Is round-trip to the beach cheaper?",
+          "a": "Round-trip bookings include a small discount versus two separate one-ways. Use the price checker to compare."
+        }
+      }
+    },
+    "city-transfer": {
+      "title": "City Transfer",
+      "subtitle": "Comfortable rides between towns across Southern Thailand",
+      "intro": "Krabi Town, Trang, Surat Thani, and more — private cars for errands, hotels, and day moves.",
+      "tip": "For multi-stop city runs, note each stop in booking comments.",
+      "benefit1": "Point-to-point or multi-stop on request",
+      "benefit2": "Air-conditioned comfort for longer city hops",
+      "benefit3": "Sedan to van for families and luggage",
+      "faq": {
+        "1": {
+          "q": "Can I make multiple stops in town?",
+          "a": "Yes, on request. List each stop in the booking notes so we can plan time and quote fairly."
+        },
+        "2": {
+          "q": "Do you cover Trang and Surat Thani?",
+          "a": "Yes. City and town transfers include Krabi Town plus selected Southern cities for private point-to-point trips."
+        },
+        "3": {
+          "q": "Is the car air-conditioned?",
+          "a": "All transfer vehicles are air-conditioned and suitable for daytime heat and longer town hops."
+        },
+        "4": {
+          "q": "Can I book same-day in the city?",
+          "a": "Often yes, subject to availability. Book online as early as you can, or message us on LINE for urgent trips."
+        },
+        "5": {
+          "q": "Can I keep the car for a few hours in town?",
+          "a": "For waiting or hourly use, choose hourly charter or note wait time when you book so we can quote correctly."
+        },
+        "6": {
+          "q": "Do you pick up from bus or train stations?",
+          "a": "Yes, where listed in our locations. Select the station as pickup or drop-off on the booking form."
+        }
+      }
+    },
+    "attraction-transfer": {
+      "title": "Attraction Transfer",
+      "subtitle": "Temples, emerald pools, hot springs, and viewpoint runs",
+      "intro": "Private transfers to Krabi’s top sights with wait-and-return options for day trips.",
+      "tip": "Ask for wait-and-return if you want the same car for the trip back.",
+      "benefit1": "Popular park and temple routes",
+      "benefit2": "Wait-and-return day-trip options",
+      "benefit3": "Vans for small groups and tour gear",
+      "faq": {
+        "1": {
+          "q": "Can the driver wait while we visit?",
+          "a": "Yes. Ask for wait-and-return when you book so the same car can take you back after Emerald Pool, temples, or hot springs."
+        },
+        "2": {
+          "q": "Which sights do you cover?",
+          "a": "Popular drops include Emerald Pool, Tiger Cave Temple, hot springs, and other Krabi parks and viewpoints."
+        },
+        "3": {
+          "q": "Is a van better for a day of sightseeing?",
+          "a": "For 4+ guests or wet clothes after swimming, a van or VIP van is more comfortable than a sedan."
+        },
+        "4": {
+          "q": "Do entrance tickets come with the transfer?",
+          "a": "No. Transfer fares cover transport only. Park and temple tickets are paid on site unless you book a separate tour."
+        },
+        "5": {
+          "q": "Can we visit more than one attraction?",
+          "a": "Yes. List the order of stops in booking notes, or book a multi-route / day charter for a full sightseeing loop."
+        },
+        "6": {
+          "q": "What time should we leave for morning sights?",
+          "a": "For popular spots like Emerald Pool, an early start helps avoid heat and crowds — we can suggest a pickup time when you book."
+        }
+      }
+    },
+    "inter-province-transfer": {
+      "title": "Inter Province Transfer",
+      "subtitle": "Long-distance private transfers across Southern Thailand",
+      "intro": "Krabi–Phuket, Trang, Surat Thani and beyond — private SUV, van, or bus for comfortable highway travel.",
+      "tip": "Long routes book out on weekends — reserve early for morning departures.",
+      "benefit1": "Highway-ready SUV, van, and bus options",
+      "benefit2": "Fixed fare for province-to-province trips",
+      "benefit3": "Ideal for groups with luggage and gear",
+      "faq": {
+        "1": {
+          "q": "Which vehicle is best for long highway trips?",
+          "a": "SUV or van for comfort; VIP van or bus for larger groups and more luggage on Krabi–Phuket or Surat routes."
+        },
+        "2": {
+          "q": "Is the price fixed between provinces?",
+          "a": "Yes. Inter-province transfers use a private fixed fare for your chosen vehicle, agreed before you pay."
+        },
+        "3": {
+          "q": "How early should I book weekend trips?",
+          "a": "Weekends and holidays fill up early — reserve morning departures at least a day ahead when you can."
+        },
+        "4": {
+          "q": "Are highway tolls included?",
+          "a": "Quoted transfer prices include standard tolls and parking related to the trip unless noted otherwise at booking."
+        },
+        "5": {
+          "q": "Are rest stops included on long routes?",
+          "a": "Drivers can stop briefly for toilets or snacks on long highway trips. Mention preferred breaks in your notes."
+        },
+        "6": {
+          "q": "Can you do Krabi to Phuket with hotel drop-off?",
+          "a": "Yes. Choose your Phuket hotel or airport as the drop-off — private point-to-point, not a shared bus."
+        }
+      }
+    }
+  },
+  "Vehicles": {
+    "amenities": {
+      "ac": "Air conditioning",
+      "water": "Bottled water",
+      "charger": "Phone charger",
+      "legroom": "Extra legroom",
+      "groupSeating": "Group seating",
+      "leather": "Leather seats",
+      "wifi": "Wi-Fi",
+      "snacks": "Snacks",
+      "meetGreet": "Meet & greet",
+      "luxury": "Luxury sedan",
+      "premium": "Premium amenities",
+      "priority": "Priority service",
+      "captain": "Captain seats",
+      "privacy": "Privacy glass",
+      "usb": "USB charging",
+      "drinks": "Cold drinks",
+      "groupTravel": "Group travel",
+      "tourGuide": "Tour guide space"
+    },
+    "bags": "{n} bags",
+    "largeCargo": "Large cargo area",
+    "pax": "{n} pax",
+    "bags3": "3 bags",
+    "bags4": "4 bags",
+    "bags6": "6 bags",
+    "bags8": "8 bags",
+    "bags10": "10 bags",
+    "ECO": {
+      "name": "Economy Sedan",
+      "luggage": "3 bags"
+    },
+    "PREM": {
+      "name": "Premium Sedan",
+      "luggage": "4 bags"
+    },
+    "SUV": {
+      "name": "SUV",
+      "luggage": "6 bags"
+    },
+    "VAN": {
+      "name": "Standard Van",
+      "luggage": "8 bags"
+    },
+    "VIP": {
+      "name": "VIP Van",
+      "luggage": "8 bags"
+    },
+    "SIG": {
+      "name": "Signature Class",
+      "luggage": "4 bags"
+    },
+    "EXE": {
+      "name": "Executive Van",
+      "luggage": "10 bags"
+    },
+    "BUS": {
+      "name": "Mini Bus",
+      "luggage": "Large cargo area"
+    }
+  },
+  "Contact": {
+    "title": "Contact Us",
+    "subtitle": "Have questions? Our team is ready to help with your Southern Thailand travel plans.",
+    "sendTitle": "Send a Message",
+    "sendSubtitle": "We typically respond within 24 hours",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "phName": "Your name",
+    "phEmail": "email@example.com",
+    "phSubject": "How can we help?",
+    "phMessage": "Tell us about your travel plans...",
+    "send": "Send Message",
+    "toastOk": "Message sent! We'll get back to you within 24 hours.",
+    "getInTouch": "Get in Touch",
+    "phone": "Phone",
+    "address": "Address",
+    "lineTitle": "LINE Official",
+    "lineSubtitle": "Chat with us for quick support"
+  },
+  "FleetUi": {
+    "filterAll": "All",
+    "filterRental": "Car Rental",
+    "filterTransfer": "Transfer",
+    "seatsAll": "All seats",
+    "seatsGroup": "Group / Bus",
+    "search": "Search model, category, code…",
+    "rentalTitle": "Car Rental Packages",
+    "rentalSubtitle": "Daily rates by duration — Mini Car, Economy, Compact, Full Size",
+    "allCategories": "All categories",
+    "catMini": "Mini Car",
+    "catEconomy": "Economy",
+    "catCompact": "Compact",
+    "catFull": "Full Size",
+    "seats": "seats",
+    "bags": "large bag(s)",
+    "doors": "doors",
+    "inquire": "Inquire {model}",
+    "emptyRental": "No rental packages match your filters.",
+    "transferTitle": "Transfer Vehicles",
+    "transferSubtitle": "Private transfer vehicles for every group size",
+    "emptyTransfer": "No transfer vehicles match your filters.",
+    "onRequest": "On request",
+    "days1to3": "1–3 days",
+    "days4to6": "4–6 days",
+    "days7to10": "7–10 days",
+    "days7to20": "7–20 days",
+    "days11to14": "11–14 days",
+    "days15to20": "15–20 days",
+    "days21to30": "21–30 days"
+  },
+  "PriceList": {
+    "filterAll": "All",
+    "filterRental": "Car Rental",
+    "filterTransfer": "Transfer",
+    "search": "Search model, route, category…",
+    "rentalTitle": "Car Rental Packages",
+    "rentalSubtitle": "Daily rate (THB) by rental duration — all automatic",
+    "pricePerDay": "Price per day",
+    "category": "Category",
+    "model": "Model",
+    "details": "Details",
+    "capacity": "Capacity",
+    "capacityLine": "{seats} seats / {bags} large bag(s) / {doors} doors",
+    "modelsCount": "{n} model(s)",
+    "fromPerDay": "From ฿{price}/day",
+    "notes": "Notes: Prices are per day (THB) based on rental duration. Hyundai H-1 capacity varies by layout.",
+    "transferTitle": "Transfer Routes",
+    "transferSubtitle": "Point-to-point private transfer across Southern Thailand",
+    "allRoutes": "All routes",
+    "route": "Route",
+    "emptyRental": "No rental packages match your filters.",
+    "emptyTransfer": "No transfer routes match your filters.",
+    "bookNow": "Book Now",
+    "catAirport": "Airport",
+    "catHotel": "Hotel",
+    "catPier": "Pier",
+    "catBeach": "Beach",
+    "catCity": "City",
+    "catAttraction": "Attraction",
+    "catInter": "Inter province"
+  },
+  "Payment": {
+    "bankTransfer": "Bank Transfer",
+    "bankTransferDesc": "Transfer to our company account, then upload your slip.",
+    "card": "Credit / Debit Card",
+    "cardDesc": "Visa, Mastercard — mock payment for demo.",
+    "promptpay": "PromptPay",
+    "promptpayDesc": "Scan QR or pay to our PromptPay ID.",
+    "transferIntro": "Transfer ฿{amount} to one of the accounts below.",
+    "referenceNote": "Put this reference in the transfer note: {ref}",
+    "afterConfirm": "Generated after confirmation",
+    "selectAccount": "Select transfer account *",
+    "accountName": "Account name",
+    "accountNumber": "Account number",
+    "branch": "Branch",
+    "attachProof": "Attach transfer proof *",
+    "proofHint": "Upload a clear photo or PDF of your transfer slip.",
+    "uploadSlip": "Upload transfer slip",
+    "fileTypes": "JPG, PNG, WEBP, or PDF",
+    "pdfAttached": "PDF attached — you can open it on the e-Voucher page.",
+    "cardMockNote": "Card payment — mock fields for demo only",
+    "cardNumber": "Card number",
+    "nameOnCard": "Name on card",
+    "expiry": "Expiry",
+    "cvv": "CVV",
+    "scanQr": "Scan PromptPay QR for ฿{amount}",
+    "promptpayId": "PromptPay",
+    "demoQrNote": "Demo QR — not a real PromptPay payload",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copiedToast": "{label} copied",
+    "copyFail": "Could not copy",
+    "toastBank": "Please select the bank account you transferred to",
+    "toastProof": "Please attach your transfer proof",
+    "toastCard": "Please complete all card details (mock)",
+    "toastProofOk": "Transfer proof attached",
+    "toastProofFail": "Could not read file. Try a smaller image or PDF.",
+    "toastProofSize": "File is too large. Max 1.5 MB."
+  },
+  "Voucher": {
+    "pending": "e-Voucher · Pending Payment",
+    "confirmed": "e-Voucher Confirmed",
+    "bookingHash": "Booking #{n}",
+    "confirmedOn": "Confirmed on {date}",
+    "support": "Support",
+    "legs": "{n} leg(s)",
+    "legN": "Leg {n}",
+    "pickup": "Pickup",
+    "dropoff": "Drop-off",
+    "dateTime": "Date & Time",
+    "at": "at",
+    "vehicle": "Vehicle",
+    "driverSoon": "Driver details will be sent 24 hours before pickup",
+    "flight": "Flight",
+    "notes": "Notes",
+    "payment": "Payment",
+    "method": "Method",
+    "status": "Status",
+    "statusPaid": "Paid (mock)",
+    "statusAwaiting": "Awaiting bank transfer verification",
+    "account": "Account",
+    "transferProof": "Transfer proof",
+    "downloadPdf": "Download PDF slip",
+    "totalDue": "Total Due",
+    "totalPaid": "Total Paid",
+    "print": "Print Voucher",
+    "newBooking": "New Booking",
+    "loading": "Loading voucher...",
+    "notFoundTitle": "Voucher Not Found",
+    "notFoundBody": "We could not find this booking in your browser storage. Complete a new booking to generate a voucher.",
+    "makeNew": "Make a New Booking"
+  },
+  "Listing": {
+    "searchArticles": "Search articles…",
+    "searchTours": "Search tours, islands, areas…",
+    "searchTravel": "Search destinations, tips…",
+    "all": "All",
+    "min": "min",
+    "minRead": "min read",
+    "read": "Read",
+    "readGuide": "Read guide",
+    "details": "Details",
+    "from": "From",
+    "emptyArticles": "No articles match your search.",
+    "emptyTours": "No tours match your filters.",
+    "emptyTravel": "No guides match your search.",
+    "ctaArticles": "Need a transfer after reading?",
+    "ctaTours": "Need a ride to the pier?",
+    "pierTransfer": "Pier Transfer",
+    "inquireTour": "Inquire about a tour",
+    "allArticles": "All articles",
+    "allTours": "All tours",
+    "allTravel": "All travel info",
+    "relatedArticles": "Related articles",
+    "relatedTours": "Related tours",
+    "bookRoute": "Ready to book this route?",
+    "startBooking": "Start Booking",
+    "highlights": "Highlights",
+    "includes": "Typically includes",
+    "bookTransfer": "Book Transfer",
+    "inquire": "Inquire",
+    "quickTips": "Quick tips",
+    "planTransfer": "Plan the transfer next",
+    "moreGuides": "More guides",
+    "boatType": "Boat type",
+    "allBoats": "All boats",
+    "ferry": "Ferry",
+    "speedboat": "Speedboat",
+    "longtail": "Longtail",
+    "route": "Route",
+    "allRoutes": "All routes",
+    "departures": "Departures",
+    "duration": "Duration",
+    "transferTo": "Transfer to {pier}",
+    "landTransfer": "Land transfer to the pier",
+    "emptyBoats": "No schedules match your filters.",
+    "mockBanner": "Mock boat schedules for planning — times may differ in reality.",
+    "ctaArticlesBody": "Check live prices and book a private car with instant e-Voucher.",
+    "bookRouteBody": "Get an instant price and e-Voucher with QR code."
+  },
+  "Articles": {
+    "categories": {
+      "Airport": "Airport",
+      "Beach": "Beach",
+      "Pier": "Pier",
+      "Inter Province": "Inter Province"
+    },
+    "items": {
+      "krabi-airport-transfer-guide": {
+        "title": "Krabi Airport Transfer Guide: Smooth Arrival at KBV",
+        "excerpt": "What to expect after landing at Krabi International Airport, how meet & greet works, and how to book a private transfer with an e-Voucher.",
+        "p1": "Landing at Krabi International Airport (KBV) is the start of your Southern Thailand trip. A private airport transfer helps you skip taxi queues and go straight to your hotel, beach, or pier.",
+        "p2": "With Krabi Links Taxi, your driver tracks the flight and includes free waiting time for airport pickups. You receive an e-Voucher with a QR code right after booking — show it at the meeting point.",
+        "p3": "Popular routes from KBV include Ao Nang Beach, Railay, Centara Grand, and Krabi Town. Choose Economy Sedan for couples or a Van if you travel with family and luggage.",
+        "p4": "Tip: Share your flight number and hotel name when booking so the driver can prepare a name sign and plan the best route around evening traffic."
+      },
+      "ao-nang-railay-beach-transfer": {
+        "title": "Ao Nang & Railay Beach Transfer Tips",
+        "excerpt": "How to move between Ao Nang, Railay, and nearby resorts with private cars, piers, and the right vehicle for beach bags.",
+        "p1": "Ao Nang is the hub for many Krabi beach stays, while Railay is reached via short pier connections. Planning your transfer in advance keeps the day simple.",
+        "p2": "From the airport or Krabi Town, book a private drop-off to Ao Nang Beach or your hotel. For Railay, we can take you to the pier and help time your boat connection.",
+        "p3": "If you carry snorkel gear or large bags, an SUV or Standard Van gives more space than a sedan. Round-trip bookings also save time on checkout day.",
+        "p4": "Evening returns from the beach can get busy — reserve your pickup time early, especially on weekends and public holidays."
+      },
+      "pier-transfer-to-phi-phi": {
+        "title": "Pier Transfer to Phi Phi: What Travelers Should Know",
+        "excerpt": "A practical checklist for hotel-to-pier transfers, ferry timing, and luggage tips before heading to Phi Phi.",
+        "p1": "Island days start on land. A reliable pier transfer from your hotel or the airport means you reach Ao Nang Pier or other departure points without rushing.",
+        "p2": "Build in buffer time for check-in and boarding. We recommend arriving at the pier at least 45–60 minutes before ferry departure during peak season.",
+        "p3": "Private vans are ideal for groups sharing the same ferry. Families can request child seats free of charge when booking.",
+        "p4": "After your island trip, book a return pier pickup so a driver is ready when the boat docks — especially useful if you arrive after dark."
+      },
+      "krabi-to-phuket-inter-province": {
+        "title": "Krabi to Phuket Inter-Province Transfer",
+        "excerpt": "Compare comfort and timing for the Krabi–Phuket corridor, vehicle options, and when a private transfer beats shared vans.",
+        "p1": "The Krabi–Phuket route is one of the most requested inter-province transfers in Southern Thailand. Private cars give door-to-door timing without multiple stops.",
+        "p2": "Typical journeys connect KBV or Krabi Town with Phuket Airport or Patong. Travel time depends on traffic and whether you start from the airport or town.",
+        "p3": "For longer rides, VIP Van or Mini Bus options offer more space and comfort. Prices are all-inclusive of tolls and parking unless you add waiting time.",
+        "p4": "Book round-trip if you fly into one province and out of the other — one reservation covers both legs with a single e-Voucher flow."
+      }
+    }
+  },
+  "Admin": {
+    "loading": "Loading…",
+    "loginTitle": "Admin sign in",
+    "loginHint": "Demo: {user} / {pass}",
+    "username": "Username",
+    "password": "Password",
+    "signIn": "Sign in",
+    "loginError": "Invalid username or password",
+    "logout": "Log out",
+    "backToSite": "Back to website",
+    "panelTitle": "Operations",
+    "opsLabel": "Back office · Demo",
+    "nav": {
+      "dashboard": "Dashboard",
+      "bookings": "Bookings",
+      "payments": "Payments",
+      "schedule": "Schedule",
+      "drivers": "Drivers",
+      "customers": "Customers"
+    },
+    "dashboardTitle": "Dashboard",
+    "dashboardSubtitle": "Live overview of transfers, payments, and drivers.",
+    "resetDemo": "Reset demo data",
+    "statOpen": "Open jobs",
+    "statPayReview": "Payment review",
+    "statToday": "Today’s trips",
+    "statDrivers": "Drivers online",
+    "statRevenue": "Paid revenue",
+    "recentBookings": "Recent bookings",
+    "viewAll": "View all",
+    "bookingsTitle": "Bookings",
+    "bookingsSubtitle": "Search, update status, and assign drivers.",
+    "searchBookings": "Search booking, name, phone…",
+    "filterAll": "All statuses",
+    "colBooking": "Booking",
+    "colCustomer": "Customer",
+    "colRoute": "Route",
+    "colWhen": "Pickup",
+    "colStatus": "Status",
+    "colAmount": "Amount",
+    "colContact": "Contact",
+    "colBookings": "Bookings",
+    "colSpent": "Spent",
+    "emptyBookings": "No bookings match your filters.",
+    "detailTitle": "Booking detail",
+    "flight": "Flight",
+    "payment": "Payment",
+    "opsStatus": "Operations status",
+    "assignDriver": "Assign driver",
+    "unassigned": "Unassigned",
+    "adminNotes": "Admin notes",
+    "cancelBooking": "Cancel booking",
+    "selectBooking": "Select a booking from the list.",
+    "toastUpdated": "Updated",
+    "toastCancelled": "Booking cancelled",
+    "paymentsTitle": "Payments",
+    "paymentsSubtitle": "Verify bank transfers and review paid bookings.",
+    "pendingPayments": "Awaiting verification",
+    "emptyPayments": "No payments waiting for review.",
+    "recentPaid": "Recently paid",
+    "approve": "Approve",
+    "reject": "Reject",
+    "toastPaymentOk": "Payment verified",
+    "toastPaymentReject": "Payment rejected · booking cancelled",
+    "scheduleTitle": "Schedule",
+    "scheduleSubtitle": "Trips by pickup date and time.",
+    "prevDay": "Previous",
+    "nextDay": "Next",
+    "emptySchedule": "No trips on this day.",
+    "driver": "Driver",
+    "driversTitle": "Drivers",
+    "driversSubtitle": "Fleet drivers and availability.",
+    "online": "Online",
+    "offline": "Offline",
+    "vehicles": "Vehicles",
+    "openJobs": "Open jobs",
+    "setOnline": "Set online",
+    "setOffline": "Set offline",
+    "customersTitle": "Customers",
+    "customersSubtitle": "Guests from demo and website bookings.",
+    "ops": {
+      "new": "New",
+      "payment_review": "Payment review",
+      "assigned": "Assigned",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "navGroupOps": "Operations",
+    "navGroupTeam": "People"
+  }
+}

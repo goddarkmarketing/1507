@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { PublicImage } from "@/components/shared/public-image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowRight, Clock, MapPin, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 import type { TourCategory } from "@/lib/types";
 
 export function ToursPageContent() {
+  const t = useTranslations("Listing");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<TourCategory | "All">("All");
 
@@ -44,9 +46,9 @@ export function ToursPageContent() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search tours, islands, areas…"
+            placeholder={t("searchTours")}
             className="h-9 pl-8"
-            aria-label="Search tours"
+            aria-label={t("searchTours")}
           />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -62,7 +64,7 @@ export function ToursPageContent() {
                   : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
               )}
             >
-              {item}
+              {item === "All" ? t("all") : item}
             </button>
           ))}
         </div>
@@ -112,13 +114,13 @@ export function ToursPageContent() {
                   </p>
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm">
-                      <span className="text-muted-foreground">From </span>
+                      <span className="text-muted-foreground">{t("from")} </span>
                       <span className="font-semibold">
                         ฿{tour.priceFrom.toLocaleString("en-US")}
                       </span>
                     </p>
                     <span className="inline-flex items-center gap-1 text-sm font-medium text-amber-700">
-                      Details <ArrowRight className="size-3.5" />
+                      {t("details")} <ArrowRight className="size-3.5" />
                     </span>
                   </div>
                 </CardContent>
@@ -128,20 +130,20 @@ export function ToursPageContent() {
         </div>
       ) : (
         <p className="rounded-xl bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">
-          No tours match your filters.
+          {t("emptyTours")}
         </p>
       )}
 
       <div className="mt-10 rounded-2xl border bg-muted/30 px-6 py-8 text-center">
-        <h2 className="text-lg font-bold">Need a ride to the pier?</h2>
+        <h2 className="text-lg font-bold">{t("ctaTours")}</h2>
         <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
           Tour prices are operator estimates (mock). We handle hotel–pier
           transfers with an instant e-Voucher.
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
-          <ButtonLink href="/pier-transfer">Pier Transfer</ButtonLink>
+          <ButtonLink href="/pier-transfer">{t("pierTransfer")}</ButtonLink>
           <ButtonLink variant="outline" href="/contact">
-            Inquire about a tour
+            {t("inquireTour")}
           </ButtonLink>
         </div>
       </div>

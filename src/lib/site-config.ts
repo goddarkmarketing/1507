@@ -11,44 +11,69 @@ export const siteConfig = {
   address: "Krabi Town, Krabi 81000, Thailand",
 };
 
-export const navItems = [
-  { href: "/", label: "Home" },
+/** href + Nav.* message key for i18n */
+export type NavItem = {
+  href: string;
+  labelKey:
+    | "home"
+    | "airportTransfer"
+    | "hotelTransfer"
+    | "pierTransfer"
+    | "beachTransfer"
+    | "cityTransfer"
+    | "attractionTransfer"
+    | "interProvince"
+    | "fleet"
+    | "priceList"
+    | "tours"
+    | "boatSchedules"
+    | "travelInfo"
+    | "articles"
+    | "faq"
+    | "reviews"
+    | "contact";
+  group?: "transfers" | "travel";
+};
+
+export const navItems: NavItem[] = [
+  { href: "/", labelKey: "home" },
   {
     href: "/airport-transfer",
-    label: "Airport Transfer",
+    labelKey: "airportTransfer",
     group: "transfers",
   },
-  { href: "/hotel-transfer", label: "Hotel Transfer", group: "transfers" },
-  { href: "/pier-transfer", label: "Pier Transfer", group: "transfers" },
-  { href: "/beach-transfer", label: "Beach Transfer", group: "transfers" },
-  { href: "/city-transfer", label: "City Transfer", group: "transfers" },
+  { href: "/hotel-transfer", labelKey: "hotelTransfer", group: "transfers" },
+  { href: "/pier-transfer", labelKey: "pierTransfer", group: "transfers" },
+  { href: "/beach-transfer", labelKey: "beachTransfer", group: "transfers" },
+  { href: "/city-transfer", labelKey: "cityTransfer", group: "transfers" },
   {
     href: "/attraction-transfer",
-    label: "Attraction Transfer",
+    labelKey: "attractionTransfer",
     group: "transfers",
   },
   {
     href: "/inter-province-transfer",
-    label: "Inter Province",
+    labelKey: "interProvince",
     group: "transfers",
   },
-  { href: "/fleet", label: "Fleet" },
-  { href: "/price-list", label: "Price List" },
-  { href: "/tours", label: "Tours", group: "travel" },
-  { href: "/boat-schedules", label: "Boat Schedules", group: "travel" },
-  { href: "/travel-info", label: "Travel Info", group: "travel" },
-  { href: "/articles", label: "Articles" },
-  { href: "/faq", label: "FAQ" },
-  { href: "/reviews", label: "Reviews" },
-  { href: "/contact", label: "Contact" },
+  { href: "/fleet", labelKey: "fleet" },
+  { href: "/price-list", labelKey: "priceList" },
+  { href: "/tours", labelKey: "tours", group: "travel" },
+  { href: "/boat-schedules", labelKey: "boatSchedules", group: "travel" },
+  { href: "/travel-info", labelKey: "travelInfo", group: "travel" },
+  { href: "/articles", labelKey: "articles" },
+  { href: "/faq", labelKey: "faq" },
+  { href: "/reviews", labelKey: "reviews" },
+  { href: "/contact", labelKey: "contact" },
 ];
 
 export const transferPages = {
   "airport-transfer": {
-    title: "Airport Transfer",
-    subtitle: "Reliable transfers to and from Krabi & Southern Thailand airports",
     category: "airport" as const,
+    navLabelKey: "airportTransfer" as const,
+    coverImage: "/images/article-airport-transfer.png",
     locationTypes: ["airport"] as const,
+    reviewIds: ["1", "2", "3"] as const,
     featuredRoutes: [
       ["kbv-airport", "ao-nang-beach"],
       ["kbv-airport", "centara-ao-nang"],
@@ -60,10 +85,11 @@ export const transferPages = {
     vehicleCodes: ["ECO", "PREM", "SUV", "VAN"] as const,
   },
   "hotel-transfer": {
-    title: "Hotel Transfer",
-    subtitle: "Door-to-door service to resorts and hotels across the region",
     category: "hotel" as const,
+    navLabelKey: "hotelTransfer" as const,
+    coverImage: "/images/transfer-services-bg-v3.png",
     locationTypes: ["hotel"] as const,
+    reviewIds: ["3", "5", "7"] as const,
     featuredRoutes: [
       ["kbv-airport", "centara-ao-nang"],
       ["kbv-airport", "rayavadee"],
@@ -75,10 +101,11 @@ export const transferPages = {
     vehicleCodes: ["ECO", "PREM", "SIG", "VIP"] as const,
   },
   "pier-transfer": {
-    title: "Pier Transfer",
-    subtitle: "Seamless connections to ferry piers and island departures",
     category: "pier" as const,
+    navLabelKey: "pierTransfer" as const,
+    coverImage: "/images/article-pier-phi-phi.png",
     locationTypes: ["pier"] as const,
+    reviewIds: ["5", "6", "1"] as const,
     featuredRoutes: [
       ["kbv-airport", "ao-nang-pier"],
       ["krabi-town", "ao-nang-pier"],
@@ -90,10 +117,11 @@ export const transferPages = {
     vehicleCodes: ["ECO", "SUV", "VAN", "VIP"] as const,
   },
   "beach-transfer": {
-    title: "Beach Transfer",
-    subtitle: "Direct transfers to Krabi's stunning beaches and coastal areas",
     category: "beach" as const,
+    navLabelKey: "beachTransfer" as const,
+    coverImage: "/images/article-ao-nang-railay.png",
     locationTypes: ["beach"] as const,
+    reviewIds: ["2", "6", "1"] as const,
     featuredRoutes: [
       ["kbv-airport", "ao-nang-beach"],
       ["kbv-airport", "railay-beach"],
@@ -105,10 +133,11 @@ export const transferPages = {
     vehicleCodes: ["ECO", "PREM", "SUV", "VAN"] as const,
   },
   "city-transfer": {
-    title: "City Transfer",
-    subtitle: "Comfortable city-to-city transportation across Southern Thailand",
     category: "city" as const,
+    navLabelKey: "cityTransfer" as const,
+    coverImage: "/images/transfer-services-bg-v2.png",
     locationTypes: ["city"] as const,
+    reviewIds: ["7", "4", "3"] as const,
     featuredRoutes: [
       ["kbv-airport", "krabi-town"],
       ["krabi-town", "trang-town"],
@@ -120,10 +149,11 @@ export const transferPages = {
     vehicleCodes: ["ECO", "PREM", "SUV", "VAN"] as const,
   },
   "attraction-transfer": {
-    title: "Attraction Transfer",
-    subtitle: "Visit temples, national parks, and top tourist attractions",
     category: "attraction" as const,
+    navLabelKey: "attractionTransfer" as const,
+    coverImage: "/images/tours/emerald-pool.jpg",
     locationTypes: ["attraction", "temple", "park", "viewpoint"] as const,
+    reviewIds: ["7", "6", "2"] as const,
     featuredRoutes: [
       ["krabi-town", "emerald-pool"],
       ["krabi-town", "tiger-cave"],
@@ -135,10 +165,11 @@ export const transferPages = {
     vehicleCodes: ["ECO", "SUV", "VAN", "VIP"] as const,
   },
   "inter-province-transfer": {
-    title: "Inter Province Transfer",
-    subtitle: "Long-distance transfers between provinces in Southern Thailand",
     category: "inter-province" as const,
+    navLabelKey: "interProvince" as const,
+    coverImage: "/images/article-inter-province.png",
     locationTypes: ["province", "city", "airport"] as const,
+    reviewIds: ["4", "7", "1"] as const,
     featuredRoutes: [
       ["kbv-airport", "phuket-airport"],
       ["krabi-town", "trang-town"],

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Search } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Badge } from "@/components/ui/badge";
@@ -14,14 +15,12 @@ import {
   rentalDurationLabels,
   rentalPackages,
 } from "@/lib/data/rental-packages";
+import { useLocationName } from "@/lib/i18n-labels";
 import { cn } from "@/lib/utils";
 import type { RentalCategory, TransferCategory } from "@/lib/types";
+import { PublicImage } from "@/components/shared/public-image";
 
-const sectionFilters = [
-  { id: "all", label: "All" },
-  { id: "rental", label: "Car Rental" },
-  { id: "transfer", label: "Transfer" },
-] as const;
+const sectionFilterIds = ["all", "rental", "transfer"] as const;
 
 const transferCategories: Array<TransferCategory | "all"> = [
   "all",
@@ -33,6 +32,35 @@ const transferCategories: Array<TransferCategory | "all"> = [
   "attraction",
   "inter-province",
 ];
+
+const rentalCatKey: Record<
+  RentalCategory,
+  "catMini" | "catEconomy" | "catCompact" | "catFull"
+> = {
+  "Mini Car": "catMini",
+  Economy: "catEconomy",
+  Compact: "catCompact",
+  "Full Size": "catFull",
+};
+
+const transferCatKey: Record<
+  TransferCategory,
+  | "catAirport"
+  | "catHotel"
+  | "catPier"
+  | "catBeach"
+  | "catCity"
+  | "catAttraction"
+  | "catInter"
+> = {
+  airport: "catAirport",
+  hotel: "catHotel",
+  pier: "catPier",
+  beach: "catBeach",
+  city: "catCity",
+  attraction: "catAttraction",
+  "inter-province": "catInter",
+};
 
 function FilterChip({
   active,
@@ -60,10 +88,13 @@ function FilterChip({
 }
 
 export function PriceListContent() {
+  const t = useTranslations("PriceList");
+  const tFleet = useTranslations("FleetUi");
+  const locName = useLocationName();
   const routes = useMemo(() => getSampleRoutes(), []);
   const [query, setQuery] = useState("");
   const [section, setSection] =
-    useState<(typeof sectionFilters)[number]["id"]>("all");
+    useState<(typeof sectionFilterIds)[number]>("all");
   const [rentalCategory, setRentalCategory] = useState<RentalCategory | "all">(
     "all"
   );
@@ -72,19 +103,28 @@ export function PriceListContent() {
   >("all");
 
   const q = query.trim().toLowerCase();
+  const onRequest = tFleet("onRequest");
+
+  const sectionLabel = (id: (typeof sectionFilterIds)[number]) => {
+    if (id === "all") return t("filterAll");
+    if (id === "rental") return t("filterRental");
+    return t("filterTransfer");
+  };
 
   const filteredRentals = useMemo(() => {
     return rentalPackages.filter((pkg) => {
       const categoryMatch =
         rentalCategory === "all" || pkg.category === rentalCategory;
+      const catLabel = tFleet(rentalCatKey[pkg.category]).toLowerCase();
       const textMatch =
         !q ||
         pkg.model.toLowerCase().includes(q) ||
         pkg.category.toLowerCase().includes(q) ||
+        catLabel.includes(q) ||
         pkg.engine.toLowerCase().includes(q);
       return categoryMatch && textMatch;
     });
-  }, [q, rentalCategory]);
+  }, [q, rentalCategory, tFleet]);
 
   const filteredRoutes = useMemo(() => {
     return routes.filter((route) => {
@@ -92,17 +132,25 @@ export function PriceListContent() {
         transferCategory === "all" || route.category === transferCategory;
       const from = getLocation(route.fromId);
       const to = getLocation(route.toId);
+      const fromLabel = locName(from).toLowerCase();
+      const toLabel = locName(to).toLowerCase();
+      const catLabel = t(transferCatKey[route.category]).toLowerCase();
       const textMatch =
         !q ||
+        fromLabel.includes(q) ||
+        toLabel.includes(q) ||
         from?.name.toLowerCase().includes(q) ||
         to?.name.toLowerCase().includes(q) ||
-        route.category.toLowerCase().includes(q);
+        route.category.toLowerCase().includes(q) ||
+        catLabel.includes(q);
       return categoryMatch && textMatch;
     });
-  }, [q, routes, transferCategory]);
+  }, [q, routes, transferCategory, locName, t]);
 
   const showRental = section === "all" || section === "rental";
   const showTransfer = section === "all" || section === "transfer";
+
+  const shortName = (id: string) => locName(getLocation(id)).split("(")[0].trim();
 
   return (
     <div className="mx-auto max-w-7xl space-y-14 px-4 py-12 lg:px-8">
@@ -112,19 +160,19 @@ export function PriceListContent() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search model, route, category…"
+            placeholder={t("search")}
             className="h-9 pl-8"
-            aria-label="Search price list"
+            aria-label={t("search")}
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {sectionFilters.map((f) => (
+          {sectionFilterIds.map((id) => (
             <FilterChip
-              key={f.id}
-              active={section === f.id}
-              onClick={() => setSection(f.id)}
+              key={id}
+              active={section === id}
+              onClick={() => setSection(id)}
             >
-              {f.label}
+              {sectionLabel(id)}
             </FilterChip>
           ))}
         </div>
@@ -134,18 +182,18 @@ export function PriceListContent() {
         <section>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Car Rental Packages</h2>
+              <h2 className="text-2xl font-bold">{t("rentalTitle")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Daily rate (THB) by rental duration — all automatic transmission
+                {t("rentalSubtitle")}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">Price per day</Badge>
+              <Badge variant="secondary">{t("pricePerDay")}</Badge>
               <FilterChip
                 active={rentalCategory === "all"}
                 onClick={() => setRentalCategory("all")}
               >
-                All
+                {t("filterAll")}
               </FilterChip>
               {rentalCategories.map((category) => (
                 <FilterChip
@@ -153,7 +201,7 @@ export function PriceListContent() {
                   active={rentalCategory === category}
                   onClick={() => setRentalCategory(category)}
                 >
-                  {category}
+                  {tFleet(rentalCatKey[category])}
                 </FilterChip>
               ))}
             </div>
@@ -164,10 +212,18 @@ export function PriceListContent() {
               <table className="w-full min-w-[800px] text-sm">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium">Category</th>
-                    <th className="px-4 py-3 text-left font-medium">Model</th>
-                    <th className="px-4 py-3 text-left font-medium">Details</th>
-                    <th className="px-4 py-3 text-left font-medium">Capacity</th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      {t("category")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      {t("model")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      {t("details")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      {t("capacity")}
+                    </th>
                     {rentalDurationLabels.map((tier) => (
                       <th
                         key={tier.key}
@@ -182,17 +238,38 @@ export function PriceListContent() {
                   {filteredRentals.map((pkg) => (
                     <tr key={pkg.id} className="border-t">
                       <td className="px-4 py-3">
-                        <Badge variant="outline">{pkg.category}</Badge>
+                        <Badge variant="outline">
+                          {tFleet(rentalCatKey[pkg.category])}
+                        </Badge>
                       </td>
-                      <td className="px-4 py-3 font-medium">{pkg.model}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-10 w-10 overflow-hidden rounded-md border bg-background">
+                            <PublicImage
+                              src={pkg.image}
+                              alt=""
+                              fill
+                              unoptimized
+                              className="object-contain"
+                              sizes="40px"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium truncate">{pkg.model}</p>
+                          </div>
+                        </div>
+                      </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {pkg.engine}
                         <br />
                         <span className="text-xs">{pkg.transmission}</span>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {pkg.seats} seats / {pkg.largeBags} large bag
-                        {pkg.largeBags > 1 ? "s" : ""} / {pkg.doors} doors
+                        {t("capacityLine", {
+                          seats: pkg.seats,
+                          bags: pkg.largeBags,
+                          doors: pkg.doors,
+                        })}
                       </td>
                       {rentalDurationLabels.map((tier) => {
                         const rate = pkg.rates[tier.key];
@@ -203,7 +280,7 @@ export function PriceListContent() {
                               rate == null ? "text-muted-foreground" : ""
                             }`}
                           >
-                            {formatRate(rate)}
+                            {formatRate(rate, onRequest)}
                           </td>
                         );
                       })}
@@ -214,7 +291,7 @@ export function PriceListContent() {
             </div>
           ) : (
             <p className="rounded-xl bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">
-              No rental packages match your filters.
+              {t("emptyRental")}
             </p>
           )}
 
@@ -228,13 +305,17 @@ export function PriceListContent() {
               const min = from.length ? Math.min(...from) : null;
               return (
                 <div key={category} className="rounded-xl border p-4">
-                  <p className="text-sm font-semibold">{category}</p>
+                  <p className="text-sm font-semibold">
+                    {tFleet(rentalCatKey[category])}
+                  </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {count} model{count !== 1 ? "s" : ""}
+                    {t("modelsCount", { n: count })}
                   </p>
                   <p className="mt-2 text-lg font-bold text-amber-700">
                     {min != null
-                      ? `From ฿${min.toLocaleString("en-US")}/day`
+                      ? t("fromPerDay", {
+                          price: min.toLocaleString("en-US"),
+                        })
                       : "—"}
                   </p>
                 </div>
@@ -242,10 +323,7 @@ export function PriceListContent() {
             })}
           </div>
 
-          <p className="mt-4 text-xs text-muted-foreground">
-            Notes: Prices are per day (THB) based on rental duration. Hyundai H-1
-            pricing is on request. Capacity = seats / large bags / doors.
-          </p>
+          <p className="mt-4 text-xs text-muted-foreground">{t("notes")}</p>
         </section>
       )}
 
@@ -253,9 +331,9 @@ export function PriceListContent() {
         <section>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Transfer Routes</h2>
+              <h2 className="text-2xl font-bold">{t("transferTitle")}</h2>
               <p className="text-sm text-muted-foreground">
-                Point-to-point private transfer — tolls & parking included
+                {t("transferSubtitle")}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -266,8 +344,8 @@ export function PriceListContent() {
                   onClick={() => setTransferCategory(category)}
                 >
                   {category === "all"
-                    ? "All routes"
-                    : category.replace("-", " ")}
+                    ? t("allRoutes")
+                    : t(transferCatKey[category])}
                 </FilterChip>
               ))}
             </div>
@@ -278,8 +356,8 @@ export function PriceListContent() {
               <table className="w-full min-w-[640px] text-sm">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-4 py-3 text-left">Route</th>
-                    <th className="px-4 py-3 text-left">Category</th>
+                    <th className="px-4 py-3 text-left">{t("route")}</th>
+                    <th className="px-4 py-3 text-left">{t("category")}</th>
                     {vehicles.map((v) => (
                       <th key={v.code} className="px-3 py-3 text-right">
                         {v.code}
@@ -289,20 +367,17 @@ export function PriceListContent() {
                 </thead>
                 <tbody>
                   {filteredRoutes.map((route) => {
-                    const from = getLocation(route.fromId);
-                    const to = getLocation(route.toId);
                     return (
                       <tr
                         key={`${route.fromId}-${route.toId}`}
                         className="border-t"
                       >
                         <td className="px-4 py-3 font-medium">
-                          {from?.name.split("(")[0].trim()} →{" "}
-                          {to?.name.split("(")[0].trim()}
+                          {shortName(route.fromId)} → {shortName(route.toId)}
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant="secondary" className="capitalize">
-                            {route.category.replace("-", " ")}
+                          <Badge variant="secondary">
+                            {t(transferCatKey[route.category])}
                           </Badge>
                         </td>
                         {vehicles.map((v) => {
@@ -325,7 +400,7 @@ export function PriceListContent() {
             </div>
           ) : (
             <p className="rounded-xl bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">
-              No transfer routes match your filters.
+              {t("emptyTransfer")}
             </p>
           )}
         </section>
@@ -333,7 +408,7 @@ export function PriceListContent() {
 
       <div className="text-center">
         <ButtonLink size="lg" href="/booking">
-          Book Now
+          {t("bookNow")}
         </ButtonLink>
       </div>
     </div>

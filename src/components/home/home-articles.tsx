@@ -1,6 +1,9 @@
+"use client";
+
 import { PublicImage } from "@/components/shared/public-image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowRight, Clock } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
@@ -11,22 +14,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { articles } from "@/lib/data/articles";
+import { useArticleCopy } from "@/lib/article-i18n";
 
 export function HomeArticles() {
-  const items = articles.slice(0, 4);
+  const t = useTranslations("Home");
+  const tc = useTranslations("Common");
+  const locale = useLocale();
+  const { localize } = useArticleCopy();
+  const items = articles.slice(0, 4).map(localize);
 
   return (
     <section className="bg-background py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
           <div>
-            <h2 className="text-3xl font-bold">Travel Articles</h2>
-            <p className="mt-2 text-muted-foreground">
-              Guides for airport, beach, pier, and inter-province transfers
-            </p>
+            <h2 className="text-3xl font-bold">{t("articlesTitle")}</h2>
+            <p className="mt-2 text-muted-foreground">{t("articlesSubtitle")}</p>
           </div>
           <ButtonLink variant="outline" href="/articles">
-            All Articles
+            {tc("allArticles")}
           </ButtonLink>
         </div>
 
@@ -49,7 +55,7 @@ export function HomeArticles() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <Badge className="absolute top-2 left-2 bg-white/95 text-[10px] text-zinc-950 hover:bg-white sm:top-3 sm:left-3 sm:text-xs">
-                    {article.category}
+                    {article.categoryLabel}
                   </Badge>
                 </div>
                 <CardHeader className="space-y-1 px-3 pt-3 sm:px-4 sm:pt-4">
@@ -58,15 +64,14 @@ export function HomeArticles() {
                   </CardTitle>
                   <CardDescription className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] sm:text-xs">
                     <span>
-                      {new Date(article.publishedAt).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {new Date(article.publishedAt).toLocaleDateString(
+                        locale === "th" ? "th-TH" : locale === "zh" ? "zh-CN" : "en-GB",
+                        { day: "numeric", month: "short", year: "numeric" }
+                      )}
                     </span>
                     <span className="inline-flex items-center gap-1">
                       <Clock className="size-3" />
-                      {article.readMinutes} min
+                      {article.readMinutes} {tc("min")}
                     </span>
                   </CardDescription>
                 </CardHeader>
@@ -75,7 +80,7 @@ export function HomeArticles() {
                     {article.excerpt}
                   </p>
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 sm:text-sm">
-                    Read <ArrowRight className="size-3 sm:size-3.5" />
+                    {tc("read")} <ArrowRight className="size-3 sm:size-3.5" />
                   </span>
                 </CardContent>
               </Card>

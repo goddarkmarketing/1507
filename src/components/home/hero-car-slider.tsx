@@ -5,15 +5,15 @@ import { PublicImage } from "@/components/shared/public-image";
 import { cn } from "@/lib/utils";
 
 const heroCars = [
-  { src: "/vehicles/car-2.png", alt: "Toyota Yaris Ativ" },
-  { src: "/vehicles/car-1.png", alt: "Hyundai H-1" },
-  { src: "/vehicles/car-3.png", alt: "Honda City RS" },
-  { src: "/vehicles/car-4.png", alt: "Toyota Yaris" },
-  { src: "/vehicles/car-5.png", alt: "MG5" },
-  { src: "/vehicles/car-6.png", alt: "MG ZS" },
-  { src: "/vehicles/car-7.png", alt: "Toyota Veloz" },
-  { src: "/vehicles/car-8.png", alt: "Honda City Hatchback" },
-  { src: "/vehicles/car-9.png", alt: "Mitsubishi Xpander" },
+  { src: "/vehicles/toyota/yarisativ.webp", alt: "Toyota Yaris Ativ" },
+  { src: "/vehicles/toyota/yaris.webp", alt: "Toyota Yaris" },
+  { src: "/vehicles/toyota/altis.webp", alt: "Toyota Corolla Altis" },
+  { src: "/vehicles/toyota/camry.webp", alt: "Toyota Camry" },
+  { src: "/vehicles/toyota/yariscross.webp", alt: "Toyota Yaris Cross" },
+  { src: "/vehicles/toyota/corollacross.webp", alt: "Toyota Corolla Cross" },
+  { src: "/vehicles/toyota/veloz.webp", alt: "Toyota Veloz" },
+  { src: "/vehicles/toyota/innovazenix.webp", alt: "Toyota Innova Zenix" },
+  { src: "/vehicles/toyota/alphard.webp", alt: "Toyota Alphard" },
 ];
 
 export function HeroCarSlider() {

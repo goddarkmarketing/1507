@@ -1,36 +1,43 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Car, Home, Phone, Tags } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { usePathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site-config";
 
-const sideItems = [
-  { href: "/", label: "Home", icon: Home, match: (path: string) => path === "/" },
-  {
-    href: "/fleet",
-    label: "Fleet",
-    icon: Car,
-    match: (path: string) => path.startsWith("/fleet"),
-  },
-  {
-    href: "/price-list",
-    label: "Prices",
-    icon: Tags,
-    match: (path: string) => path.startsWith("/price-list"),
-  },
-  {
-    href: `tel:${siteConfig.phone}`,
-    label: "Call",
-    icon: Phone,
-    match: () => false,
-    external: true,
-  },
-];
-
 export function MobileBottomBar() {
   const pathname = usePathname();
+  const t = useTranslations("MobileNav");
+
+  const sideItems = [
+    {
+      href: "/",
+      label: t("home"),
+      icon: Home,
+      match: (path: string) => path === "/",
+    },
+    {
+      href: "/fleet",
+      label: t("fleet"),
+      icon: Car,
+      match: (path: string) => path.startsWith("/fleet"),
+    },
+    {
+      href: "/price-list",
+      label: t("prices"),
+      icon: Tags,
+      match: (path: string) => path.startsWith("/price-list"),
+    },
+    {
+      href: `tel:${siteConfig.phone}`,
+      label: t("call"),
+      icon: Phone,
+      match: () => false,
+      external: true as const,
+    },
+  ];
 
   return (
     <nav
@@ -60,7 +67,7 @@ export function MobileBottomBar() {
         <Link
           href="/booking"
           className="flex flex-col items-center gap-1 pb-2 pt-0 text-[10px] font-semibold text-amber-700"
-          aria-label="Book Now"
+          aria-label={t("book")}
         >
           <span
             className={cn(
@@ -70,7 +77,7 @@ export function MobileBottomBar() {
           >
             <Car className="size-6" />
           </span>
-          <span>Book</span>
+          <span>{t("book")}</span>
         </Link>
 
         {sideItems.slice(2).map((item) => {

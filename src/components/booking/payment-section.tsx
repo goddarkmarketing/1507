@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { PublicImage } from "@/components/shared/public-image";
 import {
   Building2,
@@ -38,6 +39,15 @@ const methodIcons = {
   promptpay: QrCode,
 } as const;
 
+const methodCopyKey: Record<
+  PaymentMethod,
+  { label: "bankTransfer" | "card" | "promptpay"; desc: "bankTransferDesc" | "cardDesc" | "promptpayDesc" }
+> = {
+  "bank-transfer": { label: "bankTransfer", desc: "bankTransferDesc" },
+  card: { label: "card", desc: "cardDesc" },
+  promptpay: { label: "promptpay", desc: "promptpayDesc" },
+};
+
 interface PaymentSectionProps {
   amount: number;
   method: PaymentMethod | null;
@@ -52,16 +62,17 @@ interface PaymentSectionProps {
 }
 
 function CopyButton({ value, label }: { value: string; label: string }) {
+  const t = useTranslations("Payment");
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(value);
       setCopied(true);
-      toast.success(`${label} copied`);
+      toast.success(t("copiedToast", { label }));
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast.error("Could not copy");
+      toast.error(t("copyFail"));
     }
   };
 
@@ -70,14 +81,14 @@ function CopyButton({ value, label }: { value: string; label: string }) {
       type="button"
       onClick={copy}
       className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-muted"
-      aria-label={`Copy ${label}`}
+      aria-label={`${t("copy")} ${label}`}
     >
       {copied ? (
         <Check className="size-3.5 text-emerald-600" />
       ) : (
         <Copy className="size-3.5" />
       )}
-      {copied ? "Copied" : "Copy"}
+      {copied ? t("copied") : t("copy")}
     </button>
   );
 }
@@ -114,6 +125,7 @@ export function PaymentSection({
   onTransferProofChange,
   transferRef,
 }: PaymentSectionProps) {
+  const t = useTranslations("Payment");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const promptPayQr = useMemo(
@@ -126,11 +138,11 @@ export function PaymentSection({
 
     const allowed = TRANSFER_PROOF_ACCEPT.split(",");
     if (!allowed.includes(file.type)) {
-      toast.error("Please upload JPG, PNG, WEBP, or PDF only");
+      toast.error(t("fileTypes"));
       return;
     }
     if (file.size > MAX_TRANSFER_PROOF_BYTES) {
-      toast.error("File is too large (max 1.5 MB)");
+      toast.error(t("toastProofSize"));
       return;
     }
 
@@ -142,9 +154,9 @@ export function PaymentSection({
         dataUrl,
         uploadedAt: new Date().toISOString(),
       });
-      toast.success("Transfer proof attached");
+      toast.success(t("toastProofOk"));
     } catch {
-      toast.error("Could not read file");
+      toast.error(t("toastProofFail"));
     }
   };
 
@@ -158,6 +170,7 @@ export function PaymentSection({
         {paymentMethodOptions.map((opt) => {
           const Icon = methodIcons[opt.value];
           const selected = method === opt.value;
+          const copy = methodCopyKey[opt.value];
           return (
             <Label
               key={opt.value}
@@ -177,7 +190,7 @@ export function PaymentSection({
               {opt.value === "promptpay" ? (
                 <PublicImage
                   src={mockPromptPay.icon}
-                  alt="PromptPay"
+                  alt={t("promptpay")}
                   width={28}
                   height={28}
                   className="mt-0.5 size-7 shrink-0 rounded-md object-contain"
@@ -188,10 +201,10 @@ export function PaymentSection({
               )}
               <span className="min-w-0 space-y-0.5">
                 <span className="block text-sm font-semibold leading-none">
-                  {opt.label}
+                  {t(copy.label)}
                 </span>
                 <span className="block text-xs text-muted-foreground">
-                  {opt.description}
+                  {t(copy.desc)}
                 </span>
               </span>
             </Label>
@@ -202,22 +215,19 @@ export function PaymentSection({
       {method === "bank-transfer" && (
         <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
           <p className="text-sm font-medium">
-            Transfer{" "}
-            <span className="text-primary">
-              ฿{amount.toLocaleString("en-US")}
-            </span>{" "}
-            to one of the accounts below, then upload your slip.
+            {t("transferIntro", {
+              amount: amount.toLocaleString("en-US"),
+            })}
           </p>
           <p className="text-xs text-muted-foreground">
-            Put this reference in the transfer note:{" "}
-            <span className="font-mono font-medium text-foreground">
-              {transferRef || "Generated after confirmation"}
-            </span>
+            {t("referenceNote", {
+              ref: transferRef || t("afterConfirm"),
+            })}
           </p>
           <Separator />
 
           <div className="space-y-2">
-            <p className="text-sm font-medium">Select transfer account *</p>
+            <p className="text-sm font-medium">{t("selectAccount")}</p>
             <div className="grid gap-2">
               {mockBankAccounts.map((acc) => {
                 const selected = transferBankSymbol === acc.symbol;
@@ -251,25 +261,25 @@ export function PaymentSection({
                         </div>
                         <CopyButton
                           value={acc.accountNumber.replace(/-/g, "")}
-                          label="Account number"
+                          label={t("accountNumber")}
                         />
                       </div>
                       <p>
                         <span className="text-muted-foreground">
-                          Account name:
+                          {t("accountName")}:
                         </span>{" "}
                         {acc.accountName}
                       </p>
                       <p>
                         <span className="text-muted-foreground">
-                          Account number:
+                          {t("accountNumber")}:
                         </span>{" "}
                         <span className="font-mono font-semibold">
                           {acc.accountNumber}
                         </span>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Branch: {acc.branch}
+                        {t("branch")}: {acc.branch}
                       </p>
                     </div>
                   </button>
@@ -281,10 +291,8 @@ export function PaymentSection({
           <Separator />
 
           <div className="space-y-2">
-            <p className="text-sm font-medium">Attach transfer proof *</p>
-            <p className="text-xs text-muted-foreground">
-              Slip image or PDF (max 1.5 MB) — required before confirming
-            </p>
+            <p className="text-sm font-medium">{t("attachProof")}</p>
+            <p className="text-xs text-muted-foreground">{t("proofHint")}</p>
 
             <input
               ref={fileInputRef}
@@ -310,7 +318,7 @@ export function PaymentSection({
                     type="button"
                     className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
                     onClick={() => onTransferProofChange(null)}
-                    aria-label="Remove proof"
+                    aria-label={t("attachProof")}
                   >
                     <X className="size-4" />
                   </button>
@@ -319,14 +327,13 @@ export function PaymentSection({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={transferProof.dataUrl}
-                    alt="Transfer proof preview"
+                    alt={t("attachProof")}
                     className="max-h-56 w-full bg-zinc-50 object-contain"
                   />
                 ) : (
                   <div className="flex items-center gap-2 px-3 py-6 text-sm text-muted-foreground">
                     <FileText className="size-5" />
-                    PDF attached — you can open it on the e-Voucher after
-                    confirmation
+                    {t("pdfAttached")}
                   </div>
                 )}
               </div>
@@ -337,8 +344,8 @@ export function PaymentSection({
                 className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-background px-4 py-8 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-foreground"
               >
                 <Upload className="size-6" />
-                <span className="font-medium">Upload transfer slip</span>
-                <span className="text-xs">JPG, PNG, WEBP, or PDF</span>
+                <span className="font-medium">{t("uploadSlip")}</span>
+                <span className="text-xs">{t("fileTypes")}</span>
               </button>
             )}
           </div>
@@ -347,11 +354,9 @@ export function PaymentSection({
 
       {method === "card" && (
         <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
-          <p className="text-xs text-muted-foreground">
-            Card payment — mock data only, no real charge
-          </p>
+          <p className="text-xs text-muted-foreground">{t("cardMockNote")}</p>
           <div className="space-y-2">
-            <Label htmlFor="card-number">Card number</Label>
+            <Label htmlFor="card-number">{t("cardNumber")}</Label>
             <Input
               id="card-number"
               inputMode="numeric"
@@ -364,7 +369,7 @@ export function PaymentSection({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="card-name">Name on card</Label>
+            <Label htmlFor="card-name">{t("nameOnCard")}</Label>
             <Input
               id="card-name"
               autoComplete="cc-name"
@@ -377,7 +382,7 @@ export function PaymentSection({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="card-expiry">Expiry</Label>
+              <Label htmlFor="card-expiry">{t("expiry")}</Label>
               <Input
                 id="card-expiry"
                 inputMode="numeric"
@@ -390,7 +395,7 @@ export function PaymentSection({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="card-cvv">CVV</Label>
+              <Label htmlFor="card-cvv">{t("cvv")}</Label>
               <Input
                 id="card-cvv"
                 inputMode="numeric"
@@ -415,17 +420,14 @@ export function PaymentSection({
           <div className="flex items-center gap-2">
             <PublicImage
               src={mockPromptPay.icon}
-              alt="PromptPay"
+              alt={t("promptpay")}
               width={32}
               height={32}
               className="size-8 rounded-md object-contain"
               unoptimized
             />
             <p className="text-sm font-medium">
-              Scan PromptPay QR for{" "}
-              <span className="text-primary">
-                ฿{amount.toLocaleString("en-US")}
-              </span>
+              {t("scanQr", { amount: amount.toLocaleString("en-US") })}
             </p>
           </div>
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
@@ -434,22 +436,26 @@ export function PaymentSection({
             </div>
             <div className="space-y-2 text-sm">
               <p>
-                <span className="text-muted-foreground">Account name:</span>{" "}
+                <span className="text-muted-foreground">
+                  {t("accountName")}:
+                </span>{" "}
                 {mockPromptPay.accountName}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <p>
-                  <span className="text-muted-foreground">PromptPay:</span>{" "}
+                  <span className="text-muted-foreground">
+                    {t("promptpayId")}:
+                  </span>{" "}
                   <span className="font-mono font-semibold">
                     {mockPromptPay.id}
                   </span>
                 </p>
-                <CopyButton value={mockPromptPay.id} label="PromptPay ID" />
+                <CopyButton
+                  value={mockPromptPay.id}
+                  label={t("promptpayId")}
+                />
               </div>
-              <p className="text-xs text-muted-foreground">
-                This QR is a demo mock — not connected to a real payment
-                gateway.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("demoQrNote")}</p>
             </div>
           </div>
         </div>

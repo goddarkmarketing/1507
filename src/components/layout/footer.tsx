@@ -1,13 +1,20 @@
-import Link from "next/link";
+"use client";
+
 import { Mail, MapPin, Phone } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Separator } from "@/components/ui/separator";
 import { SiteLogo } from "@/components/shared/site-logo";
+import { Link } from "@/i18n/navigation";
 import { siteConfig, navItems } from "@/lib/site-config";
 
 export function Footer() {
+  const t = useTranslations("Nav");
+  const tf = useTranslations("Footer");
+  const ts = useTranslations("Site");
   const travelLinks = navItems.filter((n) => n.group === "travel");
   const companyLinks = navItems.filter(
-    (n) => !n.group && n.href !== "/" && !["/fleet", "/price-list"].includes(n.href)
+    (n) =>
+      !n.group && n.href !== "/" && !["/fleet", "/price-list"].includes(n.href)
   );
 
   return (
@@ -17,20 +24,18 @@ export function Footer() {
           <Link href="/" aria-label={siteConfig.name}>
             <SiteLogo height={48} />
           </Link>
-          <p className="text-sm text-muted-foreground">{siteConfig.slogan}</p>
-          <p className="text-sm text-muted-foreground">{siteConfig.sloganEn}</p>
+          <p className="text-sm text-muted-foreground">{ts("slogan")}</p>
         </div>
 
         <div>
-          <h3 className="mb-3 text-sm font-semibold">Services</h3>
+          <h3 className="mb-3 text-sm font-semibold">{tf("services")}</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
             {navItems
               .filter((n) => n.group === "transfers")
-              .slice(0, 5)
               .map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="hover:text-foreground">
-                    {item.label}
+                    {t(item.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -38,35 +43,35 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="mb-3 text-sm font-semibold">Travel</h3>
+          <h3 className="mb-3 text-sm font-semibold">{tf("travel")}</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
             {travelLinks.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="hover:text-foreground">
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               </li>
             ))}
             <li>
               <Link href="/articles" className="hover:text-foreground">
-                Articles
+                {t("articles")}
               </Link>
             </li>
             <li>
               <Link href="/fleet" className="hover:text-foreground">
-                Fleet
+                {t("fleet")}
               </Link>
             </li>
             <li>
               <Link href="/price-list" className="hover:text-foreground">
-                Price List
+                {t("priceList")}
               </Link>
             </li>
           </ul>
         </div>
 
         <div>
-          <h3 className="mb-3 text-sm font-semibold">Contact</h3>
+          <h3 className="mb-3 text-sm font-semibold">{tf("contact")}</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
             {companyLinks
               .filter((n) => n.href !== "/articles")
@@ -74,13 +79,13 @@ export function Footer() {
               .map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="hover:text-foreground">
-                    {item.label}
+                    {t(item.labelKey)}
                   </Link>
                 </li>
               ))}
             <li>
               <Link href="/booking" className="hover:text-foreground">
-                Booking
+                {t("booking")}
               </Link>
             </li>
             <li className="flex items-center gap-2 pt-2">
@@ -101,7 +106,7 @@ export function Footer() {
       <Separator />
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-4 text-center text-xs text-muted-foreground sm:flex-row sm:px-6 lg:px-8">
         <p>
-          © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+          © {new Date().getFullYear()} {siteConfig.name}. {tf("rights")}
         </p>
         <p>{siteConfig.domain}</p>
       </div>

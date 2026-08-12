@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { QRCodeSVG } from "qrcode.react";
 import { Download, MapPin, Phone, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { SiteLogo } from "@/components/shared/site-logo";
 import { getLocation } from "@/lib/data/locations";
 import { vehicles } from "@/lib/data/vehicles";
+import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
 import { siteConfig } from "@/lib/site-config";
 import { assetPath } from "@/lib/utils";
 import type { Booking } from "@/lib/types";
@@ -25,11 +27,20 @@ interface EVoucherProps {
 }
 
 export function EVoucher({ booking }: EVoucherProps) {
+  const t = useTranslations("Voucher");
+  const tBooking = useTranslations("Booking");
+  const tSite = useTranslations("Site");
+  const locName = useLocationName();
+  const { name: vehicleName } = useVehicleCopy();
   const qrData = JSON.stringify({
     bookingNumber: booking.bookingNumber,
     status: booking.status,
     total: booking.totalPrice,
   });
+
+  const typeLabel = tBooking(
+    `types.${booking.type}.label` as "types.one-way.label"
+  );
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
@@ -38,20 +49,22 @@ export function EVoucher({ booking }: EVoucherProps) {
           <SiteLogo height={56} />
         </div>
         <Badge className="mb-2">
-          {booking.status === "pending"
-            ? "e-Voucher · Pending Payment"
-            : "e-Voucher Confirmed"}
+          {booking.status === "pending" ? t("pending") : t("confirmed")}
         </Badge>
-        <p className="text-muted-foreground">{siteConfig.sloganEn}</p>
+        <p className="text-muted-foreground">{tSite("slogan")}</p>
       </div>
 
       <Card className="overflow-hidden border-2 border-primary/20">
         <CardHeader className="bg-primary/5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <CardTitle>Booking #{booking.bookingNumber}</CardTitle>
+              <CardTitle>
+                {t("bookingHash", { n: booking.bookingNumber })}
+              </CardTitle>
               <CardDescription>
-                Confirmed on {new Date(booking.createdAt).toLocaleString()}
+                {t("confirmedOn", {
+                  date: new Date(booking.createdAt).toLocaleString(),
+                })}
               </CardDescription>
             </div>
             <div className="rounded-lg bg-white p-2">
@@ -65,14 +78,18 @@ export function EVoucher({ booking }: EVoucherProps) {
               <User className="mt-0.5 size-4 text-primary" />
               <div>
                 <p className="text-sm font-medium">{booking.customerName}</p>
-                <p className="text-sm text-muted-foreground">{booking.customerEmail}</p>
-                <p className="text-sm text-muted-foreground">{booking.customerPhone}</p>
+                <p className="text-sm text-muted-foreground">
+                  {booking.customerEmail}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {booking.customerPhone}
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <Phone className="mt-0.5 size-4 text-primary" />
               <div>
-                <p className="text-sm font-medium">Support</p>
+                <p className="text-sm font-medium">{t("support")}</p>
                 <p className="text-sm text-muted-foreground">{siteConfig.phone}</p>
               </div>
             </div>
@@ -81,9 +98,8 @@ export function EVoucher({ booking }: EVoucherProps) {
           <Separator />
 
           <div className="space-y-4">
-            <p className="font-semibold capitalize">
-              {booking.type.replace("-", " ")} · {booking.legs.length} leg
-              {booking.legs.length > 1 ? "s" : ""}
+            <p className="font-semibold">
+              {typeLabel} · {t("legs", { n: booking.legs.length })}
             </p>
             {booking.legs.map((leg, i) => {
               const from = getLocation(leg.fromId);
@@ -95,32 +111,43 @@ export function EVoucher({ booking }: EVoucherProps) {
                   className="rounded-lg border bg-muted/30 p-4 space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline">Leg {i + 1}</Badge>
-                    <span className="font-bold">฿{leg.price.toLocaleString()}</span>
+                    <Badge variant="outline">{t("legN", { n: i + 1 })}</Badge>
+                    <span className="font-bold">
+                      ฿{leg.price.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex items-start gap-2 text-sm">
                     <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
                     <div>
                       <p>
-                        <span className="text-muted-foreground">Pickup:</span>{" "}
-                        {from?.name}
+                        <span className="text-muted-foreground">
+                          {t("pickup")}:
+                        </span>{" "}
+                        {locName(from)}
                       </p>
                       <p>
-                        <span className="text-muted-foreground">Drop-off:</span>{" "}
-                        {to?.name}
+                        <span className="text-muted-foreground">
+                          {t("dropoff")}:
+                        </span>{" "}
+                        {locName(to)}
                       </p>
                     </div>
                   </div>
                   <p className="text-sm">
-                    <span className="text-muted-foreground">Date & Time:</span>{" "}
-                    {leg.date} at {leg.time}
+                    <span className="text-muted-foreground">
+                      {t("dateTime")}:
+                    </span>{" "}
+                    {leg.date} {t("at")} {leg.time}
                   </p>
                   <p className="text-sm">
-                    <span className="text-muted-foreground">Vehicle:</span>{" "}
-                    {vehicle?.code} — {vehicle?.name}
+                    <span className="text-muted-foreground">
+                      {t("vehicle")}:
+                    </span>{" "}
+                    {vehicle?.code} —{" "}
+                    {vehicle ? vehicleName(vehicle.code) : ""}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Driver details will be sent 24 hours before pickup
+                    {t("driverSoon")}
                   </p>
                 </div>
               );
@@ -129,13 +156,14 @@ export function EVoucher({ booking }: EVoucherProps) {
 
           {booking.flightNumber && (
             <p className="text-sm">
-              <span className="text-muted-foreground">Flight:</span>{" "}
+              <span className="text-muted-foreground">{t("flight")}:</span>{" "}
               {booking.flightNumber}
             </p>
           )}
           {booking.notes && (
             <p className="text-sm">
-              <span className="text-muted-foreground">Notes:</span> {booking.notes}
+              <span className="text-muted-foreground">{t("notes")}:</span>{" "}
+              {booking.notes}
             </p>
           )}
 
@@ -143,16 +171,16 @@ export function EVoucher({ booking }: EVoucherProps) {
 
           {booking.payment && (
             <div className="space-y-3 rounded-lg border bg-muted/30 p-4 text-sm">
-              <p className="font-semibold">Payment</p>
+              <p className="font-semibold">{t("payment")}</p>
               <p>
-                <span className="text-muted-foreground">Method:</span>{" "}
+                <span className="text-muted-foreground">{t("method")}:</span>{" "}
                 {booking.payment.summary}
               </p>
               <p>
-                <span className="text-muted-foreground">Status:</span>{" "}
+                <span className="text-muted-foreground">{t("status")}:</span>{" "}
                 {booking.payment.status === "paid"
-                  ? "Paid (mock)"
-                  : "Awaiting bank transfer verification"}
+                  ? t("statusPaid")
+                  : t("statusAwaiting")}
               </p>
               {booking.payment.bankSymbol && (
                 <div className="flex items-center gap-2">
@@ -163,13 +191,13 @@ export function EVoucher({ booking }: EVoucherProps) {
                     className="size-8 rounded object-contain"
                   />
                   <span className="text-muted-foreground">
-                    Account: {booking.payment.bankSymbol}
+                    {t("account")}: {booking.payment.bankSymbol}
                   </span>
                 </div>
               )}
               {booking.payment.transferProof && (
                 <div className="space-y-2">
-                  <p className="font-medium">Transfer proof</p>
+                  <p className="font-medium">{t("transferProof")}</p>
                   <p className="text-xs text-muted-foreground">
                     {booking.payment.transferProof.fileName}
                   </p>
@@ -179,7 +207,7 @@ export function EVoucher({ booking }: EVoucherProps) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={booking.payment.transferProof.dataUrl}
-                      alt="Transfer proof"
+                      alt={t("transferProof")}
                       className="max-h-64 w-full rounded-md border object-contain bg-white"
                     />
                   ) : (
@@ -188,7 +216,7 @@ export function EVoucher({ booking }: EVoucherProps) {
                       download={booking.payment.transferProof.fileName}
                       className="inline-flex text-sm font-medium text-primary underline underline-offset-2"
                     >
-                      Download PDF slip
+                      {t("downloadPdf")}
                     </a>
                   )}
                 </div>
@@ -199,8 +227,8 @@ export function EVoucher({ booking }: EVoucherProps) {
           <div className="flex items-center justify-between text-lg font-bold">
             <span>
               {booking.payment?.status === "awaiting-transfer"
-                ? "Total Due"
-                : "Total Paid"}
+                ? t("totalDue")
+                : t("totalPaid")}
             </span>
             <span className="text-primary">
               ฿{booking.totalPrice.toLocaleString()}
@@ -212,11 +240,9 @@ export function EVoucher({ booking }: EVoucherProps) {
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
         <Button variant="outline" onClick={() => window.print()}>
           <Download className="size-4" />
-          Print Voucher
+          {t("print")}
         </Button>
-        <ButtonLink href="/booking">
-          New Booking
-        </ButtonLink>
+        <ButtonLink href="/booking">{t("newBooking")}</ButtonLink>
       </div>
     </div>
   );

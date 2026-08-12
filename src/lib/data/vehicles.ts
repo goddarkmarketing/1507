@@ -1,80 +1,92 @@
-import type { Vehicle } from "@/lib/types";
+import type { Vehicle, VehicleCode } from "@/lib/types";
 
-export const vehicles: Vehicle[] = [
+/** Amenity keys mapped in messages under Vehicles.amenities.* */
+export type AmenityKey =
+  | "ac"
+  | "water"
+  | "charger"
+  | "legroom"
+  | "groupSeating"
+  | "leather"
+  | "wifi"
+  | "snacks"
+  | "meetGreet"
+  | "luxury"
+  | "premium"
+  | "priority"
+  | "captain"
+  | "privacy"
+  | "usb"
+  | "drinks"
+  | "groupTravel"
+  | "tourGuide";
+
+export type VehicleData = Vehicle;
+
+/** Official Toyota Thailand cutout images — sourced from toyota.co.th */
+export const vehicles: VehicleData[] = [
   {
     code: "ECO",
-    name: "Economy Sedan",
     passengers: "1–3",
-    luggage: "3 bags",
-    amenities: ["Air conditioning", "Bottled water"],
+    amenityKeys: ["ac", "water"],
     priceMultiplier: 1,
-    image: "/vehicles/car-2.png",
+    image: "/vehicles/toyota/yarisativ.webp",
   },
   {
     code: "PREM",
-    name: "Premium Sedan",
     passengers: "1–3",
-    luggage: "4 bags",
-    amenities: ["Air conditioning", "Bottled water", "Phone charger"],
+    amenityKeys: ["ac", "water", "charger"],
     priceMultiplier: 1.25,
-    image: "/vehicles/car-3.png",
+    image: "/vehicles/toyota/camry.webp",
   },
   {
     code: "SUV",
-    name: "SUV",
     passengers: "1–4",
-    luggage: "6 bags",
-    amenities: ["Air conditioning", "Bottled water", "Extra legroom"],
+    amenityKeys: ["ac", "water", "legroom"],
     priceMultiplier: 1.4,
-    image: "/vehicles/car-6.png",
+    image: "/vehicles/toyota/corollacross.webp",
   },
   {
     code: "VAN",
-    name: "Standard Van",
     passengers: "1–8",
-    luggage: "8 bags",
-    amenities: ["Air conditioning", "Bottled water", "Group seating"],
+    amenityKeys: ["ac", "water", "groupSeating"],
     priceMultiplier: 1.6,
-    image: "/vehicles/car-1.png",
+    image: "/vehicles/toyota/hiace.webp",
   },
   {
     code: "VIP",
-    name: "VIP Van",
     passengers: "1–8",
-    luggage: "8 bags",
-    amenities: ["Leather seats", "Wi-Fi", "Snacks", "Meet & greet"],
+    amenityKeys: ["leather", "wifi", "snacks", "meetGreet"],
     priceMultiplier: 2,
-    image: "/vehicles/car-4.png",
+    image: "/vehicles/toyota/alphard.webp",
   },
   {
     code: "SIG",
-    name: "Signature Class",
     passengers: "1–4",
-    luggage: "4 bags",
-    amenities: ["Luxury sedan", "Premium amenities", "Priority service"],
+    amenityKeys: ["luxury", "premium", "priority"],
     priceMultiplier: 2.5,
-    image: "/vehicles/car-7.png",
+    image: "/vehicles/toyota/majesty.webp",
   },
   {
     code: "EXE",
-    name: "Executive Van",
     passengers: "1–8",
-    luggage: "10 bags",
-    amenities: ["Captain seats", "Privacy glass", "USB charging", "Cold drinks"],
+    amenityKeys: ["captain", "privacy", "usb", "drinks"],
     priceMultiplier: 2.2,
-    image: "/vehicles/car-5.png",
+    image: "/vehicles/toyota/commuter.webp",
   },
   {
     code: "BUS",
-    name: "Mini Bus",
     passengers: "1–20",
-    luggage: "Large cargo area",
-    amenities: ["Air conditioning", "Group travel", "Tour guide space"],
+    amenityKeys: ["ac", "groupTravel", "tourGuide"],
     priceMultiplier: 3,
-    image: "/vehicles/car-9.png",
+    image: "/vehicles/toyota/coaster.webp",
   },
 ];
 
-export function getVehicle(code: string): Vehicle | undefined {
+export function getVehicle(code: string): VehicleData | undefined {
   return vehicles.find((v) => v.code === code);
+}
+
+export function isVehicleCode(code: string): code is VehicleCode {
+  return vehicles.some((v) => v.code === code);
 }

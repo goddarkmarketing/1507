@@ -1,5 +1,21 @@
 import type { Review, FaqItem, Policy } from "@/lib/types";
 
+export const faqIds = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
+
+export const policyIds = [
+  "waiting",
+  "flight-delay",
+  "child-seat",
+  "pets",
+  "ferry",
+  "toll",
+  "payment",
+  "cancellation",
+  "refund",
+] as const;
+
+export const reviewIds = ["1", "2", "3", "4", "5", "6", "7"] as const;
+
 export const reviews: Review[] = [
   {
     id: "1",
