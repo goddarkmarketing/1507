@@ -40,7 +40,7 @@ export type BookingType =
   | "daily-charter"
   | "hourly-charter";
 
-export type PaymentMethod = "bank-transfer" | "card" | "promptpay";
+export type PaymentMethod = "bank-transfer" | "card" | "promptpay" | "cash";
 
 export interface CardPaymentDetails {
   cardNumber: string;

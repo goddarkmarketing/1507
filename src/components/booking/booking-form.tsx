@@ -30,8 +30,12 @@ import { Badge } from "@/components/ui/badge";
 import { PaymentSection } from "@/components/booking/payment-section";
 import { cn } from "@/lib/utils";
 import { locations } from "@/lib/data/locations";
-import { vehicles } from "@/lib/data/vehicles";
+import { tariffVehicles, vehicles } from "@/lib/data/vehicles";
 import { useBookingStore } from "@/lib/booking/store";
+import {
+  getActiveCancelPolicy,
+  useSettingsRevision,
+} from "@/lib/admin/settings-store";
 import { getLocation } from "@/lib/data/locations";
 import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
 import type { BookingType } from "@/lib/types";
@@ -67,6 +71,8 @@ export function BookingForm() {
     getLegPrice,
     getTotalPrice,
   } = useBookingStore();
+  useSettingsRevision();
+  const cancelPolicy = getActiveCancelPolicy();
 
   const [paying, setPaying] = useState(false);
 
@@ -99,7 +105,7 @@ export function BookingForm() {
       if (to) updates.toId = to;
       if (
         vehicle &&
-        ["ECO", "PREM", "SUV", "VAN", "VIP", "SIG", "EXE", "BUS"].includes(vehicle)
+        ["ECO", "PREM", "SUV", "VAN", "EXE", "VIP", "BUS"].includes(vehicle)
       ) {
         updates.vehicleCode = vehicle as typeof draft.legs[0]["vehicleCode"];
       }
@@ -172,7 +178,9 @@ export function BookingForm() {
         ? t("confirmCard")
         : draft.paymentMethod === "promptpay"
           ? t("confirmPromptPay")
-          : t("confirmBooking");
+          : draft.paymentMethod === "cash"
+            ? t("confirmCash")
+            : t("confirmBooking");
 
   const fieldClass = "h-10 text-base md:h-8 md:text-sm";
   const selectTriggerClass = cn("w-full min-w-0", fieldClass);
@@ -351,7 +359,7 @@ export function BookingForm() {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {vehicles.map((v) => (
+                      {tariffVehicles.map((v) => (
                         <SelectItem key={v.code} value={v.code}>
                           {selectLabel(v)} · {luggage(v.code)}
                         </SelectItem>
@@ -442,7 +450,13 @@ export function BookingForm() {
               {t("paymentSubtitle")}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-950">
+              {t("cancelPolicyNote", {
+                hours: cancelPolicy.freeCancelHours,
+                percent: cancelPolicy.lateFeePercent,
+              })}
+            </p>
             <PaymentSection
               amount={total}
               method={draft.paymentMethod}
@@ -511,6 +525,7 @@ export function BookingForm() {
                   {draft.paymentMethod === "bank-transfer" && t("bankTransfer")}
                   {draft.paymentMethod === "card" && t("card")}
                   {draft.paymentMethod === "promptpay" && t("promptpay")}
+                  {draft.paymentMethod === "cash" && t("cash")}
                 </span>
               </p>
             )}

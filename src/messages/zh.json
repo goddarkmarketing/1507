@@ -5,6 +5,29 @@
     "th": "TH",
     "zh": "中文"
   },
+  "MeetingPoint": {
+    "eyebrow": "甲米机场接机点",
+    "title": "在哪里与您汇合",
+    "subtitle": "国内航班：15 号门。国际航班：16 号门。出门后向左看，司机会举着写有您姓名的牌子等候。",
+    "door": "{n} 号门",
+    "domesticLabel": "国内",
+    "internationalLabel": "国际",
+    "domesticHint": "国内航班落地后领取行李，从 15 号门离开，向左看。",
+    "internationalHint": "完成入境与取行李后，从 16 号门离开，向左看。",
+    "step1Title": "领取行李",
+    "step1Body": "落地后领取行李。国际到达请先办理入境。",
+    "step2Title": "前往对应出口",
+    "step2Body": "国内：15 号门。国际：16 号门。沿到达标识前行。",
+    "step3Title": "向左看",
+    "step3Body": "出门后向左看，那里就是接机点。",
+    "step4Title": "与司机汇合",
+    "step4Body": "寻找写有您姓名的欢迎牌。我们协助提行李并送您上车。",
+    "domesticImageAlt": "甲米机场国内到达 15 号门接机点",
+    "feature1": "举牌迎接",
+    "feature2": "行李协助",
+    "feature3": "私人接送",
+    "feature4": "安全可靠"
+  },
   "Nav": {
     "home": "首页",
     "transfers": "接送服务",
@@ -27,7 +50,9 @@
     "contact": "联系我们",
     "booking": "预订",
     "bookNow": "立即预订",
-    "services": "服务"
+    "services": "服务",
+    "more": "更多",
+    "menu": "菜单"
   },
   "MobileNav": {
     "home": "首页",
@@ -93,6 +118,7 @@
     "fleetFilterAll": "全部",
     "fleetFilter13": "1–3 座",
     "fleetFilter14": "1–4 座",
+    "fleetFilter16": "1–6 座",
     "fleetFilter18": "1–8 座",
     "fleetFilterGroup": "团体 / 巴士",
     "articlesTitle": "旅游文章",
@@ -159,10 +185,13 @@
     "bankTransfer": "银行转账",
     "card": "信用卡 / 借记卡",
     "promptpay": "PromptPay",
+    "cash": "上车付现",
     "confirmBooking": "确认预订",
     "confirmBank": "确认预订（待核对转账）",
     "confirmCard": "刷卡并确认",
     "confirmPromptPay": "确认 PromptPay 付款",
+    "confirmCash": "确认现金预订",
+    "cancelPolicyNote": "出发前 {hours} 小时可免费取消，之后收取 {percent}% 费用。",
     "processing": "处理中...",
     "demoNote": "演示付款 — 不真实扣款 · 确认后签发电子凭证",
     "at": "于",
@@ -394,7 +423,7 @@
       "title": "机场接送",
       "subtitle": "往返甲米及泰南机场的私人接送",
       "intro": "按航班时间接机，可选接机举牌、行李空间充足，直达酒店、海滩或码头。",
-      "tip": "预订时填写航班号，便于我们跟踪延误并调整接机时间。",
+      "tip": "预订时填写航班号。甲米机场接机点：国内 15 号门，国际 16 号门，出门后向左看。",
       "benefit1": "航班跟踪与弹性候机时间",
       "benefit2": "可按需到达厅接机举牌",
       "benefit3": "行李空间充足 — 轿车到面包车可选",
@@ -405,7 +434,7 @@
         },
         "2": {
           "q": "提供接机举牌吗？",
-          "a": "可以。预订时填写航班号并申请接机服务，司机可在到达厅举牌等候。"
+          "a": "可以。预订时填写航班号。甲米机场国内航班请从 15 号门离开，国际航班请从 16 号门离开，出门后向左看，司机举着写有您姓名的牌子等候。"
         },
         "3": {
           "q": "可以带多少行李？",
@@ -666,35 +695,35 @@
     "bags8": "8 件行李",
     "bags10": "10 件行李",
     "ECO": {
-      "name": "经济型轿车",
+      "name": "Economy Taxi",
       "luggage": "3 件行李"
     },
     "PREM": {
-      "name": "高级轿车",
+      "name": "Luxury Taxi",
       "luggage": "4 件行李"
     },
     "SUV": {
-      "name": "SUV",
+      "name": "SUV Taxi",
       "luggage": "6 件行李"
     },
     "VAN": {
-      "name": "标准商务车",
-      "luggage": "8 件行李"
+      "name": "Van Taxi",
+      "luggage": "6 件行李"
     },
     "VIP": {
-      "name": "VIP 商务车",
-      "luggage": "8 件行李"
+      "name": "Alphard VIP",
+      "luggage": "4 件行李"
     },
     "SIG": {
-      "name": "尊享级",
+      "name": "Alphard VIP",
       "luggage": "4 件行李"
     },
     "EXE": {
-      "name": "行政商务车",
-      "luggage": "10 件行李"
+      "name": "VIP Van",
+      "luggage": "8 件行李"
     },
     "BUS": {
-      "name": "中巴",
+      "name": "Mini Bus",
       "luggage": "大容量行李区"
     }
   },
@@ -767,7 +796,7 @@
     "fromPerDay": "起 ฿{price}/天",
     "notes": "备注：价格为按租期的每日泰铢价。Hyundai H-1 容量因布局而异。",
     "transferTitle": "接送路线",
-    "transferSubtitle": "泰国南部点对点私人接送",
+    "transferSubtitle": "官方单程价 — 喀比机场 55 条线路，以及普吉机场、奥南海滩与兰塔岛",
     "allRoutes": "全部路线",
     "route": "路线",
     "emptyRental": "没有符合筛选的租车套餐。",
@@ -788,6 +817,9 @@
     "cardDesc": "Visa、Mastercard — 演示付款。",
     "promptpay": "PromptPay",
     "promptpayDesc": "扫描二维码或支付至 PromptPay ID。",
+    "cash": "上车付现",
+    "cashDesc": "与司机见面时以泰铢现金支付。",
+    "cashNote": "上车时以现金（泰铢）付给司机。行程完成前预订保持待确认。",
     "transferIntro": "请将 ฿{amount} 转入以下任一账户。",
     "referenceNote": "转账备注请填写此参考号：{ref}",
     "afterConfirm": "确认后生成",
@@ -840,6 +872,7 @@
     "status": "状态",
     "statusPaid": "已付款（演示）",
     "statusAwaiting": "等待银行转账核实",
+    "statusCash": "上车时向司机付现",
     "account": "账户",
     "transferProof": "转账凭证",
     "downloadPdf": "下载 PDF 凭证",
@@ -960,7 +993,10 @@
       "payments": "支付",
       "schedule": "日程",
       "drivers": "司机",
-      "customers": "客户"
+      "customers": "客户",
+      "prices": "价格表",
+      "vehicles": "车辆",
+      "settings": "设置"
     },
     "dashboardTitle": "仪表盘",
     "dashboardSubtitle": "接送、支付与司机的实时概览。",
@@ -1031,6 +1067,106 @@
       "cancelled": "已取消"
     },
     "navGroupOps": "运营",
-    "navGroupTeam": "人员"
+    "navGroupTeam": "人员",
+    "navGroupSystem": "系统",
+    "catalogTitle": "价格表",
+    "catalogSubtitle": "导入 CSV 以更新租车套餐和接送路线。先下载模板，在 Excel 中编辑后再导入。导入的价格会立即用于此浏览器（演示）。若要发布到正式网站，之后可以把数据写入项目并部署。",
+    "catalogRentalTitle": "租车套餐",
+    "catalogRentalHelp": "列：id, category, model, engine, seats, largeBags, doors, days1to3, days4to6, days7to20, days21to30。类别必须是 Mini Car、Economy、Compact 或 Full Size。价格留空表示询价。",
+    "catalogTransferTitle": "接送路线",
+    "catalogTransferHelp": "列：fromId, toId, distanceKm, durationMin, category, ECO, PREM, SUV, VAN, EXE, VIP, SIG, BUS。fromId/toId 可以是地点 ID 或名称（如 kbv-airport、奥南）。去程与返程同价。",
+    "catalogImport": "导入 CSV",
+    "catalogTemplate": "下载模板",
+    "catalogReset": "使用内置表格",
+    "catalogUsingBuiltin": "使用内置表格 · {n} 行",
+    "catalogUsingImported": "使用已导入表格 · {n} 行 · {when}",
+    "catalogRentalOk": "已导入 {n} 个租车套餐",
+    "catalogTransferOk": "已导入 {n} 条接送路线",
+    "catalogResetOk": "已恢复内置表格",
+    "catalogEmpty": "文件中没有有效行。",
+    "catalogSkipped": "跳过 {n} 行：{detail}",
+    "catalogRowIssue": "第 {row} 行（{reason}）",
+    "catalogXlsxHint": "请将 Excel 另存为 CSV（UTF-8）后再导入。",
+    "catalogVehiclesTitle": "接送车辆",
+    "catalogVehiclesSubtitle": "导入 CSV 更新用于定价/预订/页面展示的车辆类别（演示：浏览器存储）。",
+    "catalogTransferVehiclesTitle": "车辆类别（ECO/PREM/SUV/VAN/VIP/SIG/EXE/BUS）",
+    "catalogVehiclesHelp": "CSV 列：code, passengers, amenityKeys（逗号或 | 分隔）, priceMultiplier, image。代码固定。",
+    "catalogUsingBuiltinVehicles": "使用内置车辆表",
+    "catalogUsingImportedVehicles": "使用已导入车辆表 · {when}",
+    "catalogVehiclesOk": "已导入 {n} 条车辆记录",
+    "catalogVehiclesPreview": "内置预览",
+    "catalogVehiclesPreviewHint": "在 CSV 模板中编辑后再 import",
+    "settingsTitle": "设置",
+    "settingsSubtitle": "编辑联系方式、收款账户、包车价格、取消规则和员工登录。演示版保存在此浏览器。",
+    "settingsContactTitle": "联系方式",
+    "settingsContactHelp": "这些信息会显示在页头、页脚、联系页和凭证上。",
+    "settingsPaymentTitle": "支付",
+    "settingsPaymentHelp": "开关支付方式，并编辑结账时显示的银行 / PromptPay 信息。",
+    "settingsCharterTitle": "包车价格",
+    "settingsCharterHelp": "按日/按小时的基础泰铢价格。车辆倍率仍然生效。",
+    "settingsPolicyTitle": "取消政策",
+    "settingsPolicyHelp": "显示在预订表单上。正式网站之后可用这些数字计算退款。",
+    "settingsStaffTitle": "员工登录",
+    "settingsStaffHelp": "除演示管理员外的额外账号。角色会隐藏部分菜单。密码仅保存在此浏览器。",
+    "settingsSave": "保存",
+    "settingsReset": "恢复默认",
+    "settingsResetOk": "已恢复默认设置",
+    "settingsSaved": "设置已保存",
+    "settingsRequired": "请填写必填项",
+    "settingsNeedMethod": "请至少开启一种支付方式",
+    "settingsNeedBank": "转账需至少启用一个银行账户",
+    "settingsNeedPromptPay": "请输入 PromptPay ID",
+    "settingsPhone": "电话",
+    "settingsEmail": "邮箱",
+    "settingsLine": "LINE ID",
+    "settingsAddress": "地址",
+    "settingsEnabled": "启用",
+    "settingsBankName": "银行名称",
+    "settingsAccountName": "账户名",
+    "settingsAccountNumber": "账号",
+    "settingsBranch": "分行",
+    "settingsPromptPayId": "PromptPay ID",
+    "settingsPromptPayName": "PromptPay 账户名",
+    "settingsDailyRate": "包日价格（泰铢）",
+    "settingsHourlyRate": "小时价格（泰铢）",
+    "settingsMinHours": "最少小时",
+    "settingsFreeHours": "免费取消（出发前小时）",
+    "settingsLatePercent": "逾期取消费（%）",
+    "settingsNoShowPercent": "未出现费用（%）",
+    "settingsRefundDays": "退款工作日",
+    "settingsNoStaff": "暂无额外员工",
+    "settingsStaffName": "姓名",
+    "settingsStaffRole": "角色",
+    "settingsAddStaff": "添加员工",
+    "settingsStaffAdded": "已添加员工账号",
+    "settingsStaffRemoved": "已删除员工账号",
+    "settingsStaffDup": "该用户名已被使用",
+    "settingsRemove": "删除",
+    "settingsCancel": "取消",
+    "settingsMethod": {
+      "bank-transfer": "银行转账",
+      "card": "银行卡",
+      "promptpay": "PromptPay",
+      "cash": "上车付现"
+    },
+    "settingsRole": {
+      "admin": "管理员",
+      "ops": "运营",
+      "finance": "财务",
+      "driver": "司机"
+    },
+    "driversAdd": "添加司机",
+    "driversEdit": "编辑司机",
+    "driversLine": "LINE ID",
+    "driversPlate": "车牌",
+    "driversRemoved": "已删除司机",
+    "catalogIssue": {
+      "empty": "文件为空",
+      "missingModel": "缺少车型",
+      "badCategory": "类别无效",
+      "badLocation": "未知出发地/目的地",
+      "sameLocation": "出发地与目的地相同",
+      "missingPrice": "缺少车型价格"
+    }
   }
 }

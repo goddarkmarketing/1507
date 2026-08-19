@@ -10,15 +10,20 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Settings,
+  Table2,
   Users,
+  Truck,
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { useAdminStore } from "@/lib/admin/store";
+import { useSettingsStore } from "@/lib/admin/settings-store";
 import { useBookingStore } from "@/lib/booking/store";
 import { DEMO_ADMIN } from "@/lib/admin/seed";
+import type { StaffRole } from "@/lib/admin/settings";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
@@ -27,12 +32,35 @@ const NAV_MAIN = [
   { href: "/admin/bookings", key: "bookings", icon: ClipboardList },
   { href: "/admin/payments", key: "payments", icon: CreditCard },
   { href: "/admin/schedule", key: "schedule", icon: CalendarDays },
+  { href: "/admin/prices", key: "prices", icon: Table2 },
+  { href: "/admin/vehicles", key: "vehicles", icon: Truck },
 ] as const;
 
 const NAV_TEAM = [
   { href: "/admin/drivers", key: "drivers", icon: Car },
   { href: "/admin/customers", key: "customers", icon: Users },
 ] as const;
+
+const NAV_SYSTEM = [
+  { href: "/admin/settings", key: "settings", icon: Settings },
+] as const;
+
+function canSee(role: StaffRole | null, href: string) {
+  if (!role || role === "admin") return true;
+  if (role === "finance") {
+    return [
+      "/admin/dashboard",
+      "/admin/payments",
+      "/admin/prices",
+    ].includes(href);
+  }
+  if (role === "driver") {
+    return ["/admin/dashboard", "/admin/schedule", "/admin/bookings"].includes(
+      href
+    );
+  }
+  return href !== "/admin/settings";
+}
 
 function NavLink({
   href,
@@ -74,6 +102,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const authenticated = useAdminStore((s) => s.authenticated);
+  const staffRole = useAdminStore((s) => s.staffRole);
+  const staffName = useAdminStore((s) => s.staffName);
   const login = useAdminStore((s) => s.login);
   const logout = useAdminStore((s) => s.logout);
   const syncCustomerBookings = useAdminStore((s) => s.syncCustomerBookings);
@@ -85,12 +115,23 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const finish = () => setReady(true);
-    if (useAdminStore.persist.hasHydrated()) {
-      finish();
-      return;
-    }
-    return useAdminStore.persist.onFinishHydration(finish);
+    let alive = true;
+    const finish = () => {
+      if (
+        !alive ||
+        !useAdminStore.persist.hasHydrated() ||
+        !useSettingsStore.persist.hasHydrated()
+      ) {
+        return;
+      }
+      setReady(true);
+    };
+    finish();
+    useAdminStore.persist.onFinishHydration(finish);
+    useSettingsStore.persist.onFinishHydration(finish);
+    return () => {
+      alive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -109,7 +150,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     pathname === href || pathname.startsWith(`${href}/`);
 
   const pageTitle = (() => {
-    const all = [...NAV_MAIN, ...NAV_TEAM];
+    const all = [...NAV_MAIN, ...NAV_TEAM, ...NAV_SYSTEM];
     const hit = all.find((item) => isActive(item.href));
     return hit ? t(`nav.${hit.key}`) : t("panelTitle");
   })();
@@ -198,7 +239,11 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
           <p className="mt-1 truncate text-base font-semibold tracking-tight text-zinc-950">
             {t("panelTitle")}
           </p>
-          <p className="mt-0.5 text-xs text-zinc-400">{t("opsLabel")}</p>
+          <p className="mt-0.5 text-xs text-zinc-400">
+            {staffName
+              ? `${staffName} · ${t(`settingsRole.${staffRole ?? "admin"}`)}`
+              : t("opsLabel")}
+          </p>
         </div>
         <button
           type="button"
@@ -215,33 +260,59 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
           {t("navGroupOps")}
         </p>
         <nav className="space-y-0.5">
-          {NAV_MAIN.map((item) => (
-            <NavLink
-              key={item.href}
-              href={item.href}
-              label={t(`nav.${item.key}`)}
-              icon={item.icon}
-              active={isActive(item.href)}
-              onClick={() => setMenuOpen(false)}
-            />
-          ))}
+          {NAV_MAIN.filter((item) => canSee(staffRole, item.href)).map(
+            (item) => (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={t(`nav.${item.key}`)}
+                icon={item.icon}
+                active={isActive(item.href)}
+                onClick={() => setMenuOpen(false)}
+              />
+            )
+          )}
         </nav>
 
         <p className="mt-6 px-3 pb-2 text-[10px] font-semibold tracking-[0.12em] text-zinc-400 uppercase">
           {t("navGroupTeam")}
         </p>
         <nav className="space-y-0.5">
-          {NAV_TEAM.map((item) => (
-            <NavLink
-              key={item.href}
-              href={item.href}
-              label={t(`nav.${item.key}`)}
-              icon={item.icon}
-              active={isActive(item.href)}
-              onClick={() => setMenuOpen(false)}
-            />
-          ))}
+          {NAV_TEAM.filter((item) => canSee(staffRole, item.href)).map(
+            (item) => (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={t(`nav.${item.key}`)}
+                icon={item.icon}
+                active={isActive(item.href)}
+                onClick={() => setMenuOpen(false)}
+              />
+            )
+          )}
         </nav>
+
+        {NAV_SYSTEM.some((item) => canSee(staffRole, item.href)) ? (
+          <>
+            <p className="mt-6 px-3 pb-2 text-[10px] font-semibold tracking-[0.12em] text-zinc-400 uppercase">
+              {t("navGroupSystem")}
+            </p>
+            <nav className="space-y-0.5">
+              {NAV_SYSTEM.filter((item) => canSee(staffRole, item.href)).map(
+                (item) => (
+                  <NavLink
+                    key={item.href}
+                    href={item.href}
+                    label={t(`nav.${item.key}`)}
+                    icon={item.icon}
+                    active={isActive(item.href)}
+                    onClick={() => setMenuOpen(false)}
+                  />
+                )
+              )}
+            </nav>
+          </>
+        ) : null}
       </div>
 
       <div className="mt-auto space-y-1 border-t border-zinc-200/80 px-3 py-4">

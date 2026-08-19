@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ReviewerAvatar } from "@/components/shared/reviewer-avatar";
 import { reviews } from "@/lib/data/content";
 import { cn } from "@/lib/utils";
 import type { Review } from "@/lib/types";
@@ -22,16 +23,21 @@ function ReviewCard({ review }: { review: Review }) {
   return (
     <Card className="h-full">
       <CardHeader>
-        <div className="flex items-center gap-1">
-          {Array.from({ length: review.rating }).map((_, i) => (
-            <Star key={i} className="size-4 fill-amber-400 text-amber-400" />
-          ))}
+        <div className="flex items-start gap-3">
+          <ReviewerAvatar id={review.id} name={review.name} />
+          <div className="min-w-0 space-y-1">
+            <div className="flex items-center gap-1">
+              {Array.from({ length: review.rating }).map((_, i) => (
+                <Star key={i} className="size-4 fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+            <CardTitle className="text-base">{review.name}</CardTitle>
+            <CardDescription>
+              {t(`items.${review.id}.country` as "items.1.country")} ·{" "}
+              {t(`items.${review.id}.route` as "items.1.route")}
+            </CardDescription>
+          </div>
         </div>
-        <CardTitle className="text-base">{review.name}</CardTitle>
-        <CardDescription>
-          {t(`items.${review.id}.country` as "items.1.country")} ·{" "}
-          {t(`items.${review.id}.route` as "items.1.route")}
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">

@@ -15,6 +15,8 @@ export const seedDrivers: Driver[] = [
     vehicleCodes: ["ECO", "PREM", "SUV"],
     active: true,
     note: "Airport specialist · English",
+    lineId: "@somchai.driver",
+    plate: "กบ 1234",
   },
   {
     id: "drv-02",
@@ -23,6 +25,8 @@ export const seedDrivers: Driver[] = [
     vehicleCodes: ["VAN", "VIP", "SUV"],
     active: true,
     note: "Groups & pier runs",
+    lineId: "@nattapong.k",
+    plate: "กบ 5566",
   },
   {
     id: "drv-03",
@@ -31,6 +35,8 @@ export const seedDrivers: Driver[] = [
     vehicleCodes: ["ECO", "PREM", "SIG"],
     active: true,
     note: "Hotel & resort drops",
+    lineId: "@anong.s",
+    plate: "กบ 7788",
   },
   {
     id: "drv-04",
@@ -39,6 +45,8 @@ export const seedDrivers: Driver[] = [
     vehicleCodes: ["VAN", "VIP", "BUS"],
     active: false,
     note: "Inter-province · offline today",
+    lineId: "@wichai.t",
+    plate: "กบ 9900",
   },
 ];
 

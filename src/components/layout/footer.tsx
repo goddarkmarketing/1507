@@ -6,11 +6,13 @@ import { Separator } from "@/components/ui/separator";
 import { SiteLogo } from "@/components/shared/site-logo";
 import { Link } from "@/i18n/navigation";
 import { siteConfig, navItems } from "@/lib/site-config";
+import { useSiteContact } from "@/lib/admin/settings-store";
 
 export function Footer() {
   const t = useTranslations("Nav");
   const tf = useTranslations("Footer");
   const ts = useTranslations("Site");
+  const site = useSiteContact();
   const travelLinks = navItems.filter((n) => n.group === "travel");
   const companyLinks = navItems.filter(
     (n) =>
@@ -90,15 +92,15 @@ export function Footer() {
             </li>
             <li className="flex items-center gap-2 pt-2">
               <Phone className="size-4 shrink-0" />
-              {siteConfig.phone}
+              {site.phone}
             </li>
             <li className="flex items-center gap-2">
               <Mail className="size-4 shrink-0" />
-              {siteConfig.email}
+              {site.email}
             </li>
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 size-4 shrink-0" />
-              {siteConfig.address}
+              {site.address}
             </li>
           </ul>
         </div>

@@ -18,7 +18,7 @@ import { SiteLogo } from "@/components/shared/site-logo";
 import { getLocation } from "@/lib/data/locations";
 import { vehicles } from "@/lib/data/vehicles";
 import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
-import { siteConfig } from "@/lib/site-config";
+import { useSiteContact } from "@/lib/admin/settings-store";
 import { assetPath } from "@/lib/utils";
 import type { Booking } from "@/lib/types";
 
@@ -32,6 +32,7 @@ export function EVoucher({ booking }: EVoucherProps) {
   const tSite = useTranslations("Site");
   const locName = useLocationName();
   const { name: vehicleName } = useVehicleCopy();
+  const site = useSiteContact();
   const qrData = JSON.stringify({
     bookingNumber: booking.bookingNumber,
     status: booking.status,
@@ -90,7 +91,7 @@ export function EVoucher({ booking }: EVoucherProps) {
               <Phone className="mt-0.5 size-4 text-primary" />
               <div>
                 <p className="text-sm font-medium">{t("support")}</p>
-                <p className="text-sm text-muted-foreground">{siteConfig.phone}</p>
+                <p className="text-sm text-muted-foreground">{site.phone}</p>
               </div>
             </div>
           </div>
@@ -178,9 +179,11 @@ export function EVoucher({ booking }: EVoucherProps) {
               </p>
               <p>
                 <span className="text-muted-foreground">{t("status")}:</span>{" "}
-                {booking.payment.status === "paid"
-                  ? t("statusPaid")
-                  : t("statusAwaiting")}
+                {booking.payment.method === "cash"
+                  ? t("statusCash")
+                  : booking.payment.status === "paid"
+                    ? t("statusPaid")
+                    : t("statusAwaiting")}
               </p>
               {booking.payment.bankSymbol && (
                 <div className="flex items-center gap-2">

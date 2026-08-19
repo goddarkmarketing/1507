@@ -1,4 +1,10 @@
 import type { PaymentMethod } from "@/lib/types";
+import {
+  BANK_ICONS,
+  defaultSiteSettings,
+  type BankAccountSettings,
+} from "@/lib/admin/settings";
+import { getActivePaymentSettings } from "@/lib/admin/settings-store";
 
 export type ThaiBankSymbol = "KBANK" | "SCB" | "BBL" | "PromptPay";
 
@@ -22,59 +28,59 @@ export const paymentMethodOptions: {
     label: "PromptPay",
     description: "Scan QR or pay to our PromptPay ID.",
   },
+  {
+    value: "cash",
+    label: "Cash to driver",
+    description: "Pay in THB when you meet the driver.",
+  },
 ];
+
+export function getEnabledPaymentMethods(): PaymentMethod[] {
+  const methods = getActivePaymentSettings().methods;
+  return paymentMethodOptions
+    .map((opt) => opt.value)
+    .filter((value) => methods[value]);
+}
+
+export function getBankAccounts(): (BankAccountSettings & { icon: string })[] {
+  return getActivePaymentSettings()
+    .banks.filter((bank) => bank.enabled)
+    .map((bank) => ({ ...bank, icon: BANK_ICONS[bank.symbol] }));
+}
+
+export function getPromptPay() {
+  const payment = getActivePaymentSettings();
+  const id = payment.promptPayId || defaultSiteSettings().payment.promptPayId;
+  return {
+    id,
+    idType: "mobile" as const,
+    accountName: payment.promptPayAccountName,
+    icon: "/banks/PromptPay.png",
+    qrPayload: (amount: number, bookingRef: string) =>
+      `PROMPTPAY|MOCK|${id}|THB${amount}|REF:${bookingRef}`,
+  };
+}
 
 /**
- * Mock company bank accounts.
+ * Built-in demo accounts — used as the settings default.
  * Icons from https://github.com/casperstack/thai-banks-logo
- * (copied into /public/banks from thai-banks-logo package)
  */
-export const mockBankAccounts: {
-  symbol: Exclude<ThaiBankSymbol, "PromptPay">;
-  bank: string;
-  accountName: string;
-  accountNumber: string;
-  branch: string;
-  icon: string;
-}[] = [
-  {
-    symbol: "KBANK",
-    bank: "Kasikorn Bank (KBank)",
-    accountName: "KRABI LINKS TAXI CO., LTD.",
-    accountNumber: "123-4-56789-0",
-    branch: "Ao Nang",
-    icon: "/banks/KBANK.png",
-  },
-  {
-    symbol: "SCB",
-    bank: "Siam Commercial Bank (SCB)",
-    accountName: "KRABI LINKS TAXI CO., LTD.",
-    accountNumber: "987-6-54321-0",
-    branch: "Krabi Town",
-    icon: "/banks/SCB.png",
-  },
-  {
-    symbol: "BBL",
-    bank: "Bangkok Bank",
-    accountName: "KRABI LINKS TAXI CO., LTD.",
-    accountNumber: "456-7-89123-4",
-    branch: "Krabi Airport",
-    icon: "/banks/BBL.png",
-  },
-];
-
-/** Mock PromptPay details (demo only) */
-const PROMPTPAY_ID = "0812345678";
+export const mockBankAccounts = defaultSiteSettings().payment.banks.map(
+  (bank) => ({
+    ...bank,
+    icon: BANK_ICONS[bank.symbol],
+  })
+);
 
 export const mockPromptPay = {
-  id: PROMPTPAY_ID,
+  id: defaultSiteSettings().payment.promptPayId,
   idType: "mobile" as const,
-  accountName: "KRABI LINKS TAXI CO., LTD.",
+  accountName: defaultSiteSettings().payment.promptPayAccountName,
   icon: "/banks/PromptPay.png",
-  /** Payload shown in QR — not a real EMVCo string */
   qrPayload: (amount: number, bookingRef: string) =>
-    `PROMPTPAY|MOCK|${PROMPTPAY_ID}|THB${amount}|REF:${bookingRef}`,
+    `PROMPTPAY|MOCK|${defaultSiteSettings().payment.promptPayId}|THB${amount}|REF:${bookingRef}`,
 };
 
 export const MAX_TRANSFER_PROOF_BYTES = 1.5 * 1024 * 1024;
-export const TRANSFER_PROOF_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf";
+export const TRANSFER_PROOF_ACCEPT =
+  "image/jpeg,image/png,image/webp,application/pdf";

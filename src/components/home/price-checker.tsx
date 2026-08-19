@@ -23,10 +23,11 @@ import { Separator } from "@/components/ui/separator";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { locations } from "@/lib/data/locations";
-import { vehicles } from "@/lib/data/vehicles";
+import { getActiveTariffVehicles } from "@/lib/data/vehicles";
 import { calculatePrice } from "@/lib/data/pricing";
 import { useVehicleCopy, useLocationName } from "@/lib/i18n-labels";
 import type { VehicleCode } from "@/lib/types";
+import { useCatalogStore } from "@/lib/admin/catalog-store";
 
 type TripMode = "one-way" | "round-trip";
 
@@ -51,9 +52,19 @@ export function PriceChecker({
   const { label: vehicleLabel } = useVehicleCopy();
   const locName = useLocationName();
   const router = useRouter();
-  const fleet = vehicleCodes?.length
-    ? vehicles.filter((v) => vehicleCodes.includes(v.code))
-    : vehicles;
+
+  const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
+  const fleet = vehiclesRev
+    ? vehicleCodes?.length
+      ? getActiveTariffVehicles().filter((v) =>
+          vehicleCodes.includes(v.code)
+        )
+      : getActiveTariffVehicles()
+    : vehicleCodes?.length
+      ? getActiveTariffVehicles().filter((v) =>
+          vehicleCodes.includes(v.code)
+        )
+      : getActiveTariffVehicles();
   const initialVehicle =
     (fleet[0]?.code as VehicleCode | undefined) ?? "ECO";
 
@@ -214,7 +225,7 @@ export function PriceChecker({
             <SelectTrigger className="h-11 w-full">
               <SelectValue placeholder={t("vehicle")}>
                 {(() => {
-                  const v = vehicles.find((item) => item.code === vehicleCode);
+                  const v = fleet.find((item) => item.code === vehicleCode);
                   return v ? vehicleLabel(v) : t("vehicle");
                 })()}
               </SelectValue>

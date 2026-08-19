@@ -2,11 +2,9 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import {
-  DEMO_ADMIN,
-  seedAdminBookings,
-  seedDrivers,
-} from "@/lib/admin/seed";
+import { DEMO_ADMIN, seedAdminBookings, seedDrivers } from "@/lib/admin/seed";
+import { getActiveStaff } from "@/lib/admin/settings-store";
+import type { StaffRole } from "@/lib/admin/settings";
 import {
   markPayment,
   withAdminFields,
@@ -19,6 +17,8 @@ import type { Booking } from "@/lib/types";
 
 interface AdminState {
   authenticated: boolean;
+  staffRole: StaffRole | null;
+  staffName: string | null;
   bookings: AdminBooking[];
   drivers: Driver[];
   login: (username: string, password: string) => boolean;
@@ -29,6 +29,8 @@ interface AdminState {
   setOpsStatus: (bookingId: string, opsStatus: OpsStatus) => void;
   verifyPayment: (bookingId: string, approve: boolean) => void;
   toggleDriverActive: (driverId: string) => void;
+  upsertDriver: (driver: Driver) => void;
+  removeDriver: (driverId: string) => void;
   resetDemoData: () => void;
 }
 
@@ -61,18 +63,35 @@ export const useAdminStore = create<AdminState>()(
   persist(
     (set, get) => ({
       authenticated: false,
+      staffRole: null,
+      staffName: null,
       bookings: seedAdminBookings,
       drivers: seedDrivers,
 
       login: (username, password) => {
-        const ok =
-          username.trim() === DEMO_ADMIN.username &&
-          password === DEMO_ADMIN.password;
-        if (ok) set({ authenticated: true });
-        return ok;
+        const user = username.trim();
+        if (user === DEMO_ADMIN.username && password === DEMO_ADMIN.password) {
+          set({
+            authenticated: true,
+            staffRole: "admin",
+            staffName: "Admin",
+          });
+          return true;
+        }
+        const match = getActiveStaff().find(
+          (person) => person.username === user && person.password === password
+        );
+        if (!match) return false;
+        set({
+          authenticated: true,
+          staffRole: match.role,
+          staffName: match.name,
+        });
+        return true;
       },
 
-      logout: () => set({ authenticated: false }),
+      logout: () =>
+        set({ authenticated: false, staffRole: null, staffName: null }),
 
       syncCustomerBookings: (customerBookings) => {
         set({
@@ -164,6 +183,24 @@ export const useAdminStore = create<AdminState>()(
         });
       },
 
+      upsertDriver: (driver) => {
+        const exists = get().drivers.some((d) => d.id === driver.id);
+        set({
+          drivers: exists
+            ? get().drivers.map((d) => (d.id === driver.id ? driver : d))
+            : [...get().drivers, driver],
+        });
+      },
+
+      removeDriver: (driverId) => {
+        set({
+          drivers: get().drivers.filter((d) => d.id !== driverId),
+          bookings: get().bookings.map((b) =>
+            b.driverId === driverId ? { ...b, driverId: null } : b
+          ),
+        });
+      },
+
       resetDemoData: () =>
         set({
           bookings: seedAdminBookings,
@@ -174,6 +211,8 @@ export const useAdminStore = create<AdminState>()(
       name: "krabi-links-admin",
       partialize: (state) => ({
         authenticated: state.authenticated,
+        staffRole: state.staffRole,
+        staffName: state.staffName,
         bookings: state.bookings,
         drivers: state.drivers,
       }),

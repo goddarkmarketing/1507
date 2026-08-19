@@ -18,6 +18,7 @@ import {
 import { useTranslations } from "next-intl";
 import { PriceChecker } from "@/components/home/price-checker";
 import { PublicImage } from "@/components/shared/public-image";
+import { ReviewerAvatar } from "@/components/shared/reviewer-avatar";
 import { VehicleCard } from "@/components/shared/vehicle-card";
 import {
   Accordion,
@@ -39,6 +40,7 @@ import {
 } from "@/lib/site-config";
 import type { VehicleCode } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { AirportMeetingPoint } from "@/components/transfers/airport-meeting-point";
 
 interface TransferPageTemplateProps {
   pageKey: TransferPageKey;
@@ -145,6 +147,8 @@ export function TransferPageTemplate({ pageKey }: TransferPageTemplateProps) {
           </div>
         </div>
       </section>
+
+      {pageKey === "airport-transfer" ? <AirportMeetingPoint /> : null}
 
       {/* How it works */}
       <section className="border-b bg-zinc-50/80">
@@ -417,15 +421,22 @@ export function TransferPageTemplate({ pageKey }: TransferPageTemplateProps) {
                   )}
                   &rdquo;
                 </p>
-                <footer className="mt-4 text-xs text-muted-foreground">
-                  <span className="font-medium text-zinc-900">
-                    {review.name}
-                  </span>
-                  <span className="mx-1.5">·</span>
-                  {tr(`items.${review.id}.country` as "items.1.country")}
-                  <p className="mt-1">
-                    {tr(`items.${review.id}.route` as "items.1.route")}
-                  </p>
+                <footer className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
+                  <ReviewerAvatar
+                    id={review.id}
+                    name={review.name}
+                    className="size-10"
+                  />
+                  <div className="min-w-0">
+                    <span className="font-medium text-zinc-900">
+                      {review.name}
+                    </span>
+                    <span className="mx-1.5">·</span>
+                    {tr(`items.${review.id}.country` as "items.1.country")}
+                    <p className="mt-0.5">
+                      {tr(`items.${review.id}.route` as "items.1.route")}
+                    </p>
+                  </div>
                 </footer>
               </blockquote>
             ))}

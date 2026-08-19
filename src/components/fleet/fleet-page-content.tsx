@@ -16,17 +16,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { vehicles } from "@/lib/data/vehicles";
+import { tariffVehicles } from "@/lib/data/vehicles";
 import {
   formatRate,
+  getActiveRentalPackages,
   rentalCategories,
-  rentalPackages,
 } from "@/lib/data/rental-packages";
+import { useCatalogStore } from "@/lib/admin/catalog-store";
 import { cn } from "@/lib/utils";
 import type { RentalCategory } from "@/lib/types";
 
 const sectionFilterIds = ["all", "rental", "transfer"] as const;
-const capacityFilterIds = ["all", "1-3", "1-4", "1-8", "1-20"] as const;
+const capacityFilterIds = ["all", "1-3", "1-4", "1-6", "1-8", "9-20"] as const;
 
 const rentalCatKey: Record<
   RentalCategory,
@@ -71,6 +72,11 @@ function FilterChip({
 
 export function FleetPageContent() {
   const t = useTranslations("FleetUi");
+  const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
+  const packages = useMemo(
+    () => getActiveRentalPackages(),
+    [rentalRev]
+  );
   const [query, setQuery] = useState("");
   const [section, setSection] =
     useState<(typeof sectionFilterIds)[number]>("all");
@@ -91,12 +97,12 @@ export function FleetPageContent() {
 
   const capacityLabel = (id: (typeof capacityFilterIds)[number]) => {
     if (id === "all") return t("seatsAll");
-    if (id === "1-20") return t("seatsGroup");
+    if (id === "9-20") return t("seatsGroup");
     return id.replace("-", "–");
   };
 
   const filteredRentals = useMemo(() => {
-    return rentalPackages.filter((pkg) => {
+    return packages.filter((pkg) => {
       const categoryMatch =
         rentalCategory === "all" || pkg.category === rentalCategory;
       const catLabel = t(rentalCatKey[pkg.category]).toLowerCase();
@@ -108,10 +114,10 @@ export function FleetPageContent() {
         pkg.engine.toLowerCase().includes(q);
       return categoryMatch && textMatch;
     });
-  }, [q, rentalCategory, t]);
+  }, [q, rentalCategory, t, packages]);
 
   const filteredTransfers = useMemo(() => {
-    return vehicles.filter((v) => {
+    return tariffVehicles.filter((v) => {
       const textMatch =
         !q ||
         v.code.toLowerCase().includes(q) ||

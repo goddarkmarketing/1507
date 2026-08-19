@@ -6,10 +6,10 @@ import { useTranslations } from "next-intl";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Input } from "@/components/ui/input";
 import { VehicleCard } from "@/components/shared/vehicle-card";
-import { vehicles } from "@/lib/data/vehicles";
+import { tariffVehicles } from "@/lib/data/vehicles";
 import { cn } from "@/lib/utils";
 
-const capacityFilterIds = ["all", "1-3", "1-4", "1-8", "1-20"] as const;
+const capacityFilterIds = ["all", "1-3", "1-4", "1-6", "1-8", "9-20"] as const;
 
 function matchesCapacity(passengers: string, filterId: string) {
   if (filterId === "all") return true;
@@ -29,13 +29,14 @@ export function HomeFleet() {
     all: t("fleetFilterAll"),
     "1-3": t("fleetFilter13"),
     "1-4": t("fleetFilter14"),
+    "1-6": t("fleetFilter16"),
     "1-8": t("fleetFilter18"),
-    "1-20": t("fleetFilterGroup"),
+    "9-20": t("fleetFilterGroup"),
   };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return vehicles.filter((v) => {
+    return tariffVehicles.filter((v) => {
       const textMatch =
         !q ||
         v.code.toLowerCase().includes(q) ||
@@ -52,7 +53,7 @@ export function HomeFleet() {
         <div>
           <h2 className="text-3xl font-bold">{tp("fleet")}</h2>
           <p className="mt-2 text-muted-foreground">
-            {t("fleetSubtitle", { count: vehicles.length })}
+            {t("fleetSubtitle", { count: tariffVehicles.length })}
           </p>
         </div>
         <ButtonLink variant="outline" href="/fleet">

@@ -5,15 +5,13 @@ import { PublicImage } from "@/components/shared/public-image";
 import { cn } from "@/lib/utils";
 
 const heroCars = [
-  { src: "/vehicles/toyota/yarisativ.webp", alt: "Toyota Yaris Ativ" },
-  { src: "/vehicles/toyota/yaris.webp", alt: "Toyota Yaris" },
   { src: "/vehicles/toyota/altis.webp", alt: "Toyota Corolla Altis" },
   { src: "/vehicles/toyota/camry.webp", alt: "Toyota Camry" },
-  { src: "/vehicles/toyota/yariscross.webp", alt: "Toyota Yaris Cross" },
-  { src: "/vehicles/toyota/corollacross.webp", alt: "Toyota Corolla Cross" },
-  { src: "/vehicles/toyota/veloz.webp", alt: "Toyota Veloz" },
-  { src: "/vehicles/toyota/innovazenix.webp", alt: "Toyota Innova Zenix" },
+  { src: "/vehicles/toyota/fortuner.webp", alt: "Toyota Fortuner" },
+  { src: "/vehicles/toyota/hiace.webp", alt: "Toyota HiAce" },
+  { src: "/vehicles/toyota/commuter.webp", alt: "Toyota Commuter" },
   { src: "/vehicles/toyota/alphard.webp", alt: "Toyota Alphard" },
+  { src: "/vehicles/toyota/coaster.webp", alt: "Toyota Coaster" },
 ];
 
 export function HeroCarSlider() {

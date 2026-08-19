@@ -37,8 +37,10 @@ import { HomeFleet } from "@/components/home/home-fleet";
 import { HomeArticles } from "@/components/home/home-articles";
 import { HomeReviews } from "@/components/home/home-reviews";
 import { HomeTravelHubs } from "@/components/home/home-travel-hubs";
+import { PublicImage } from "@/components/shared/public-image";
 import { Link } from "@/i18n/navigation";
 import { siteConfig } from "@/lib/site-config";
+import { useSiteContact } from "@/lib/admin/settings-store";
 import { faqIds } from "@/lib/data/content";
 
 const serviceDefs = [
@@ -62,6 +64,7 @@ export function HomePage() {
   const tn = useTranslations("Nav");
   const tc = useTranslations("Common");
   const tFaq = useTranslations("Faq");
+  const site = useSiteContact();
 
   return (
     <>
@@ -78,7 +81,7 @@ export function HomePage() {
                 {t("privateTransfer")}
               </p>
               <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-                {t("startFrom")} <span className="text-gold-gradient">฿968</span>
+                {t("startFrom")} <span className="text-gold-gradient">฿400</span>
               </h1>
               <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {t("heroBody")}{" "}
@@ -127,31 +130,39 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-b bg-gold-gradient">
-        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:flex-row lg:items-center lg:gap-10 lg:px-8">
+      <section className="relative overflow-hidden border-b">
+        <PublicImage
+          src="/images/home-contact-bg.png"
+          alt=""
+          fill
+          unoptimized
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-black/65" />
+        <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 px-4 py-12 sm:px-6 sm:py-16 lg:flex-row lg:items-center lg:gap-10 lg:px-8">
           <div className="max-w-xl space-y-3 text-left">
-            <p className="text-sm font-semibold tracking-[0.2em] text-primary-foreground/80 uppercase">
+            <p className="text-sm font-semibold tracking-[0.2em] text-white/75 uppercase">
               {siteConfig.name}
             </p>
-            <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl lg:text-5xl">
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
               {t("contactTitle")}
             </h2>
-            <p className="text-sm text-primary-foreground/85 sm:text-base">
+            <p className="text-sm text-white/85 sm:text-base">
               {t("contactBody")}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center justify-start gap-3 lg:justify-end">
             <ButtonLink
-              href={`tel:${siteConfig.phone.replace(/\s/g, "")}`}
+              href={`tel:${site.phone.replace(/\s/g, "")}`}
               size="lg"
-              className="bg-zinc-950 text-white shadow-md hover:bg-zinc-900 hover:brightness-100"
+              className="shadow-md"
             >
               <Phone data-icon="inline-start" />
               {tc("callNow")}
             </ButtonLink>
             <ButtonLink
-              href={`https://line.me/ti/p/${encodeURIComponent(siteConfig.line)}`}
+              href={`https://line.me/ti/p/${encodeURIComponent(site.line)}`}
               target="_blank"
               rel="noopener noreferrer"
               size="lg"
@@ -162,12 +173,12 @@ export function HomePage() {
             </ButtonLink>
             <div className="rounded-xl bg-white p-2 shadow-md">
               <QRCodeSVG
-                value={`https://line.me/ti/p/${encodeURIComponent(siteConfig.line)}`}
+                value={`https://line.me/ti/p/${encodeURIComponent(site.line)}`}
                 size={72}
                 level="M"
                 bgColor="#ffffff"
                 fgColor="#09090b"
-                title={`LINE ${siteConfig.line}`}
+                title={`LINE ${site.line}`}
               />
             </div>
           </div>
@@ -200,14 +211,25 @@ export function HomePage() {
       <HomeReviews />
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-zinc-50 px-6 py-12 text-center ring-1 ring-zinc-200/80 sm:px-10 sm:py-14">
-          <h2 className="text-3xl font-bold">{t("ctaTitle")}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            {t("ctaBody")}
-          </p>
-          <ButtonLink size="lg" className="mt-6" href="/booking">
-            {tc("startBooking")} <ArrowRight className="size-4" />
-          </ButtonLink>
+        <div className="relative overflow-hidden rounded-2xl px-6 py-12 text-center sm:px-10 sm:py-16">
+          <PublicImage
+            src="/images/home-cta-bg.png"
+            alt=""
+            fill
+            unoptimized
+            className="object-cover object-center"
+          />
+          <div className="relative z-10">
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+              {t("ctaTitle")}
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-white/85">
+              {t("ctaBody")}
+            </p>
+            <ButtonLink size="lg" className="mt-6" href="/booking">
+              {tc("startBooking")} <ArrowRight className="size-4" />
+            </ButtonLink>
+          </div>
         </div>
       </section>
 

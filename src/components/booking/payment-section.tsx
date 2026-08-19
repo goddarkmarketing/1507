@@ -6,6 +6,7 @@ import { PublicImage } from "@/components/shared/public-image";
 import {
   Building2,
   CreditCard,
+  Banknote,
   QrCode,
   Copy,
   Check,
@@ -23,10 +24,12 @@ import { cn } from "@/lib/utils";
 import {
   MAX_TRANSFER_PROOF_BYTES,
   TRANSFER_PROOF_ACCEPT,
-  mockBankAccounts,
-  mockPromptPay,
+  getBankAccounts,
+  getEnabledPaymentMethods,
+  getPromptPay,
   paymentMethodOptions,
 } from "@/lib/data/payment";
+import { useSettingsRevision } from "@/lib/admin/settings-store";
 import type {
   CardPaymentDetails,
   PaymentMethod,
@@ -37,15 +40,20 @@ const methodIcons = {
   "bank-transfer": Building2,
   card: CreditCard,
   promptpay: QrCode,
+  cash: Banknote,
 } as const;
 
 const methodCopyKey: Record<
   PaymentMethod,
-  { label: "bankTransfer" | "card" | "promptpay"; desc: "bankTransferDesc" | "cardDesc" | "promptpayDesc" }
+  {
+    label: "bankTransfer" | "card" | "promptpay" | "cash";
+    desc: "bankTransferDesc" | "cardDesc" | "promptpayDesc" | "cashDesc";
+  }
 > = {
   "bank-transfer": { label: "bankTransfer", desc: "bankTransferDesc" },
   card: { label: "card", desc: "cardDesc" },
   promptpay: { label: "promptpay", desc: "promptpayDesc" },
+  cash: { label: "cash", desc: "cashDesc" },
 };
 
 interface PaymentSectionProps {
@@ -127,10 +135,14 @@ export function PaymentSection({
 }: PaymentSectionProps) {
   const t = useTranslations("Payment");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  useSettingsRevision();
+  const enabledMethods = getEnabledPaymentMethods();
+  const bankAccounts = getBankAccounts();
+  const promptPay = getPromptPay();
 
   const promptPayQr = useMemo(
-    () => mockPromptPay.qrPayload(amount, transferRef || "DRAFT"),
-    [amount, transferRef]
+    () => promptPay.qrPayload(amount, transferRef || "DRAFT"),
+    [amount, transferRef, promptPay]
   );
 
   const handleProofFile = async (file: File | undefined) => {
@@ -167,7 +179,9 @@ export function PaymentSection({
         onValueChange={(v) => v && onMethodChange(v as PaymentMethod)}
         className="grid gap-3"
       >
-        {paymentMethodOptions.map((opt) => {
+        {paymentMethodOptions
+          .filter((opt) => enabledMethods.includes(opt.value))
+          .map((opt) => {
           const Icon = methodIcons[opt.value];
           const selected = method === opt.value;
           const copy = methodCopyKey[opt.value];
@@ -189,7 +203,7 @@ export function PaymentSection({
               />
               {opt.value === "promptpay" ? (
                 <PublicImage
-                  src={mockPromptPay.icon}
+                  src={promptPay.icon}
                   alt={t("promptpay")}
                   width={28}
                   height={28}
@@ -229,7 +243,7 @@ export function PaymentSection({
           <div className="space-y-2">
             <p className="text-sm font-medium">{t("selectAccount")}</p>
             <div className="grid gap-2">
-              {mockBankAccounts.map((acc) => {
+              {bankAccounts.map((acc) => {
                 const selected = transferBankSymbol === acc.symbol;
                 return (
                   <button
@@ -419,7 +433,7 @@ export function PaymentSection({
         <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
           <div className="flex items-center gap-2">
             <PublicImage
-              src={mockPromptPay.icon}
+              src={promptPay.icon}
               alt={t("promptpay")}
               width={32}
               height={32}
@@ -439,7 +453,7 @@ export function PaymentSection({
                 <span className="text-muted-foreground">
                   {t("accountName")}:
                 </span>{" "}
-                {mockPromptPay.accountName}
+                {promptPay.accountName}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <p>
@@ -447,17 +461,23 @@ export function PaymentSection({
                     {t("promptpayId")}:
                   </span>{" "}
                   <span className="font-mono font-semibold">
-                    {mockPromptPay.id}
+                    {promptPay.id}
                   </span>
                 </p>
                 <CopyButton
-                  value={mockPromptPay.id}
+                  value={promptPay.id}
                   label={t("promptpayId")}
                 />
               </div>
               <p className="text-xs text-muted-foreground">{t("demoQrNote")}</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {method === "cash" && (
+        <div className="rounded-xl border bg-muted/30 p-4 text-sm text-muted-foreground">
+          {t("cashNote")}
         </div>
       )}
     </div>

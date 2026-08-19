@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { calculatePrice } from "@/lib/data/pricing";
-import { mockPromptPay } from "@/lib/data/payment";
+import { getPromptPay } from "@/lib/data/payment";
+import { getActiveCharterRates } from "@/lib/admin/settings-store";
 import type {
   Booking,
   BookingLeg,
@@ -212,8 +213,11 @@ export const useBookingStore = create<BookingStore>()(
           get().draft.type === "daily-charter" ||
           get().draft.type === "hourly-charter"
         ) {
+          const rates = getActiveCharterRates();
           const base =
-            get().draft.type === "daily-charter" ? 3500 : 500 * 3;
+            get().draft.type === "daily-charter"
+              ? rates.daily
+              : rates.hourly * rates.hourlyMinHours;
           const multipliers: Record<VehicleCode, number> = {
             ECO: 1,
             PREM: 1.25,
@@ -287,10 +291,16 @@ export const useBookingStore = create<BookingStore>()(
             paidAt,
             status: "paid",
           };
+        } else if (draft.paymentMethod === "cash") {
+          payment = {
+            method: "cash",
+            summary: "Cash to driver",
+            status: "awaiting-transfer",
+          };
         } else {
           payment = {
             method: "promptpay",
-            summary: `PromptPay ${mockPromptPay.id}`,
+            summary: `PromptPay ${getPromptPay().id}`,
             paidAt,
             status: "paid",
           };
@@ -309,7 +319,10 @@ export const useBookingStore = create<BookingStore>()(
           totalPrice,
           createdAt: paidAt,
           status:
-            draft.paymentMethod === "bank-transfer" ? "pending" : "confirmed",
+            draft.paymentMethod === "bank-transfer" ||
+            draft.paymentMethod === "cash"
+              ? "pending"
+              : "confirmed",
           payment,
         };
 

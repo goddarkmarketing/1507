@@ -5,11 +5,12 @@ import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { siteConfig } from "@/lib/site-config";
+import { useSiteContact } from "@/lib/admin/settings-store";
 
 export function MobileBottomBar() {
   const pathname = usePathname();
   const t = useTranslations("MobileNav");
+  const site = useSiteContact();
 
   const sideItems = [
     {
@@ -31,7 +32,7 @@ export function MobileBottomBar() {
       match: (path: string) => path.startsWith("/price-list"),
     },
     {
-      href: `tel:${siteConfig.phone}`,
+      href: `tel:${site.phone}`,
       label: t("call"),
       icon: Phone,
       match: () => false,

@@ -12,6 +12,8 @@ export interface Driver {
   id: string;
   name: string;
   phone: string;
+  lineId?: string;
+  plate?: string;
   vehicleCodes: VehicleCode[];
   active: boolean;
   note?: string;
@@ -33,6 +35,7 @@ export type AdminBookingPatch = Partial<
 
 export function deriveOpsStatus(booking: Booking): OpsStatus {
   if (booking.status === "cancelled") return "cancelled";
+  if (booking.payment?.method === "cash") return "new";
   if (booking.payment?.status === "awaiting-transfer") return "payment_review";
   if (booking.status === "pending") return "payment_review";
   if (booking.status === "confirmed") return "new";

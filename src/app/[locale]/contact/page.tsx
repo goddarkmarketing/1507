@@ -15,10 +15,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { siteConfig } from "@/lib/site-config";
+import { useSiteContact } from "@/lib/admin/settings-store";
 
 export default function ContactPage() {
   const t = useTranslations("Contact");
+  const site = useSiteContact();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -86,10 +87,10 @@ export default function ContactPage() {
                 <div>
                   <p className="font-medium">{t("phone")}</p>
                   <a
-                    href={`tel:${siteConfig.phone}`}
+                    href={`tel:${site.phone}`}
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    {siteConfig.phone}
+                    {site.phone}
                   </a>
                 </div>
               </div>
@@ -98,10 +99,10 @@ export default function ContactPage() {
                 <div>
                   <p className="font-medium">{t("email")}</p>
                   <a
-                    href={`mailto:${siteConfig.email}`}
+                    href={`mailto:${site.email}`}
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    {siteConfig.email}
+                    {site.email}
                   </a>
                 </div>
               </div>
@@ -109,7 +110,7 @@ export default function ContactPage() {
                 <MapPin className="mt-0.5 size-5 text-primary" />
                 <div>
                   <p className="font-medium">{t("address")}</p>
-                  <p className="text-muted-foreground">{siteConfig.address}</p>
+                  <p className="text-muted-foreground">{site.address}</p>
                 </div>
               </div>
             </CardContent>
@@ -121,7 +122,7 @@ export default function ContactPage() {
               <CardDescription>{t("lineSubtitle")}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="font-mono text-lg">{siteConfig.line}</p>
+              <p className="font-mono text-lg">{site.line}</p>
             </CardContent>
           </Card>
         </div>

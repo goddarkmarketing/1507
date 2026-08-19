@@ -5,6 +5,29 @@
     "th": "TH",
     "zh": "中文"
   },
+  "MeetingPoint": {
+    "eyebrow": "จุดนัดพบสนามบินกระบี่",
+    "title": "จุดพบลูกค้า",
+    "subtitle": "เที่ยวบินในประเทศ: ประตู 15 · เที่ยวบินต่างประเทศ: ประตู 16 ออกมาแล้วมองทางซ้าย — คนขับถือป้ายชื่อรอ",
+    "door": "ประตู {n}",
+    "domesticLabel": "ในประเทศ",
+    "internationalLabel": "ต่างประเทศ",
+    "domesticHint": "หลังลงเที่ยวบินในประเทศ รับกระเป๋าแล้วออกประตู 15 มองทางซ้าย",
+    "internationalHint": "หลังตรวจคนเข้าเมืองและรับกระเป๋า ออกประตู 16 มองทางซ้าย",
+    "step1Title": "รับกระเป๋า",
+    "step1Body": "รับสัมภาระหลังเครื่องลง หากมาต่างประเทศให้ผ่านตรวจคนเข้าเมืองก่อน",
+    "step2Title": "ไปประตูทางออก",
+    "step2Body": "ในประเทศ: ประตู 15 · ต่างประเทศ: ประตู 16 ตามป้าย Arrivals",
+    "step3Title": "มองทางซ้าย",
+    "step3Body": "ออกจากประตูแล้วมองทางซ้าย นั่นคือจุดนัดพบ",
+    "step4Title": "พบคนขับ",
+    "step4Body": "มองหาป้ายชื่อของคุณ ทีมงานช่วยยกกระเป๋าและพาไปรถ",
+    "domesticImageAlt": "จุดพบลูกค้าเที่ยวบินในประเทศที่ประตู 15 สนามบินกระบี่",
+    "feature1": "บริการพบที่จุดนัด",
+    "feature2": "ช่วยยกกระเป๋า",
+    "feature3": "รถรับส่งส่วนตัว",
+    "feature4": "ปลอดภัย น่าเชื่อถือ"
+  },
   "Nav": {
     "home": "หน้าแรก",
     "transfers": "บริการรับส่ง",
@@ -27,7 +50,9 @@
     "contact": "ติดต่อเรา",
     "booking": "จองรถ",
     "bookNow": "จองเลย",
-    "services": "บริการ"
+    "services": "บริการ",
+    "more": "เพิ่มเติม",
+    "menu": "เมนู"
   },
   "MobileNav": {
     "home": "หน้าแรก",
@@ -93,6 +118,7 @@
     "fleetFilterAll": "ทั้งหมด",
     "fleetFilter13": "1–3 ที่นั่ง",
     "fleetFilter14": "1–4 ที่นั่ง",
+    "fleetFilter16": "1–6 ที่นั่ง",
     "fleetFilter18": "1–8 ที่นั่ง",
     "fleetFilterGroup": "กลุ่ม / รถบัส",
     "articlesTitle": "บทความท่องเที่ยว",
@@ -159,10 +185,13 @@
     "bankTransfer": "โอนเงิน",
     "card": "บัตรเครดิต / เดบิต",
     "promptpay": "พร้อมเพย์",
+    "cash": "เงินสดกับคนขับ",
     "confirmBooking": "ยืนยันการจอง",
     "confirmBank": "ยืนยันการจอง (รอตรวจสอบการโอน)",
     "confirmCard": "ชำระด้วยบัตรและยืนยัน",
     "confirmPromptPay": "ยืนยันชำระพร้อมเพย์",
+    "confirmCash": "ยืนยันจองแบบเงินสด",
+    "cancelPolicyNote": "ยกเลิกฟรีก่อนเวลารับ {hours} ชั่วโมง หลังจากนั้นคิดค่าธรรมเนียม {percent}%",
     "processing": "กำลังดำเนินการ...",
     "demoNote": "การชำระเงินเดโม — ไม่คิดเงินจริง · ออก e-Voucher หลังยืนยัน",
     "at": "เวลา",
@@ -394,7 +423,7 @@
       "title": "รับส่งสนามบิน",
       "subtitle": "รถส่วนตัวรับส่งสนามบินกระบี่และภาคใต้",
       "intro": "รับตรงตามเวลาไฟลต์ มีบริการพบที่จุดรับสัมภาระ และส่งตรงถึงโรงแรม ชายหาด หรือท่าเรือ",
-      "tip": "แจ้งหมายเลขไฟลต์ตอนจอง เพื่อให้เราติดตามดีเลย์และปรับเวลารับได้",
+      "tip": "แจ้งหมายเลขไฟลต์ตอนจอง จุดนัดพบสนามบินกระบี่: ในประเทศประตู 15 ต่างประเทศประตู 16 — ออกมาแล้วมองทางซ้าย",
       "benefit1": "ติดตามไฟลต์และยืดหยุ่นเวลารอ",
       "benefit2": "พบที่จุดรับสัมภาระตามคำขอ",
       "benefit3": "พื้นที่สัมภาระครบ — จากเก๋งถึงรถตู้",
@@ -405,7 +434,7 @@
         },
         "2": {
           "q": "มีบริการพบที่จุดรับสัมภาระไหม?",
-          "a": "มีครับ ใส่หมายเลขไฟลต์ตอนจองและขอ meet & greet — คนขับถือป้ายชื่อรอได้"
+          "a": "มีครับ ใส่หมายเลขไฟลต์ตอนจอง ที่สนามบินกระบี่ เที่ยวบินในประเทศออกประตู 15 เที่ยวบินต่างประเทศออกประตู 16 แล้วมองทางซ้าย — คนขับถือป้ายชื่อรอ"
         },
         "3": {
           "q": "นำกระเป๋าได้เท่าไหร่?",
@@ -666,35 +695,35 @@
     "bags8": "กระเป๋า 8 ใบ",
     "bags10": "กระเป๋า 10 ใบ",
     "ECO": {
-      "name": "รถเก๋งประหยัด",
+      "name": "Economy Taxi",
       "luggage": "กระเป๋า 3 ใบ"
     },
     "PREM": {
-      "name": "รถเก๋งพรีเมียม",
+      "name": "Luxury Taxi",
       "luggage": "กระเป๋า 4 ใบ"
     },
     "SUV": {
-      "name": "รถ SUV",
+      "name": "SUV Taxi",
       "luggage": "กระเป๋า 6 ใบ"
     },
     "VAN": {
-      "name": "รถตู้มาตรฐาน",
-      "luggage": "กระเป๋า 8 ใบ"
+      "name": "Van Taxi",
+      "luggage": "กระเป๋า 6 ใบ"
     },
     "VIP": {
-      "name": "รถตู้ VIP",
-      "luggage": "กระเป๋า 8 ใบ"
+      "name": "Alphard VIP",
+      "luggage": "กระเป๋า 4 ใบ"
     },
     "SIG": {
-      "name": "ซิกเนเจอร์คลาส",
+      "name": "Alphard VIP",
       "luggage": "กระเป๋า 4 ใบ"
     },
     "EXE": {
-      "name": "รถตู้เอ็กเซกคิวทีฟ",
-      "luggage": "กระเป๋า 10 ใบ"
+      "name": "VIP Van",
+      "luggage": "กระเป๋า 8 ใบ"
     },
     "BUS": {
-      "name": "มินิบัส",
+      "name": "Mini Bus",
       "luggage": "พื้นที่สัมภาระขนาดใหญ่"
     }
   },
@@ -767,7 +796,7 @@
     "fromPerDay": "เริ่ม ฿{price}/วัน",
     "notes": "หมายเหตุ: ราคาเป็นต่อวัน (บาท) ตามระยะเวลาเช่า ความจุ Hyundai H-1 ขึ้นกับเลย์เอาต์",
     "transferTitle": "เส้นทางรับส่ง",
-    "transferSubtitle": "รับส่งส่วนตัวจุดต่อจุดทั่วภาคใต้",
+    "transferSubtitle": "ราคาทางการเที่ยวเดียว — 55 เส้นทางจากสนามบินกระบี่ รวมสนามบินภูเก็ต อ่าวนาง และเกาะลันตา",
     "allRoutes": "ทุกเส้นทาง",
     "route": "เส้นทาง",
     "emptyRental": "ไม่พบแพ็กเกจเช่าที่ตรงกับตัวกรอง",
@@ -788,6 +817,9 @@
     "cardDesc": "Visa, Mastercard — การชำระเงินเดโม",
     "promptpay": "พร้อมเพย์",
     "promptpayDesc": "สแกน QR หรือจ่ายไปยัง PromptPay ID",
+    "cash": "เงินสดกับคนขับ",
+    "cashDesc": "จ่ายเป็นเงินบาทเมื่อพบคนขับ",
+    "cashNote": "จ่ายเงินสดให้คนขับตอนรับตัว การจองจะรอยืนยันจนกว่าทริปจะเสร็จ",
     "transferIntro": "โอน ฿{amount} เข้าบัญชีด้านล่างบัญชีใดบัญชีหนึ่ง",
     "referenceNote": "ใส่รหัสอ้างอิงนี้ในหมายเหตุการโอน: {ref}",
     "afterConfirm": "สร้างหลังยืนยันการจอง",
@@ -840,6 +872,7 @@
     "status": "สถานะ",
     "statusPaid": "ชำระแล้ว (เดโม)",
     "statusAwaiting": "รอตรวจสอบการโอน",
+    "statusCash": "จ่ายเงินสดกับคนขับตอนรับตัว",
     "account": "บัญชี",
     "transferProof": "หลักฐานการโอน",
     "downloadPdf": "ดาวน์โหลดสลิป PDF",
@@ -960,7 +993,10 @@
       "payments": "การชำระเงิน",
       "schedule": "ตารางงาน",
       "drivers": "คนขับ",
-      "customers": "ลูกค้า"
+      "customers": "ลูกค้า",
+      "prices": "ตารางราคา",
+      "vehicles": "รถรับส่ง",
+      "settings": "ตั้งค่า"
     },
     "dashboardTitle": "แดชบอร์ด",
     "dashboardSubtitle": "ภาพรวมงานรับส่ง การชำระเงิน และคนขับ",
@@ -1031,6 +1067,106 @@
       "cancelled": "ยกเลิก"
     },
     "navGroupOps": "ปฏิบัติการ",
-    "navGroupTeam": "ทีมงาน"
+    "navGroupTeam": "ทีมงาน",
+    "navGroupSystem": "ระบบ",
+    "catalogTitle": "ตารางราคา",
+    "catalogSubtitle": "นำเข้าไฟล์ CSV สำหรับแพ็กเกจเช่ารถและเส้นทางรับส่ง ดาวน์โหลดเทมเพลต แก้ใน Excel แล้ว import ราคาที่นำเข้าจะใช้บนเบราว์เซอร์นี้ทันที (เดโม) ถ้าจะขึ้นเว็บจริงภายหลังสามารถบันทึกลงโปรเจกต์แล้ว deploy ได้",
+    "catalogRentalTitle": "แพ็กเกจเช่ารถ",
+    "catalogRentalHelp": "คอลัมน์: id, category, model, engine, seats, largeBags, doors, days1to3, days4to6, days7to20, days21to30 หมวดต้องเป็น Mini Car, Economy, Compact หรือ Full Size ช่องราคาเว้นว่าง = ขอราคา",
+    "catalogTransferTitle": "เส้นทางรับส่ง",
+    "catalogTransferHelp": "คอลัมน์: fromId, toId, distanceKm, durationMin, category, ECO, PREM, SUV, VAN, EXE, VIP, SIG, BUS ใส่รหัสสถานที่หรือชื่อ เช่น kbv-airport, อ่าวนาง ราคาเดียวกันทั้งไปและกลับ",
+    "catalogImport": "นำเข้า CSV",
+    "catalogTemplate": "ดาวน์โหลดเทมเพลต",
+    "catalogReset": "ใช้ตารางเดิมในระบบ",
+    "catalogUsingBuiltin": "ใช้ตารางในระบบ · {n} แถว",
+    "catalogUsingImported": "ใช้ตารางที่นำเข้า · {n} แถว · {when}",
+    "catalogRentalOk": "นำเข้าแพ็กเกจเช่า {n} รายการ",
+    "catalogTransferOk": "นำเข้าเส้นทางรับส่ง {n} เส้น",
+    "catalogResetOk": "คืนตารางในระบบแล้ว",
+    "catalogEmpty": "ไม่พบแถวที่ใช้งานได้ในไฟล์นี้",
+    "catalogSkipped": "ข้าม {n} แถว: {detail}",
+    "catalogRowIssue": "แถว {row} ({reason})",
+    "catalogXlsxHint": "กรุณาบันทึก Excel เป็น CSV (UTF-8) แล้วค่อยนำเข้า",
+    "catalogVehiclesTitle": "รถรับส่ง",
+    "catalogVehiclesSubtitle": "นำเข้า CSV เพื่ออัปเดตคลาสรถที่แสดงบนตารางราคาและหน้าจอง (เดโม: เก็บในเบราว์เซอร์)",
+    "catalogTransferVehiclesTitle": "คลาสรถ (ECO/PREM/SUV/VAN/VIP/SIG/EXE/BUS)",
+    "catalogVehiclesHelp": "คอลัมน์ CSV: code, passengers, amenityKeys (คั่นด้วย , หรือ |), priceMultiplier, image โดยโค้ดกำหนดตายตัว",
+    "catalogUsingBuiltinVehicles": "ใช้ตารางรถแบบเดิมในระบบ",
+    "catalogUsingImportedVehicles": "ใช้ตารางรถที่นำเข้า · {when}",
+    "catalogVehiclesOk": "นำเข้าข้อมูลรถ {n} แถว",
+    "catalogVehiclesPreview": "พรีวิวแบบเดิม",
+    "catalogVehiclesPreviewHint": "แก้ฟิลด์ในเทมเพลต CSV แล้ว import",
+    "settingsTitle": "ตั้งค่า",
+    "settingsSubtitle": "แก้เบอร์ติดต่อ บัญชีโอน เรทเช่าเหมา นโยบายยกเลิก และบัญชีพนักงาน ค่าที่บันทึกใช้บนเบราว์เซอร์นี้ (เดโม)",
+    "settingsContactTitle": "ข้อมูลติดต่อ",
+    "settingsContactHelp": "ค่าเหล่านี้โชว์ในหัวเว็บ ท้ายเว็บ หน้าติดต่อ และวาวเชอร์",
+    "settingsPaymentTitle": "การชำระเงิน",
+    "settingsPaymentHelp": "เปิด-ปิดช่องทางชำระ และแก้เลขบัญชี / PromptPay ที่ลูกค้าเห็นตอนจอง",
+    "settingsCharterTitle": "เรทเช่าเหมา",
+    "settingsCharterHelp": "ราคาพื้นฐาน (บาท) สำหรับเหมาวันและเหมาชั่วโมง ยังคูณด้วยตัวคูณประเภทรถ",
+    "settingsPolicyTitle": "นโยบายยกเลิก",
+    "settingsPolicyHelp": "แสดงบนฟอร์มจอง เว็บจริงภายหลังสามารถใช้ตัวเลขนี้คำนวณเงินคืนได้",
+    "settingsStaffTitle": "บัญชีพนักงาน",
+    "settingsStaffHelp": "บัญชีเพิ่มจากแอดมินเดโม สิทธิ์จะซ่อนบางเมนู รหัสผ่านเก็บในเบราว์เซอร์นี้เท่านั้น",
+    "settingsSave": "บันทึก",
+    "settingsReset": "คืนค่าเริ่มต้น",
+    "settingsResetOk": "คืนค่าตั้งค่าเริ่มต้นแล้ว",
+    "settingsSaved": "บันทึกการตั้งค่าแล้ว",
+    "settingsRequired": "กรุณากรอกข้อมูลที่จำเป็น",
+    "settingsNeedMethod": "ต้องเปิดช่องทางชำระอย่างน้อย 1 ช่อง",
+    "settingsNeedBank": "ต้องเปิดบัญชีธนาคารอย่างน้อย 1 บัญชีสำหรับการโอน",
+    "settingsNeedPromptPay": "กรอก PromptPay ID",
+    "settingsPhone": "โทรศัพท์",
+    "settingsEmail": "อีเมล",
+    "settingsLine": "LINE ID",
+    "settingsAddress": "ที่อยู่",
+    "settingsEnabled": "เปิดใช้",
+    "settingsBankName": "ชื่อธนาคาร",
+    "settingsAccountName": "ชื่อบัญชี",
+    "settingsAccountNumber": "เลขบัญชี",
+    "settingsBranch": "สาขา",
+    "settingsPromptPayId": "PromptPay ID",
+    "settingsPromptPayName": "ชื่อบัญชี PromptPay",
+    "settingsDailyRate": "เหมาวัน (บาท)",
+    "settingsHourlyRate": "รายชั่วโมง (บาท)",
+    "settingsMinHours": "ชั่วโมงขั้นต่ำ",
+    "settingsFreeHours": "ยกเลิกฟรี (ชั่วโมงก่อนรับ)",
+    "settingsLatePercent": "ค่าธรรมเนียมยกเลิกช้า (%)",
+    "settingsNoShowPercent": "ค่าไม่มาตามนัด (%)",
+    "settingsRefundDays": "คืนเงินภายใน (วันทำการ)",
+    "settingsNoStaff": "ยังไม่มีพนักงานเพิ่ม",
+    "settingsStaffName": "ชื่อ",
+    "settingsStaffRole": "สิทธิ์",
+    "settingsAddStaff": "เพิ่มพนักงาน",
+    "settingsStaffAdded": "เพิ่มบัญชีพนักงานแล้ว",
+    "settingsStaffRemoved": "ลบบัญชีพนักงานแล้ว",
+    "settingsStaffDup": "ชื่อผู้ใช้นี้ถูกใช้แล้ว",
+    "settingsRemove": "ลบ",
+    "settingsCancel": "ยกเลิก",
+    "settingsMethod": {
+      "bank-transfer": "โอนเงิน",
+      "card": "บัตร",
+      "promptpay": "พร้อมเพย์",
+      "cash": "เงินสดกับคนขับ"
+    },
+    "settingsRole": {
+      "admin": "แอดมิน",
+      "ops": "ปฏิบัติการ",
+      "finance": "การเงิน",
+      "driver": "คนขับ"
+    },
+    "driversAdd": "เพิ่มคนขับ",
+    "driversEdit": "แก้ไขคนขับ",
+    "driversLine": "LINE ID",
+    "driversPlate": "ทะเบียนรถ",
+    "driversRemoved": "ลบคนขับแล้ว",
+    "catalogIssue": {
+      "empty": "ไฟล์ว่าง",
+      "missingModel": "ไม่มีรุ่นรถ",
+      "badCategory": "หมวดไม่ถูกต้อง",
+      "badLocation": "ไม่รู้จักจุดต้นทาง/ปลายทาง",
+      "sameLocation": "ต้นทางกับปลายทางซ้ำกัน",
+      "missingPrice": "ราคาประเภทรถไม่ครบ"
+    }
   }
 }

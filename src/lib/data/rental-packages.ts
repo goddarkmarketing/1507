@@ -1,4 +1,5 @@
 import type { RentalCategory, RentalPackage } from "@/lib/types";
+import { getImportedRentalPackages } from "@/lib/admin/catalog-store";
 
 /** Car rental packages — daily rates (THB) by rental duration */
 export const rentalPackages: RentalPackage[] = [
@@ -12,7 +13,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 1,
     doors: 4,
     rates: { days1to3: 1000, days4to6: 900, days7to20: 800, days21to30: 700 },
-    image: "/vehicles/toyota/yaris.webp",
+    image: "/vehicles/toyota/altis.webp",
   },
   {
     id: "toyota-ativ",
@@ -24,7 +25,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 1,
     doors: 4,
     rates: { days1to3: 1000, days4to6: 900, days7to20: 800, days21to30: 700 },
-    image: "/vehicles/toyota/yarisativ.webp",
+    image: "/vehicles/toyota/altis.webp",
   },
   {
     id: "toyota-yaris-cross",
@@ -36,7 +37,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 1,
     doors: 4,
     rates: { days1to3: 1200, days4to6: 1100, days7to20: 900, days21to30: 800 },
-    image: "/vehicles/toyota/yariscross.webp",
+    image: "/vehicles/toyota/fortuner.webp",
   },
   {
     id: "toyota-corolla-altis",
@@ -72,7 +73,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 2,
     doors: 4,
     rates: { days1to3: 1400, days4to6: 1300, days7to20: 1200, days21to30: 950 },
-    image: "/vehicles/toyota/corollacross.webp",
+    image: "/vehicles/toyota/fortuner.webp",
   },
   {
     id: "toyota-veloz",
@@ -84,7 +85,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 2,
     doors: 4,
     rates: { days1to3: 1500, days4to6: 1400, days7to20: 1300, days21to30: 1200 },
-    image: "/vehicles/toyota/veloz.webp",
+    image: "/vehicles/toyota/hiace.webp",
   },
   {
     id: "toyota-innova-zenix",
@@ -96,7 +97,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 2,
     doors: 4,
     rates: { days1to3: 1500, days4to6: 1400, days7to20: 1300, days21to30: 1200 },
-    image: "/vehicles/toyota/innovazenix.webp",
+    image: "/vehicles/toyota/hiace.webp",
   },
   {
     id: "toyota-alphard",
@@ -138,12 +139,16 @@ export const rentalCategories: RentalCategory[] = [
   "Full Size",
 ];
 
+export function getActiveRentalPackages(): RentalPackage[] {
+  return getImportedRentalPackages() ?? rentalPackages;
+}
+
 export function getRentalPackage(id: string): RentalPackage | undefined {
-  return rentalPackages.find((p) => p.id === id);
+  return getActiveRentalPackages().find((p) => p.id === id);
 }
 
 export function getPackagesByCategory(category: RentalCategory): RentalPackage[] {
-  return rentalPackages.filter((p) => p.category === category);
+  return getActiveRentalPackages().filter((p) => p.category === category);
 }
 
 /** Daily rate for a given rental length (number of days). */

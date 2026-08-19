@@ -8,14 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { getLocation } from "@/lib/data/locations";
 import { calculatePrice, getSampleRoutes } from "@/lib/data/pricing";
-import { vehicles } from "@/lib/data/vehicles";
+import { getActiveTariffVehicles } from "@/lib/data/vehicles";
+import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
 import {
   formatRate,
+  getActiveRentalPackages,
   rentalCategories,
   rentalDurationLabels,
-  rentalPackages,
 } from "@/lib/data/rental-packages";
-import { useLocationName } from "@/lib/i18n-labels";
+import { useCatalogStore } from "@/lib/admin/catalog-store";
 import { cn } from "@/lib/utils";
 import type { RentalCategory, TransferCategory } from "@/lib/types";
 import { PublicImage } from "@/components/shared/public-image";
@@ -91,7 +92,13 @@ export function PriceListContent() {
   const t = useTranslations("PriceList");
   const tFleet = useTranslations("FleetUi");
   const locName = useLocationName();
-  const routes = useMemo(() => getSampleRoutes(), []);
+  const { name: vehicleName } = useVehicleCopy();
+  const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
+  const transferRev = useCatalogStore((s) => s.transferImportedAt);
+  const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
+  const routes = useMemo(() => getSampleRoutes(), [transferRev]);
+  const packages = useMemo(() => getActiveRentalPackages(), [rentalRev]);
+  const vehicles = useMemo(() => getActiveTariffVehicles(), [vehiclesRev]);
   const [query, setQuery] = useState("");
   const [section, setSection] =
     useState<(typeof sectionFilterIds)[number]>("all");
@@ -112,7 +119,7 @@ export function PriceListContent() {
   };
 
   const filteredRentals = useMemo(() => {
-    return rentalPackages.filter((pkg) => {
+    return packages.filter((pkg) => {
       const categoryMatch =
         rentalCategory === "all" || pkg.category === rentalCategory;
       const catLabel = tFleet(rentalCatKey[pkg.category]).toLowerCase();
@@ -124,14 +131,17 @@ export function PriceListContent() {
         pkg.engine.toLowerCase().includes(q);
       return categoryMatch && textMatch;
     });
-  }, [q, rentalCategory, tFleet]);
+  }, [q, rentalCategory, tFleet, packages]);
 
   const filteredRoutes = useMemo(() => {
     return routes.filter((route) => {
-      const categoryMatch =
-        transferCategory === "all" || route.category === transferCategory;
       const from = getLocation(route.fromId);
       const to = getLocation(route.toId);
+      const categoryMatch =
+        transferCategory === "all" ||
+        (transferCategory === "airport"
+          ? from?.type === "airport" || to?.type === "airport"
+          : route.category === transferCategory);
       const fromLabel = locName(from).toLowerCase();
       const toLabel = locName(to).toLowerCase();
       const catLabel = t(transferCatKey[route.category]).toLowerCase();
@@ -353,14 +363,17 @@ export function PriceListContent() {
 
           {filteredRoutes.length > 0 ? (
             <div className="overflow-x-auto rounded-xl border">
-              <table className="w-full min-w-[640px] text-sm">
+              <table className="w-full min-w-[960px] text-sm">
                 <thead className="bg-muted/50">
                   <tr>
                     <th className="px-4 py-3 text-left">{t("route")}</th>
                     <th className="px-4 py-3 text-left">{t("category")}</th>
-                    {vehicles.map((v) => (
+                    {vehicles.map((v, index) => (
                       <th key={v.code} className="px-3 py-3 text-right">
-                        {v.code}
+                        <span className="block text-[10px] font-medium text-muted-foreground">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        {vehicleName(v.code)}
                       </th>
                     ))}
                   </tr>

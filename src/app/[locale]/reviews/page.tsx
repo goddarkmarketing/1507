@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Star } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
+import { ReviewerAvatar } from "@/components/shared/reviewer-avatar";
 import {
   Card,
   CardContent,
@@ -28,19 +29,24 @@ export default async function ReviewsPage({ params }: Props) {
         {reviews.map((review) => (
           <Card key={review.id}>
             <CardHeader>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: review.rating }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="size-4 fill-amber-400 text-amber-400"
-                  />
-                ))}
+              <div className="flex items-start gap-3">
+                <ReviewerAvatar id={review.id} name={review.name} />
+                <div className="min-w-0 space-y-1">
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: review.rating }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className="size-4 fill-amber-400 text-amber-400"
+                      />
+                    ))}
+                  </div>
+                  <CardTitle className="text-base">{review.name}</CardTitle>
+                  <CardDescription>
+                    {t(`items.${review.id}.country` as "items.1.country")} ·{" "}
+                    {t(`items.${review.id}.route` as "items.1.route")} · {review.date}
+                  </CardDescription>
+                </div>
               </div>
-              <CardTitle className="text-base">{review.name}</CardTitle>
-              <CardDescription>
-                {t(`items.${review.id}.country` as "items.1.country")} ·{" "}
-                {t(`items.${review.id}.route` as "items.1.route")} · {review.date}
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">

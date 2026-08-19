@@ -1,45 +1,48 @@
 "use client";
 
-import { Car, Menu, Phone } from "lucide-react";
+import { Car, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { SiteLogo } from "@/components/shared/site-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { MobileMenu } from "@/components/layout/mobile-menu";
 import { Link } from "@/i18n/navigation";
-import { siteConfig, navItems } from "@/lib/site-config";
+import { navIcons } from "@/lib/nav-icons";
+import { siteConfig, navItems, type NavItem } from "@/lib/site-config";
+import { useSiteContact } from "@/lib/admin/settings-store";
 
 function NavDropdown({
   label,
   links,
 }: {
   label: string;
-  links: { href: string; label: string }[];
+  links: { href: NavItem["href"]; label: string }[];
 }) {
   return (
     <div className="group relative">
       <button className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
         {label}
       </button>
-      <div className="invisible absolute left-0 top-full z-50 min-w-[220px] rounded-lg border bg-popover p-2 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
-        {links.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="block rounded-md px-3 py-2 text-sm hover:bg-accent"
-          >
-            {item.label}
-          </Link>
-        ))}
+      <div className="invisible absolute left-0 top-full z-50 min-w-[240px] rounded-xl border bg-popover p-1.5 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
+        {links.map((item) => {
+          const Icon = navIcons[item.href];
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-accent"
+            >
+              {Icon ? (
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-600">
+                  <Icon className="size-4" />
+                </span>
+              ) : null}
+              <span className="leading-snug">{item.label}</span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
@@ -47,6 +50,7 @@ function NavDropdown({
 
 export function Header() {
   const t = useTranslations("Nav");
+  const site = useSiteContact();
   const transferLinks = navItems
     .filter((item) => item.group === "transfers")
     .map((item) => ({ href: item.href, label: t(item.labelKey) }));
@@ -101,48 +105,20 @@ export function Header() {
         <div className="flex items-center gap-2">
           <LocaleSwitcher className="hidden sm:inline-flex" />
           <a
-            href={`tel:${siteConfig.phone}`}
+            href={`tel:${site.phone}`}
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
               "hidden xl:inline-flex"
             )}
           >
             <Phone className="size-4" />
-            {siteConfig.phone}
+            {site.phone}
           </a>
           <ButtonLink size="sm" href="/booking">
             <Car className="size-4" />
             <span className="hidden xs:inline sm:inline">{t("bookNow")}</span>
           </ButtonLink>
-
-          <Sheet>
-            <SheetTrigger
-              render={
-                <Button variant="outline" size="icon" className="lg:hidden" />
-              }
-            >
-              <Menu className="size-4" />
-            </SheetTrigger>
-            <SheetContent side="right" className="overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle>{siteConfig.name}</SheetTitle>
-              </SheetHeader>
-              <div className="mt-4">
-                <LocaleSwitcher />
-              </div>
-              <nav className="mt-6 flex flex-col gap-1">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                  >
-                    {t(item.labelKey)}
-                  </Link>
-                ))}
-              </nav>
-            </SheetContent>
-          </Sheet>
+          <MobileMenu />
         </div>
       </div>
     </header>

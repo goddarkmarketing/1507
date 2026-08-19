@@ -1,4 +1,8 @@
 import { getLocation } from "@/lib/data/locations";
+import {
+  getActiveOfficialRoutes,
+  getOfficialRoute,
+} from "@/lib/data/transfer-routes";
 import { getVehicle } from "@/lib/data/vehicles";
 import type { RoutePrice, TransferCategory, VehicleCode } from "@/lib/types";
 
@@ -44,7 +48,9 @@ function estimateRoute(fromId: string, toId: string) {
   const basePrice = categoryBase[category];
 
   const sameProvince = from && to && from.province === to.province;
-  const distanceKm = sameProvince ? 15 + Math.abs(fromId.length - toId.length) * 3 : 120;
+  const distanceKm = sameProvince
+    ? 15 + Math.abs(fromId.length - toId.length) * 3
+    : 120;
   const durationMin = Math.round(distanceKm * (sameProvince ? 2.2 : 1.5));
 
   return {
@@ -60,6 +66,19 @@ export function calculatePrice(
   toId: string,
   vehicleCode: VehicleCode
 ): RoutePrice & { totalPrice: number } {
+  const official = getOfficialRoute(fromId, toId);
+  if (official) {
+    return {
+      fromId,
+      toId,
+      basePrice: official.prices.ECO,
+      durationMin: official.durationMin,
+      distanceKm: official.distanceKm,
+      category: official.category,
+      totalPrice: official.prices[vehicleCode],
+    };
+  }
+
   const route = estimateRoute(fromId, toId);
   const vehicle = getVehicle(vehicleCode);
   const multiplier = vehicle?.priceMultiplier ?? 1;
@@ -77,29 +96,14 @@ export function calculatePrice(
 }
 
 export function getSampleRoutes(): RoutePrice[] {
-  const pairs = [
-    ["kbv-airport", "ao-nang-beach"],
-    ["kbv-airport", "krabi-town"],
-    ["kbv-airport", "railay-beach"],
-    ["kbv-airport", "centara-ao-nang"],
-    ["ao-nang-pier", "railay-beach"],
-    ["krabi-town", "emerald-pool"],
-    ["krabi-town", "tiger-cave"],
-    ["kbv-airport", "phuket-airport"],
-    ["kbv-airport", "trang-town"],
-  ];
-
-  return pairs.map(([fromId, toId]) => {
-    const route = estimateRoute(fromId, toId);
-    return {
-      fromId,
-      toId,
-      basePrice: route.basePrice,
-      durationMin: route.durationMin,
-      distanceKm: route.distanceKm,
-      category: route.category,
-    };
-  });
+  return getActiveOfficialRoutes().map((route) => ({
+    fromId: route.fromId,
+    toId: route.toId,
+    basePrice: route.prices.ECO,
+    durationMin: route.durationMin,
+    distanceKm: route.distanceKm,
+    category: route.category,
+  }));
 }
 
 export const charterRates = {

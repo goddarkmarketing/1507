@@ -5,6 +5,29 @@
     "th": "TH",
     "zh": "中文"
   },
+  "MeetingPoint": {
+    "eyebrow": "Krabi Airport meeting points",
+    "title": "Where we meet you",
+    "subtitle": "Domestic flights: Door 15. International flights: Door 16. After you exit, look left — your driver waits with your name on a sign.",
+    "door": "Door {n}",
+    "domesticLabel": "Domestic",
+    "internationalLabel": "International",
+    "domesticHint": "After a domestic flight, collect your bags and exit at Door 15. Look left.",
+    "internationalHint": "After immigration and baggage, exit at Door 16. Look left.",
+    "step1Title": "Collect your luggage",
+    "step1Body": "Pick up your bags after landing. International arrivals go through immigration first.",
+    "step2Title": "Go to your exit door",
+    "step2Body": "Domestic: Door 15. International: Door 16. Follow the Arrivals signs.",
+    "step3Title": "Look to your left",
+    "step3Body": "After you come out, look left. That is the meeting point.",
+    "step4Title": "Meet your driver",
+    "step4Body": "Look for your name on the welcome sign. We help with luggage and walk you to the car.",
+    "domesticImageAlt": "Krabi Airport domestic arrival meeting point at Door 15",
+    "feature1": "Meet & greet",
+    "feature2": "Luggage assistance",
+    "feature3": "Private transfer",
+    "feature4": "Safe & reliable"
+  },
   "Nav": {
     "home": "Home",
     "transfers": "Transfers",
@@ -27,7 +50,9 @@
     "contact": "Contact",
     "booking": "Booking",
     "bookNow": "Book Now",
-    "services": "Services"
+    "services": "Services",
+    "more": "More",
+    "menu": "Menu"
   },
   "MobileNav": {
     "home": "Home",
@@ -93,6 +118,7 @@
     "fleetFilterAll": "All",
     "fleetFilter13": "1–3 seats",
     "fleetFilter14": "1–4 seats",
+    "fleetFilter16": "1–6 seats",
     "fleetFilter18": "1–8 seats",
     "fleetFilterGroup": "Group / Bus",
     "articlesTitle": "Travel Articles",
@@ -159,10 +185,13 @@
     "bankTransfer": "Bank Transfer",
     "card": "Credit / Debit Card",
     "promptpay": "PromptPay",
+    "cash": "Cash to driver",
     "confirmBooking": "Confirm Booking",
     "confirmBank": "Confirm booking (awaiting transfer)",
     "confirmCard": "Pay by card & confirm",
     "confirmPromptPay": "Confirm PromptPay payment",
+    "confirmCash": "Confirm cash booking",
+    "cancelPolicyNote": "Free cancellation until {hours} hours before pickup. After that a {percent}% fee applies.",
     "processing": "Processing...",
     "demoNote": "Demo payment — no real charge · e-Voucher issued after confirmation",
     "at": "at",
@@ -394,7 +423,7 @@
       "title": "Airport Transfer",
       "subtitle": "Private transfers to and from Krabi and Southern Thailand airports",
       "intro": "Flight-timed pickups with meet & greet options, luggage space, and direct rides to hotels, beaches, and piers.",
-      "tip": "Share your flight number when booking so we can track delays and adjust pickup time.",
+      "tip": "Share your flight number when booking. Krabi Airport meeting points: domestic Door 15, international Door 16 — look left after you exit.",
       "benefit1": "Flight monitoring and flexible waiting time",
       "benefit2": "Meet & greet at arrivals on request",
       "benefit3": "Space for suitcases — sedan to van options",
@@ -405,7 +434,7 @@
         },
         "2": {
           "q": "Do you offer meet & greet?",
-          "a": "Yes. Add your flight number when booking and request meet & greet — the driver can wait with a name sign at arrivals."
+          "a": "Yes. Add your flight number when booking. At Krabi Airport, domestic arrivals exit Door 15 and international arrivals exit Door 16, then look left — the driver waits with your name on a sign."
         },
         "3": {
           "q": "How much luggage can I bring?",
@@ -666,32 +695,32 @@
     "bags8": "8 bags",
     "bags10": "10 bags",
     "ECO": {
-      "name": "Economy Sedan",
+      "name": "Economy Taxi",
       "luggage": "3 bags"
     },
     "PREM": {
-      "name": "Premium Sedan",
+      "name": "Luxury Taxi",
       "luggage": "4 bags"
     },
     "SUV": {
-      "name": "SUV",
+      "name": "SUV Taxi",
       "luggage": "6 bags"
     },
     "VAN": {
-      "name": "Standard Van",
-      "luggage": "8 bags"
+      "name": "Van Taxi",
+      "luggage": "6 bags"
     },
     "VIP": {
-      "name": "VIP Van",
-      "luggage": "8 bags"
+      "name": "Alphard VIP",
+      "luggage": "4 bags"
     },
     "SIG": {
-      "name": "Signature Class",
+      "name": "Alphard VIP",
       "luggage": "4 bags"
     },
     "EXE": {
-      "name": "Executive Van",
-      "luggage": "10 bags"
+      "name": "VIP Van",
+      "luggage": "8 bags"
     },
     "BUS": {
       "name": "Mini Bus",
@@ -767,7 +796,7 @@
     "fromPerDay": "From ฿{price}/day",
     "notes": "Notes: Prices are per day (THB) based on rental duration. Hyundai H-1 capacity varies by layout.",
     "transferTitle": "Transfer Routes",
-    "transferSubtitle": "Point-to-point private transfer across Southern Thailand",
+    "transferSubtitle": "Official one-way prices — Krabi Airport 55 routes plus Phuket Airport, Ao Nang and Koh Lanta",
     "allRoutes": "All routes",
     "route": "Route",
     "emptyRental": "No rental packages match your filters.",
@@ -788,6 +817,9 @@
     "cardDesc": "Visa, Mastercard — mock payment for demo.",
     "promptpay": "PromptPay",
     "promptpayDesc": "Scan QR or pay to our PromptPay ID.",
+    "cash": "Cash to driver",
+    "cashDesc": "Pay in Thai Baht when you meet the driver.",
+    "cashNote": "Pay the driver in cash (THB) at pickup. Your booking stays pending until the trip is completed.",
     "transferIntro": "Transfer ฿{amount} to one of the accounts below.",
     "referenceNote": "Put this reference in the transfer note: {ref}",
     "afterConfirm": "Generated after confirmation",
@@ -840,6 +872,7 @@
     "status": "Status",
     "statusPaid": "Paid (mock)",
     "statusAwaiting": "Awaiting bank transfer verification",
+    "statusCash": "Pay driver in cash at pickup",
     "account": "Account",
     "transferProof": "Transfer proof",
     "downloadPdf": "Download PDF slip",
@@ -960,7 +993,10 @@
       "payments": "Payments",
       "schedule": "Schedule",
       "drivers": "Drivers",
-      "customers": "Customers"
+      "customers": "Customers",
+      "prices": "Price tables",
+      "vehicles": "Vehicles",
+      "settings": "Settings"
     },
     "dashboardTitle": "Dashboard",
     "dashboardSubtitle": "Live overview of transfers, payments, and drivers.",
@@ -1031,6 +1067,106 @@
       "cancelled": "Cancelled"
     },
     "navGroupOps": "Operations",
-    "navGroupTeam": "People"
+    "navGroupTeam": "People",
+    "navGroupSystem": "System",
+    "catalogTitle": "Price tables",
+    "catalogSubtitle": "Import CSV files for car rental packages and transfer routes. Download a template, edit in Excel, then import. Imported prices apply on this browser immediately (demo). For a live site, we can later save these into the project and deploy.",
+    "catalogRentalTitle": "Car rental packages",
+    "catalogRentalHelp": "Columns: id, category, model, engine, seats, largeBags, doors, days1to3, days4to6, days7to20, days21to30. Category must be Mini Car, Economy, Compact, or Full Size. Leave a rate blank for on request.",
+    "catalogTransferTitle": "Transfer routes",
+    "catalogTransferHelp": "Columns: fromId, toId, distanceKm, durationMin, category, ECO, PREM, SUV, VAN, EXE, VIP, SIG, BUS. fromId/toId can be location IDs or names (e.g. kbv-airport, Ao Nang). Same price both ways.",
+    "catalogImport": "Import CSV",
+    "catalogTemplate": "Download template",
+    "catalogReset": "Use built-in table",
+    "catalogUsingBuiltin": "Using built-in table · {n} rows",
+    "catalogUsingImported": "Using imported table · {n} rows · {when}",
+    "catalogRentalOk": "Imported {n} rental packages",
+    "catalogTransferOk": "Imported {n} transfer routes",
+    "catalogResetOk": "Restored built-in table",
+    "catalogEmpty": "No valid rows found in that file.",
+    "catalogSkipped": "Skipped {n} row(s): {detail}",
+    "catalogRowIssue": "row {row} ({reason})",
+    "catalogXlsxHint": "Please save Excel as CSV (UTF-8) and import that file.",
+    "catalogVehiclesTitle": "Transfer vehicles",
+    "catalogVehiclesSubtitle": "Import CSV to update the fleet classes shown on pricing, booking, and the /fleet pages (demo: browser storage).",
+    "catalogTransferVehiclesTitle": "Vehicle classes (ECO/PREM/SUV/VAN/VIP/SIG/EXE/BUS)",
+    "catalogVehiclesHelp": "CSV columns: code, passengers, amenityKeys (comma or | separated), priceMultiplier, image. Codes are fixed.",
+    "catalogUsingBuiltinVehicles": "Using built-in vehicle table",
+    "catalogUsingImportedVehicles": "Using imported vehicle table · {when}",
+    "catalogVehiclesOk": "Imported {n} vehicle rows",
+    "catalogVehiclesPreview": "Built-in preview",
+    "catalogVehiclesPreviewHint": "Edit these fields in the CSV template, then import.",
+    "settingsTitle": "Settings",
+    "settingsSubtitle": "Edit contact details, payment accounts, charter rates, cancellation rules, and staff logins. Saved in this browser for the demo.",
+    "settingsContactTitle": "Contact details",
+    "settingsContactHelp": "These values appear in the header, footer, contact page, and vouchers.",
+    "settingsPaymentTitle": "Payments",
+    "settingsPaymentHelp": "Turn methods on or off and edit bank / PromptPay details shown at checkout.",
+    "settingsCharterTitle": "Charter rates",
+    "settingsCharterHelp": "Base THB rates for daily and hourly charter. Vehicle multipliers still apply.",
+    "settingsPolicyTitle": "Cancellation policy",
+    "settingsPolicyHelp": "Shown on the booking form. A live site can later use these numbers to calculate refunds.",
+    "settingsStaffTitle": "Staff logins",
+    "settingsStaffHelp": "Extra accounts besides the demo admin. Roles hide some menu items. Passwords are stored in this browser only.",
+    "settingsSave": "Save",
+    "settingsReset": "Restore defaults",
+    "settingsResetOk": "Restored default settings",
+    "settingsSaved": "Settings saved",
+    "settingsRequired": "Please fill the required fields",
+    "settingsNeedMethod": "Turn on at least one payment method",
+    "settingsNeedBank": "Enable at least one bank account for transfers",
+    "settingsNeedPromptPay": "Enter a PromptPay ID",
+    "settingsPhone": "Phone",
+    "settingsEmail": "Email",
+    "settingsLine": "LINE ID",
+    "settingsAddress": "Address",
+    "settingsEnabled": "Enabled",
+    "settingsBankName": "Bank name",
+    "settingsAccountName": "Account name",
+    "settingsAccountNumber": "Account number",
+    "settingsBranch": "Branch",
+    "settingsPromptPayId": "PromptPay ID",
+    "settingsPromptPayName": "PromptPay account name",
+    "settingsDailyRate": "Daily charter (THB)",
+    "settingsHourlyRate": "Hourly rate (THB)",
+    "settingsMinHours": "Minimum hours",
+    "settingsFreeHours": "Free cancel (hours before pickup)",
+    "settingsLatePercent": "Late cancel fee (%)",
+    "settingsNoShowPercent": "No-show fee (%)",
+    "settingsRefundDays": "Refund within (business days)",
+    "settingsNoStaff": "No extra staff yet.",
+    "settingsStaffName": "Name",
+    "settingsStaffRole": "Role",
+    "settingsAddStaff": "Add staff",
+    "settingsStaffAdded": "Staff account added",
+    "settingsStaffRemoved": "Staff account removed",
+    "settingsStaffDup": "That username is already used",
+    "settingsRemove": "Remove",
+    "settingsCancel": "Cancel",
+    "settingsMethod": {
+      "bank-transfer": "Bank transfer",
+      "card": "Card",
+      "promptpay": "PromptPay",
+      "cash": "Cash to driver"
+    },
+    "settingsRole": {
+      "admin": "Admin",
+      "ops": "Operations",
+      "finance": "Finance",
+      "driver": "Driver"
+    },
+    "driversAdd": "Add driver",
+    "driversEdit": "Edit driver",
+    "driversLine": "LINE ID",
+    "driversPlate": "License plate",
+    "driversRemoved": "Driver removed",
+    "catalogIssue": {
+      "empty": "file is empty",
+      "missingModel": "missing model",
+      "badCategory": "invalid category",
+      "badLocation": "unknown from/to location",
+      "sameLocation": "from and to are the same",
+      "missingPrice": "missing vehicle price"
+    }
   }
 }
