@@ -18,27 +18,34 @@ import {
   travelGuideCategories,
   travelGuides,
 } from "@/lib/data/travel-guides";
+import { useTravelGuideCopy } from "@/lib/content-i18n";
 import { cn } from "@/lib/utils";
 import type { TravelGuideCategory } from "@/lib/types";
 
 export function TravelInfoPageContent() {
   const t = useTranslations("Listing");
+  const { localize, category: categoryLabel } = useTravelGuideCopy();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<TravelGuideCategory | "All">("All");
+  const localized = useMemo(
+    () => travelGuides.map(localize),
+    [localize]
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return travelGuides.filter((guide) => {
+    return localized.filter((guide) => {
       const categoryMatch =
         category === "All" || guide.category === category;
       const textMatch =
         !q ||
         guide.title.toLowerCase().includes(q) ||
         guide.excerpt.toLowerCase().includes(q) ||
-        guide.region.toLowerCase().includes(q);
+        guide.region.toLowerCase().includes(q) ||
+        guide.categoryLabel.toLowerCase().includes(q);
       return categoryMatch && textMatch;
     });
-  }, [query, category]);
+  }, [query, category, localized]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -66,7 +73,7 @@ export function TravelInfoPageContent() {
                   : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
               )}
             >
-              {item === "All" ? t("all") : item}
+              {item === "All" ? t("all") : categoryLabel(item)}
             </button>
           ))}
         </div>
@@ -92,7 +99,7 @@ export function TravelInfoPageContent() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <Badge className="absolute top-2 left-2 bg-white/95 text-[10px] text-zinc-950 hover:bg-white sm:text-xs">
-                    {guide.category}
+                    {guide.categoryLabel}
                   </Badge>
                 </div>
                 <CardHeader className="space-y-1 px-4 pt-4">

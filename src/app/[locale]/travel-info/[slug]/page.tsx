@@ -19,6 +19,7 @@ import {
   getTravelGuide,
   travelGuides,
 } from "@/lib/data/travel-guides";
+import { getBoatCopy, getTourCopy, getTravelGuideCopy } from "@/lib/content-i18n-server";
 import { routing } from "@/i18n/routing";
 import type { BoatSchedule, Tour } from "@/lib/types";
 
@@ -35,18 +36,24 @@ export default async function TravelInfoDetailPage({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
-  const guide = getTravelGuide(slug);
-  if (!guide) notFound();
+  const raw = getTravelGuide(slug);
+  if (!raw) notFound();
 
   const t = await getTranslations("Listing");
   const tNav = await getTranslations("Nav");
-  const related = getRelatedGuides(guide.slug, 3);
-  const relatedTours = (guide.relatedTourSlugs ?? [])
+  const { localize } = await getTravelGuideCopy();
+  const { localize: localizeTour } = await getTourCopy();
+  const { localize: localizeBoat } = await getBoatCopy();
+  const guide = localize(raw);
+  const related = getRelatedGuides(guide.slug, 3).map(localize);
+  const relatedTours = (raw.relatedTourSlugs ?? [])
     .map((s) => getTour(s))
-    .filter((tour): tour is Tour => Boolean(tour));
-  const relatedBoats = (guide.relatedBoatRouteIds ?? [])
+    .filter((tour): tour is Tour => Boolean(tour))
+    .map(localizeTour);
+  const relatedBoats = (raw.relatedBoatRouteIds ?? [])
     .map((id) => getBoatSchedule(id))
-    .filter((b): b is BoatSchedule => Boolean(b));
+    .filter((b): b is BoatSchedule => Boolean(b))
+    .map(localizeBoat);
 
   return (
     <article>
@@ -60,7 +67,7 @@ export default async function TravelInfoDetailPage({
             {t("allTravel")}
           </Link>
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline">{guide.category}</Badge>
+            <Badge variant="outline">{guide.categoryLabel}</Badge>
             <Badge variant="secondary">{guide.region}</Badge>
           </div>
           <h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
@@ -132,7 +139,7 @@ export default async function TravelInfoDetailPage({
               )}
               {relatedBoats.length > 0 && (
                 <div>
-                  <h2 className="mb-3 text-lg font-bold">Related boat routes</h2>
+                  <h2 className="mb-3 text-lg font-bold">{t("relatedBoats")}</h2>
                   <ul className="space-y-2 text-sm">
                     {relatedBoats.map((boat) => (
                       <li key={boat.id}>
@@ -144,7 +151,7 @@ export default async function TravelInfoDetailPage({
                         </Link>
                         <span className="text-muted-foreground">
                           {" "}
-                          · {boat.type} · {t("from")} ฿
+                          · {t(boat.type)} · {t("from")} ฿
                           {boat.priceFrom.toLocaleString("en-US")}
                         </span>
                       </li>
@@ -158,8 +165,7 @@ export default async function TravelInfoDetailPage({
           <div className="mt-10 rounded-2xl bg-gold-gradient px-6 py-8 text-primary-foreground shadow-lg shadow-amber-500/20">
             <h2 className="text-xl font-bold">{t("planTransfer")}</h2>
             <p className="mt-2 text-sm text-primary-foreground/85">
-              Check boat times, then book a private transfer to the pier or
-              hotel.
+              {t("travelCtaBody")}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <ButtonLink variant="secondary" href="/boat-schedules">
@@ -200,7 +206,7 @@ export default async function TravelInfoDetailPage({
                       </div>
                       <CardHeader className="min-w-0 flex-1 gap-1.5 p-3 sm:p-4">
                         <Badge variant="outline" className="w-fit text-[10px]">
-                          {item.category}
+                          {item.categoryLabel}
                         </Badge>
                         <CardTitle className="line-clamp-2 text-sm leading-snug group-hover:text-amber-700">
                           {item.title}

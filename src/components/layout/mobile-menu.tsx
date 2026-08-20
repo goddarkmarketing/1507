@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { Car, House, Menu, Phone } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
@@ -86,8 +86,8 @@ export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const t = useTranslations("Nav");
   const tLang = useTranslations("LocaleSwitcher");
-  const locale = useLocale();
-  const slogan = locale === "th" ? siteConfig.slogan : siteConfig.sloganEn;
+  const ts = useTranslations("Site");
+  const slogan = ts("slogan");
   const site = useSiteContact();
   const close = () => setOpen(false);
 

@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getRelatedTours, getTour, tours } from "@/lib/data/tours";
+import { getTourCopy } from "@/lib/content-i18n-server";
 import { routing } from "@/i18n/routing";
 
 export function generateStaticParams() {
@@ -28,11 +29,13 @@ export default async function TourDetailPage({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
-  const tour = getTour(slug);
-  if (!tour) notFound();
+  const raw = getTour(slug);
+  if (!raw) notFound();
 
   const t = await getTranslations("Listing");
-  const related = getRelatedTours(tour.slug, 3);
+  const { localize } = await getTourCopy();
+  const tour = localize(raw);
+  const related = getRelatedTours(tour.slug, 3).map(localize);
   const bookingHref = tour.pierId
     ? `/booking?to=${tour.pierId}`
     : "/pier-transfer";
@@ -48,7 +51,7 @@ export default async function TourDetailPage({
             <ArrowLeft className="size-3.5" />
             {t("allTours")}
           </Link>
-          <Badge variant="outline">{tour.category}</Badge>
+          <Badge variant="outline">{tour.categoryLabel}</Badge>
           <h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
             {tour.title}
           </h1>
@@ -117,10 +120,9 @@ export default async function TourDetailPage({
           </div>
 
           <div className="mt-10 rounded-2xl bg-gold-gradient px-6 py-8 text-primary-foreground shadow-lg shadow-amber-500/20">
-            <h2 className="text-xl font-bold">Book pier or hotel transfer</h2>
+            <h2 className="text-xl font-bold">{t("tourCtaTitle")}</h2>
             <p className="mt-2 text-sm text-primary-foreground/85">
-              Tour tickets are sold by local operators. We get you to the
-              meeting pier on time with an e-Voucher.
+              {t("tourCtaBody")}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <ButtonLink variant="secondary" href={bookingHref}>
@@ -161,7 +163,7 @@ export default async function TourDetailPage({
                       </div>
                       <CardHeader className="min-w-0 flex-1 gap-1.5 p-3 sm:p-4">
                         <Badge variant="outline" className="w-fit text-[10px]">
-                          {item.category}
+                          {item.categoryLabel}
                         </Badge>
                         <CardTitle className="line-clamp-2 text-sm leading-snug group-hover:text-amber-700">
                           {item.title}

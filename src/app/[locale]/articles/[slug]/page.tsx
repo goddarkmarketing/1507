@@ -19,6 +19,7 @@ import {
 } from "@/lib/data/articles";
 import { getArticleCopy } from "@/lib/article-i18n-server";
 import { routing } from "@/i18n/routing";
+import { getDateLocale } from "@/i18n/locales";
 
 export function generateStaticParams() {
   return articles.map((article) => ({ slug: article.slug }));
@@ -41,8 +42,7 @@ export default async function ArticleDetailPage({
   const article = localize(raw);
   const related = getRelatedArticles(article.slug, 3).map(localize);
 
-  const dateLocale =
-    locale === "th" ? "th-TH" : locale === "zh" ? "zh-CN" : "en-GB";
+  const dateLocale = getDateLocale(locale);
 
   return (
     <article>

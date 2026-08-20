@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { articles } from "@/lib/data/articles";
 import { useArticleCopy } from "@/lib/article-i18n";
+import { getDateLocale } from "@/i18n/locales";
 
 export function HomeArticles() {
   const t = useTranslations("Home");
@@ -65,7 +66,7 @@ export function HomeArticles() {
                   <CardDescription className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] sm:text-xs">
                     <span>
                       {new Date(article.publishedAt).toLocaleDateString(
-                        locale === "th" ? "th-TH" : locale === "zh" ? "zh-CN" : "en-GB",
+                        getDateLocale(locale),
                         { day: "numeric", month: "short", year: "numeric" }
                       )}
                     </span>

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { boatSchedules } from "@/lib/data/boat-schedules";
 import { getLocation } from "@/lib/data/locations";
+import { useBoatCopy } from "@/lib/content-i18n";
 import { useLocationName } from "@/lib/i18n-labels";
 import { cn } from "@/lib/utils";
 import type { BoatType } from "@/lib/types";
@@ -31,20 +32,25 @@ const boatTypeLabelKey = {
 export function BoatSchedulesContent() {
   const t = useTranslations("Listing");
   const locName = useLocationName();
+  const { localize } = useBoatCopy();
   const [boatType, setBoatType] = useState<BoatType | "all">("all");
   const [routeQuery, setRouteQuery] = useState("all");
+  const localized = useMemo(
+    () => boatSchedules.map(localize),
+    [localize]
+  );
 
   const routes = useMemo(() => {
-    return Array.from(new Set(boatSchedules.map((s) => s.routeLabel)));
-  }, []);
+    return Array.from(new Set(localized.map((s) => s.routeLabel)));
+  }, [localized]);
 
   const filtered = useMemo(() => {
-    return boatSchedules.filter((s) => {
+    return localized.filter((s) => {
       const typeMatch = boatType === "all" || s.type === boatType;
       const routeMatch = routeQuery === "all" || s.routeLabel === routeQuery;
       return typeMatch && routeMatch;
     });
-  }, [boatType, routeQuery]);
+  }, [boatType, routeQuery, localized]);
 
   const pierShort = (pierId: string) => {
     const name = locName(getLocation(pierId));
@@ -256,8 +262,7 @@ export function BoatSchedulesContent() {
           <div>
             <h2 className="text-lg font-bold">{t("landTransfer")}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              We do not sell ferry tickets — we get you to the departure point
-              on time.
+              {t("landTransferBody")}
             </p>
           </div>
         </div>

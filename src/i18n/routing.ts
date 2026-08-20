@@ -1,15 +1,11 @@
 import { defineRouting } from "next-intl/routing";
+import { localeCodes, localeLabels, type AppLocale } from "@/i18n/locales";
 
 export const routing = defineRouting({
-  locales: ["en", "th", "zh"],
+  locales: localeCodes,
   defaultLocale: "en",
   localePrefix: "always",
 });
 
-export type AppLocale = (typeof routing.locales)[number];
-
-export const localeLabels: Record<AppLocale, string> = {
-  en: "English",
-  th: "ไทย",
-  zh: "中文",
-};
+export type { AppLocale };
+export { localeLabels };

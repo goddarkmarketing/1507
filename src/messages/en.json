@@ -1,9 +1,43 @@
 {
   "LocaleSwitcher": {
     "label": "Language",
+    "search": "Search language",
+    "empty": "No matching language",
     "en": "EN",
     "th": "TH",
-    "zh": "中文"
+    "zh": "中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "ru": "RU",
+    "de": "DE",
+    "fr": "FR",
+    "it": "IT",
+    "es": "ES",
+    "pt": "PT",
+    "ar": "AR",
+    "hi": "HI",
+    "ms": "MS",
+    "vi": "VI",
+    "km": "KM",
+    "lo": "LO",
+    "my": "MY",
+    "tl": "TL",
+    "id": "ID",
+    "sv": "SV",
+    "nl": "NL",
+    "pl": "PL",
+    "uk": "UK",
+    "tr": "TR",
+    "cs": "CS",
+    "el": "EL",
+    "fi": "FI",
+    "no": "NO",
+    "da": "DA",
+    "ro": "RO",
+    "hu": "HU",
+    "he": "HE",
+    "fa": "FA",
+    "bn": "BN"
   },
   "MeetingPoint": {
     "eyebrow": "Krabi Airport meeting points",
@@ -931,7 +965,13 @@
     "emptyBoats": "No schedules match your filters.",
     "mockBanner": "Mock boat schedules for planning — times may differ in reality.",
     "ctaArticlesBody": "Check live prices and book a private car with instant e-Voucher.",
-    "bookRouteBody": "Get an instant price and e-Voucher with QR code."
+    "bookRouteBody": "Get an instant price and e-Voucher with QR code.",
+    "relatedBoats": "Related boat routes",
+    "landTransferBody": "We do not sell ferry tickets — we get you to the departure point on time.",
+    "tourCtaTitle": "Book pier or hotel transfer",
+    "tourCtaBody": "Tour tickets are sold by local operators. We get you to the meeting pier on time with an e-Voucher.",
+    "toursCtaBody": "Tour prices are operator estimates (mock). We handle hotel–pier transfers with an instant e-Voucher.",
+    "travelCtaBody": "Check boat times, then book a private transfer to the pier or hotel."
   },
   "Articles": {
     "categories": {
@@ -1167,6 +1207,276 @@
       "badLocation": "unknown from/to location",
       "sameLocation": "from and to are the same",
       "missingPrice": "missing vehicle price"
+    }
+  },
+  "Tours": {
+    "categories": {
+      "Island": "Island",
+      "Snorkel": "Snorkel",
+      "Kayak": "Kayak",
+      "Sightseeing": "Sightseeing",
+      "Combo": "Combo"
+    },
+    "items": {
+      "phi-phi-islands-day-trip": {
+        "title": "Phi Phi Islands Day Trip",
+        "excerpt": "Classic Andaman day trip with Maya Bay viewpoint, snorkel stops, and lunch on the beach.",
+        "duration": "Full day (~8–9 hrs)",
+        "fromArea": "Ao Nang / Krabi",
+        "toArea": "Phi Phi Islands",
+        "highlights": {
+          "1": "Maya Bay viewpoint (subject to park rules)",
+          "2": "Snorkel at clear reefs",
+          "3": "Beach lunch on Phi Phi Don or nearby bay",
+          "4": "Hotel or pier pickup timing support"
+        },
+        "includes": {
+          "1": "Speedboat or ferry seat (operator dependent)",
+          "2": "National park fees (where included by operator)",
+          "3": "Lunch & drinking water",
+          "4": "Life jacket & snorkel gear"
+        },
+        "content": {
+          "1": "Phi Phi remains one of the most requested day trips from Krabi. Most packages leave early from Ao Nang or nearby piers and return in the late afternoon.",
+          "2": "We recommend booking a private pier transfer so you arrive with buffer time before check-in. Evening returns can be busy — reserve your pickup slot when you book the tour.",
+          "3": "Tour prices shown are from typical local operators (mock guide prices). Confirm inclusions, boat type, and Maya Bay access rules for your travel date."
+        }
+      },
+      "four-islands-tour": {
+        "title": "4 Islands Tour (Chicken, Tup, Poda & Railay)",
+        "excerpt": "Short island hopping near Ao Nang — shallow reefs, iconic rocks, and soft sand beaches.",
+        "duration": "Half / full day",
+        "fromArea": "Ao Nang",
+        "toArea": "Chicken · Tup · Poda · Railay",
+        "highlights": {
+          "1": "Chicken Island viewpoint & snorkel",
+          "2": "Tup Island sandbar (tide dependent)",
+          "3": "Poda Beach swim stop",
+          "4": "Optional Railay drop or visit"
+        },
+        "includes": {
+          "1": "Longtail or speedboat",
+          "2": "Snorkel mask & life jacket",
+          "3": "Fruit / soft drinks (operator dependent)",
+          "4": "Guide on board"
+        },
+        "content": {
+          "1": "The 4 Islands route is ideal if you want scenery close to Ao Nang without a long crossing to Phi Phi.",
+          "2": "Tide affects sandbar visibility at Tup Island — morning departures usually give the best conditions.",
+          "3": "Pair this tour with a hotel–pier transfer so you do not rely on last-minute songthaews during peak season."
+        }
+      },
+      "hong-island-lagoon": {
+        "title": "Hong Island Lagoon Trip",
+        "excerpt": "Calm lagoons, kayaking options, and powder sand beaches in Than Bok Khorani National Park.",
+        "duration": "Full day",
+        "fromArea": "Ao Nang / Nopparat Thara",
+        "toArea": "Hong Island",
+        "highlights": {
+          "1": "Emerald lagoon views",
+          "2": "Kayak through limestone channels",
+          "3": "Quiet beach time",
+          "4": "National park scenery"
+        },
+        "includes": {
+          "1": "Boat transfer to Hong Island",
+          "2": "Kayak (shared or private — operator dependent)",
+          "3": "National park fee (often included)",
+          "4": "Lunch on some packages"
+        },
+        "content": {
+          "1": "Hong Island is popular with travelers who prefer lagoons and kayaking over long-distance speedboat days.",
+          "2": "Departures are often from Nopparat Thara / Ao Nang side. Allow extra time if your hotel is inland or in Krabi Town.",
+          "3": "Ask your operator about park opening rules and whether kayaks are included or rented on site."
+        }
+      },
+      "james-bond-island-phang-nga": {
+        "title": "James Bond Island · Phang Nga Bay",
+        "excerpt": "Iconic limestone karsts, canoeing in caves, and the famous Koh Tapu rock needle.",
+        "duration": "Full day",
+        "fromArea": "Krabi / Phuket side",
+        "toArea": "Phang Nga Bay",
+        "highlights": {
+          "1": "Koh Tapu (James Bond Island)",
+          "2": "Canoe through mangrove caves",
+          "3": "Muslim fishing village stop (operator dependent)",
+          "4": "Scenic bay cruise"
+        },
+        "includes": {
+          "1": "Boat & canoe segment",
+          "2": "Guide",
+          "3": "Lunch",
+          "4": "National park fees (package dependent)"
+        },
+        "content": {
+          "1": "James Bond Island tours can start from Krabi or Phuket. Travel time on land may be longer than the boat segment itself.",
+          "2": "A private transfer between your hotel and the meeting pier keeps the day on schedule — especially for early hotel pickups.",
+          "3": "Prices vary widely by canoe quality and group size; use our from-price as a planning guide only."
+        }
+      },
+      "emerald-pool-hot-spring-combo": {
+        "title": "Emerald Pool & Hot Spring Combo",
+        "excerpt": "Land-based nature day — emerald jungle pools and mineral hot springs near Krabi Town.",
+        "duration": "Half day",
+        "fromArea": "Krabi Town / Ao Nang",
+        "toArea": "Emerald Pool · Hot Spring",
+        "highlights": {
+          "1": "Swim at Emerald Pool",
+          "2": "Relax at natural hot spring",
+          "3": "Blue Pool viewpoint option",
+          "4": "Easy half-day for families"
+        },
+        "includes": {
+          "1": "Entrance fees (package dependent)",
+          "2": "Guide on some packages",
+          "3": "Drinking water"
+        },
+        "content": {
+          "1": "This combo is perfect when seas are rough or you want a land day between island trips.",
+          "2": "Book an attraction transfer for door-to-door timing without shared van delays.",
+          "3": "Bring water shoes — paths can be slippery after rain."
+        }
+      },
+      "railay-sunset-longtail": {
+        "title": "Railay Sunset by Longtail",
+        "excerpt": "Short pier hop to Railay for viewpoints, climbing cliffs, and golden-hour photos.",
+        "duration": "3–5 hrs / evening",
+        "fromArea": "Ao Nang",
+        "toArea": "Railay Beach",
+        "highlights": {
+          "1": "Longtail to Railay West / East",
+          "2": "Phra Nang Cave Beach walk",
+          "3": "Sunset on Railay West",
+          "4": "Optional dinner on the beach"
+        },
+        "includes": {
+          "1": "Round-trip longtail (shared or private)",
+          "2": "Life jacket"
+        },
+        "content": {
+          "1": "Railay is only a short boat ride from Ao Nang but feels like a different destination.",
+          "2": "Check return boat times if you stay for sunset — private longtails are flexible when public boats slow down.",
+          "3": "We can drop you at Ao Nang Pier and wait for your return pickup on request."
+        }
+      }
+    }
+  },
+  "TravelGuides": {
+    "categories": {
+      "Destination": "Destination",
+      "Island": "Island",
+      "Corridor": "Corridor",
+      "Practical": "Practical"
+    },
+    "items": {
+      "ao-nang-base-guide": {
+        "title": "Ao Nang as Your Krabi Base",
+        "excerpt": "Where to stay, how to reach the pier, and how to link beaches, Railay, and day trips.",
+        "region": "Krabi",
+        "tips": {
+          "1": "Stay near the beach road for easy longtail access to Railay.",
+          "2": "Book pier transfers the night before busy ferry mornings.",
+          "3": "Evening traffic between Krabi Town and Ao Nang can add 15–25 minutes."
+        },
+        "content": {
+          "1": "Ao Nang is the most practical base for first-time visitors: restaurants, tour desks, and boat access sit close together.",
+          "2": "Use private transfers from Krabi Airport (KBV) if you arrive with luggage or after dark — metered taxis and shared vans vary in wait time.",
+          "3": "From Ao Nang you can reach Railay in about 15 minutes by longtail, join 4 Islands trips, or connect to Phi Phi speedboats.",
+          "4": "If your hotel is uphill or inland, add buffer time to every pier departure."
+        }
+      },
+      "railay-access-tips": {
+        "title": "Getting to Railay Beach Without Stress",
+        "excerpt": "Boat options, luggage tips, and when to book a private longtail vs shared boats.",
+        "region": "Krabi",
+        "tips": {
+          "1": "Large suitcases are easier on private longtails.",
+          "2": "Railay East can be muddy at low tide — West is better for sunset.",
+          "3": "Confirm return boat plans before dinner."
+        },
+        "content": {
+          "1": "Railay has no road access. Almost everyone arrives by boat from Ao Nang or by longer routes from Krabi Town.",
+          "2": "Shared longtails are cheap and frequent by day. Private boats cost more but help with timing, kids, and bulky bags.",
+          "3": "Climbing, kayaking, and Phra Nang Cave Beach are walkable once you arrive — plan footwear for rocky paths.",
+          "4": "We can transfer you hotel → Ao Nang Pier and arrange a timed return pickup after sunset."
+        }
+      },
+      "phi-phi-arrival-checklist": {
+        "title": "Phi Phi Arrival Checklist",
+        "excerpt": "Ferry vs speedboat, pier timing, and how to connect hotel transfers before and after the crossing.",
+        "region": "Phi Phi / Krabi",
+        "tips": {
+          "1": "Arrive at the pier 45–60 minutes early in high season.",
+          "2": "Speedboats are faster; ferries are usually smoother and cheaper.",
+          "3": "Pre-book the land transfer so you are not rushing with luggage."
+        },
+        "content": {
+          "1": "Island days start on land. A reliable hotel-to-pier transfer is as important as the boat ticket itself.",
+          "2": "Weather and park rules can change Maya Bay access — check with your operator the day before.",
+          "3": "On return evenings, private pier pickups beat waiting for shared vans, especially with wet bags and tired kids.",
+          "4": "If you fly out of Phuket or Krabi the next morning, leave buffer time for ferry delays."
+        }
+      },
+      "krabi-phuket-corridor": {
+        "title": "Krabi–Phuket Corridor: Transfer Tips",
+        "excerpt": "When a private car beats shared vans on the busiest inter-province route in the south.",
+        "region": "Krabi · Phuket",
+        "tips": {
+          "1": "Door-to-door private cars skip multiple hotel stops.",
+          "2": "Airport–airport transfers need flight tracking and waiting time.",
+          "3": "Toll and parking are usually included in private quotes."
+        },
+        "content": {
+          "1": "Krabi ↔ Phuket is the most requested inter-province corridor for flight connections and multi-stay trips.",
+          "2": "Shared vans are cheaper but add time with stops. Private SUVs or vans suit families and tight flight schedules.",
+          "3": "Typical legs connect KBV or Krabi Town with Phuket Airport, Patong, or west-coast hotels.",
+          "4": "Book round-trip if you fly into one province and out of the other — one e-Voucher covers both legs."
+        }
+      }
+    }
+  },
+  "Boats": {
+    "items": {
+      "ao-nang-railay-longtail": {
+        "routeLabel": "Ao Nang Pier → Railay Beach",
+        "operator": "Local longtail (shared)",
+        "notes": "Frequent shared longtails; private charter available. Evening boats thin out after sunset."
+      },
+      "railay-ao-nang-longtail": {
+        "routeLabel": "Railay Beach → Ao Nang Pier",
+        "operator": "Local longtail (shared)",
+        "notes": "Return boats from Railay West / East depending on tide and luggage."
+      },
+      "ao-nang-phi-phi-speedboat": {
+        "routeLabel": "Ao Nang / Tonsai → Phi Phi",
+        "operator": "Speedboat operators (mock)",
+        "notes": "Exact pier (Ao Nang vs Tonsai) depends on operator. Arrive 30–45 min early in peak season."
+      },
+      "phi-phi-ao-nang-speedboat": {
+        "routeLabel": "Phi Phi → Ao Nang / Tonsai",
+        "operator": "Speedboat operators (mock)",
+        "notes": "Book return pier pickup in advance if you arrive after dark."
+      },
+      "ao-nang-phi-phi-ferry": {
+        "routeLabel": "Ao Nang area → Phi Phi (Ferry)",
+        "operator": "Ferry / combined transfer (mock)",
+        "notes": "Slower and usually cheaper than speedboat. May include van to a larger ferry pier."
+      },
+      "krabi-lanta-ferry": {
+        "routeLabel": "Krabi → Koh Lanta",
+        "operator": "Ferry + van combo (mock)",
+        "notes": "Many packages use Krabi Town or nearby piers; confirm meeting point. Duration includes road + sea."
+      },
+      "phi-phi-phuket-ferry": {
+        "routeLabel": "Phi Phi → Phuket",
+        "operator": "Ferry operators (mock)",
+        "notes": "Connect with a Phuket Airport or Patong private transfer after arrival."
+      },
+      "railay-hong-island-speedboat": {
+        "routeLabel": "Ao Nang → Hong Island",
+        "operator": "Day-trip speedboat (mock)",
+        "notes": "Usually sold as a round-trip day package rather than one-way tickets."
+      }
     }
   }
 }

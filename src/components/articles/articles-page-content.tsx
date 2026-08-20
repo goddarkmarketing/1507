@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { articles } from "@/lib/data/articles";
 import { useArticleCopy } from "@/lib/article-i18n";
+import { getDateLocale } from "@/i18n/locales";
 import { cn } from "@/lib/utils";
 
 const categoryKeys = [
@@ -46,8 +47,7 @@ export function ArticlesPageContent() {
     return categoryMatch && textMatch;
   });
 
-  const dateLocale =
-    locale === "th" ? "th-TH" : locale === "zh" ? "zh-CN" : "en-GB";
+  const dateLocale = getDateLocale(locale);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

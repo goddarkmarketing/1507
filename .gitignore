@@ -38,6 +38,9 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# generated translation cache
+/scripts/.translate-cache.json
 next-env.d.ts
 
 # Local source assets (processed copies live in /public)

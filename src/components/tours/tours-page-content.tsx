@@ -16,27 +16,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { tourCategories, tours } from "@/lib/data/tours";
+import { useTourCopy } from "@/lib/content-i18n";
 import { cn } from "@/lib/utils";
 import type { TourCategory } from "@/lib/types";
 
 export function ToursPageContent() {
   const t = useTranslations("Listing");
+  const { localize, category: categoryLabel } = useTourCopy();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<TourCategory | "All">("All");
+  const localized = useMemo(() => tours.map(localize), [localize]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return tours.filter((tour) => {
+    return localized.filter((tour) => {
       const categoryMatch = category === "All" || tour.category === category;
       const textMatch =
         !q ||
         tour.title.toLowerCase().includes(q) ||
         tour.excerpt.toLowerCase().includes(q) ||
         tour.fromArea.toLowerCase().includes(q) ||
-        tour.toArea.toLowerCase().includes(q);
+        tour.toArea.toLowerCase().includes(q) ||
+        tour.categoryLabel.toLowerCase().includes(q);
       return categoryMatch && textMatch;
     });
-  }, [query, category]);
+  }, [query, category, localized]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -64,7 +68,7 @@ export function ToursPageContent() {
                   : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
               )}
             >
-              {item === "All" ? t("all") : item}
+              {item === "All" ? t("all") : categoryLabel(item)}
             </button>
           ))}
         </div>
@@ -90,7 +94,7 @@ export function ToursPageContent() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <Badge className="absolute top-2 left-2 bg-white/95 text-[10px] text-zinc-950 hover:bg-white sm:top-3 sm:left-3 sm:text-xs">
-                    {tour.category}
+                    {tour.categoryLabel}
                   </Badge>
                 </div>
                 <CardHeader className="space-y-1 px-4 pt-4">
@@ -137,8 +141,7 @@ export function ToursPageContent() {
       <div className="mt-10 rounded-2xl border bg-muted/30 px-6 py-8 text-center">
         <h2 className="text-lg font-bold">{t("ctaTours")}</h2>
         <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
-          Tour prices are operator estimates (mock). We handle hotel–pier
-          transfers with an instant e-Voucher.
+          {t("toursCtaBody")}
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
           <ButtonLink href="/pier-transfer">{t("pierTransfer")}</ButtonLink>
