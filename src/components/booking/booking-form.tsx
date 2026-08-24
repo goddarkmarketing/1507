@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, CalendarClock, Wallet, PlaneTakeoff, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +28,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { PaymentSection } from "@/components/booking/payment-section";
+import { RentalConditions } from "@/components/shared/rental-conditions";
 import { cn } from "@/lib/utils";
 import { locations } from "@/lib/data/locations";
 import { tariffVehicles, vehicles } from "@/lib/data/vehicles";
@@ -186,7 +187,10 @@ export function BookingForm() {
   const selectTriggerClass = cn("w-full min-w-0", fieldClass);
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-5 px-3 py-4 pb-32 sm:gap-8 sm:px-4 sm:py-8 md:pb-8 lg:grid-cols-3 lg:px-8">
+    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-32 sm:space-y-8 sm:px-4 sm:py-8 md:pb-8 lg:px-8">
+      <RentalConditions />
+
+      <div className="grid gap-5 sm:gap-8 lg:grid-cols-3">
       <div className="space-y-4 sm:space-y-6 lg:col-span-2">
         <Card className="md:[--card-spacing:--spacing(4)]" size="sm">
           <CardHeader className="gap-1">
@@ -382,8 +386,18 @@ export function BookingForm() {
         <Card size="sm">
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">{t("customerTitle")}</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
+              {t("customerSubtitle")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+            <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
+              <ul className="space-y-1.5 rounded-xl border border-amber-200/80 bg-amber-50/70 px-3 py-2.5 text-xs text-amber-950 sm:text-sm">
+                <li>{t("reqHintId")}</li>
+                <li>{t("reqHintFlight")}</li>
+                <li>{t("reqHintPhone")}</li>
+              </ul>
+            </div>
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="name">{t("fullName")}</Label>
               <Input
@@ -406,6 +420,7 @@ export function BookingForm() {
                 onChange={(e) => setCustomer("customerPhone", e.target.value)}
                 placeholder={t("phPhone")}
               />
+              <p className="text-[11px] text-muted-foreground">{t("phoneHint")}</p>
             </div>
             <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
               <Label htmlFor="email">{t("email")}</Label>
@@ -421,7 +436,7 @@ export function BookingForm() {
               />
             </div>
             <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="flight">{t("flightOptional")}</Label>
+              <Label htmlFor="flight">{t("flightLabel")}</Label>
               <Input
                 id="flight"
                 className={fieldClass}
@@ -429,6 +444,7 @@ export function BookingForm() {
                 onChange={(e) => setCustomer("flightNumber", e.target.value)}
                 placeholder={t("phFlight")}
               />
+              <p className="text-[11px] text-muted-foreground">{t("flightHint")}</p>
             </div>
             <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
               <Label htmlFor="notes">{t("specialRequests")}</Label>
@@ -451,12 +467,80 @@ export function BookingForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-950">
-              {t("cancelPolicyNote", {
-                hours: cancelPolicy.freeCancelHours,
-                percent: cancelPolicy.lateFeePercent,
-              })}
-            </p>
+            <details className="group overflow-hidden rounded-xl border border-amber-200/80 bg-amber-50/80 open:bg-amber-50">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-left sm:px-4 [&::-webkit-details-marker]:hidden">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-amber-950">
+                    {t("policyBoxTitle")}
+                  </p>
+                  <p className="text-[11px] text-amber-900/70 sm:text-xs">
+                    {t("policyBoxHint")}
+                  </p>
+                </div>
+                <ChevronDown className="size-4 shrink-0 text-amber-800 transition-transform group-open:rotate-180" />
+              </summary>
+
+              <div className="divide-y divide-amber-200/60 border-t border-amber-200/70">
+                <div className="flex gap-3 px-3 py-3 sm:px-4">
+                  <CalendarClock className="mt-0.5 size-4 shrink-0 text-amber-800" />
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="text-xs font-semibold text-amber-950 sm:text-sm">
+                      {t("cancelTitle")}
+                    </p>
+                    <p className="text-xs leading-relaxed text-amber-900/90 sm:text-sm">
+                      {t("cancelPolicyNote", {
+                        hours: cancelPolicy.freeCancelHours,
+                        percent: cancelPolicy.lateFeePercent,
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 px-3 py-3 sm:px-4">
+                  <Wallet className="mt-0.5 size-4 shrink-0 text-amber-800" />
+                  <div className="min-w-0 flex-1 space-y-2.5">
+                    <p className="text-xs font-semibold text-amber-950 sm:text-sm">
+                      {t("depositTitle")}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-lg bg-white/90 px-2.5 py-2 ring-1 ring-amber-200/70">
+                        <p className="text-[11px] text-amber-900/70">
+                          {t("depositSmallLabel")}
+                        </p>
+                        <p className="text-sm font-bold text-amber-950">
+                          {t("depositSmallAmount")}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-white/90 px-2.5 py-2 ring-1 ring-amber-200/70">
+                        <p className="text-[11px] text-amber-900/70">
+                          {t("depositLargeLabel")}
+                        </p>
+                        <p className="text-sm font-bold text-amber-950">
+                          {t("depositLargeAmount")}
+                        </p>
+                      </div>
+                    </div>
+                    <ol className="list-decimal space-y-1 pl-4 text-xs leading-relaxed text-amber-900/90 sm:text-sm">
+                      <li>{t("depositStepAdvance")}</li>
+                      <li>{t("depositStepContract")}</li>
+                      <li>{t("depositStepRefund")}</li>
+                    </ol>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 px-3 py-3 sm:px-4">
+                  <PlaneTakeoff className="mt-0.5 size-4 shrink-0 text-amber-800" />
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="text-xs font-semibold text-amber-950 sm:text-sm">
+                      {t("airportTitle")}
+                    </p>
+                    <p className="text-xs leading-relaxed text-amber-900/90 sm:text-sm">
+                      {t("airportTransferNote")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </details>
             <PaymentSection
               amount={total}
               method={draft.paymentMethod}
@@ -544,6 +628,7 @@ export function BookingForm() {
             </p>
           </CardContent>
         </Card>
+      </div>
       </div>
 
       {/* Sticky confirm bar on small screens — above mobile bottom nav */}

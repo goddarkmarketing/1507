@@ -20,6 +20,7 @@ import { useCatalogStore } from "@/lib/admin/catalog-store";
 import { cn } from "@/lib/utils";
 import type { RentalCategory, TransferCategory } from "@/lib/types";
 import { PublicImage } from "@/components/shared/public-image";
+import { RentalConditions } from "@/components/shared/rental-conditions";
 
 const sectionFilterIds = ["all", "rental", "transfer"] as const;
 
@@ -190,6 +191,7 @@ export function PriceListContent() {
 
       {showRental && (
         <section>
+          <RentalConditions className="mb-6" />
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold">{t("rentalTitle")}</h2>

@@ -200,15 +200,22 @@
     "selectVehicle": "Select Vehicle",
     "legPrice": "Leg price",
     "customerTitle": "Customer Details",
+    "customerSubtitle": "Please prepare ID/license, flight tickets, and a reachable phone number before confirming.",
     "fullName": "Full Name *",
     "phone": "Phone *",
+    "phoneHint": "Use a number we can call or message on the booking day.",
     "email": "Email *",
     "flightOptional": "Flight Number (optional)",
+    "flightLabel": "Flight number (round-trip recommended)",
+    "flightHint": "Prepare round-trip tickets in the customer’s name for rental confirmation.",
+    "reqHintId": "Prepare your national ID card or driver’s license.",
+    "reqHintFlight": "Prepare round-trip flight tickets with the customer’s name.",
+    "reqHintPhone": "Provide a phone number we can reach you on.",
     "specialRequests": "Special Requests",
     "phName": "John Smith",
     "phPhone": "+66 ...",
     "phEmail": "email@example.com",
-    "phFlight": "FD1234",
+    "phFlight": "FD1234 / return flight",
     "phNotes": "Child seat, extra stops, etc.",
     "paymentTitle": "Payment",
     "paymentSubtitle": "Choose how to pay — bank details, QR, and card fields are mock demo data",
@@ -226,6 +233,20 @@
     "confirmPromptPay": "Confirm PromptPay payment",
     "confirmCash": "Confirm cash booking",
     "cancelPolicyNote": "Free cancellation until {hours} hours before pickup. After that a {percent}% fee applies.",
+    "policyBoxTitle": "Booking & payment notes",
+    "policyBoxHint": "Tap to view cancellation, deposit, and airport notes",
+    "cancelTitle": "Cancellation",
+    "depositTitle": "Car rental deposit",
+    "depositSmallLabel": "Small car",
+    "depositSmallAmount": "฿3,000",
+    "depositLargeLabel": "Large car",
+    "depositLargeAmount": "฿5,000",
+    "depositStepAdvance": "After confirmation, pay ฿500 advance deposit first.",
+    "depositStepContract": "Pay rental fee and remaining deposit on contract day.",
+    "depositStepRefund": "Deposit is refunded after car return and inspection.",
+    "airportTitle": "Airport transfer",
+    "depositNote": "Car rental deposit: small car ฿3,000 · large car ฿5,000. After confirmation, pay ฿500 advance first; remaining rental and deposit are paid on contract day. Deposit is refunded after return and inspection.",
+    "airportTransferNote": "Free Krabi Airport pickup & drop-off for car rental customers.",
     "processing": "Processing...",
     "demoNote": "Demo payment — no real charge · e-Voucher issued after confirmation",
     "at": "at",
@@ -325,6 +346,10 @@
       "8": {
         "q": "How do I receive my e-Voucher?",
         "a": "After confirming your booking, an e-Voucher with QR code is shown instantly and can be reopened anytime from your booking page. Show it to the driver at pickup."
+      },
+      "9": {
+        "q": "What documents and deposit are needed for car rental?",
+        "a": "Please prepare an ID card or driver’s license, round-trip flight tickets in your name, and a reachable phone number. Security deposit is ฿3,000 for small cars and ฿5,000 for large cars. Pay ฿500 in advance when the car is confirmed; pay the rental fee and remaining deposit on contract day. The deposit is refunded after return and inspection. Free Krabi Airport pickup and drop-off is included."
       }
     },
     "policies": {
@@ -363,6 +388,10 @@
       "refund": {
         "title": "Refund",
         "content": "Approved refunds are processed within 5–7 business days to the original payment method."
+      },
+      "rental-deposit": {
+        "title": "Car rental deposit",
+        "content": "Small cars: ฿3,000 deposit. Large cars: ฿5,000 deposit. After confirmation, pay ฿500 advance deposit first. Pay rental fee and remaining deposit on contract day. Deposit is refunded after car return and inspection. Free Krabi Airport pickup & drop-off."
       }
     }
   },
@@ -781,6 +810,25 @@
     "address": "Address",
     "lineTitle": "LINE Official",
     "lineSubtitle": "Chat with us for quick support"
+  },
+  "RentalConditions": {
+    "eyebrow": "Car rental",
+    "title": "Booking conditions",
+    "subtitle": "Please prepare these documents and deposits before confirming your rental.",
+    "requirementsTitle": "Required for booking",
+    "reqId": "National ID card or driver’s license",
+    "reqFlight": "Round-trip flight tickets in the customer’s name",
+    "reqPhone": "A phone number we can reach you on",
+    "depositTitle": "Deposit conditions",
+    "smallCar": "Small car deposit",
+    "smallDeposit": "฿3,000",
+    "largeCar": "Large car deposit",
+    "largeDeposit": "฿5,000",
+    "stepConfirm": "When the car is confirmed, pay a ฿500 advance deposit first.",
+    "stepContract": "Pay the rental fee and remaining deposit on the contract signing day.",
+    "stepRefund": "The security deposit is refunded after you return the car and it passes inspection.",
+    "freeAirport": "Free Krabi Airport pickup & drop-off",
+    "thanks": "Thank you for choosing our service."
   },
   "FleetUi": {
     "filterAll": "All",

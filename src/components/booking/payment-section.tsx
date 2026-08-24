@@ -87,7 +87,10 @@ function CopyButton({ value, label }: { value: string; label: string }) {
   return (
     <button
       type="button"
-      onClick={copy}
+      onClick={(e) => {
+        e.stopPropagation();
+        void copy();
+      }}
       className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-muted"
       aria-label={`${t("copy")} ${label}`}
     >
@@ -246,10 +249,8 @@ export function PaymentSection({
               {bankAccounts.map((acc) => {
                 const selected = transferBankSymbol === acc.symbol;
                 return (
-                  <button
+                  <div
                     key={acc.symbol}
-                    type="button"
-                    onClick={() => onTransferBankChange(acc.symbol)}
                     className={cn(
                       "flex w-full items-start gap-3 rounded-lg border bg-background p-3 text-left text-sm transition-colors",
                       selected
@@ -257,46 +258,51 @@ export function PaymentSection({
                         : "hover:border-primary/40"
                     )}
                   >
-                    <PublicImage
-                      src={acc.icon}
-                      alt={acc.bank}
-                      width={40}
-                      height={40}
-                      className="size-10 shrink-0 rounded-md object-contain"
-                      unoptimized
-                    />
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-start justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onTransferBankChange(acc.symbol)}
+                      className="flex min-w-0 flex-1 items-start gap-3 text-left"
+                      aria-pressed={selected}
+                    >
+                      <PublicImage
+                        src={acc.icon}
+                        alt={acc.bank}
+                        width={40}
+                        height={40}
+                        className="size-10 shrink-0 rounded-md object-contain"
+                        unoptimized
+                      />
+                      <div className="min-w-0 flex-1 space-y-1">
                         <div>
                           <p className="font-medium">{acc.bank}</p>
                           <p className="text-xs text-muted-foreground">
                             {acc.symbol}
                           </p>
                         </div>
-                        <CopyButton
-                          value={acc.accountNumber.replace(/-/g, "")}
-                          label={t("accountNumber")}
-                        />
+                        <p>
+                          <span className="text-muted-foreground">
+                            {t("accountName")}:
+                          </span>{" "}
+                          {acc.accountName}
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">
+                            {t("accountNumber")}:
+                          </span>{" "}
+                          <span className="font-mono font-semibold">
+                            {acc.accountNumber}
+                          </span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {t("branch")}: {acc.branch}
+                        </p>
                       </div>
-                      <p>
-                        <span className="text-muted-foreground">
-                          {t("accountName")}:
-                        </span>{" "}
-                        {acc.accountName}
-                      </p>
-                      <p>
-                        <span className="text-muted-foreground">
-                          {t("accountNumber")}:
-                        </span>{" "}
-                        <span className="font-mono font-semibold">
-                          {acc.accountNumber}
-                        </span>
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("branch")}: {acc.branch}
-                      </p>
-                    </div>
-                  </button>
+                    </button>
+                    <CopyButton
+                      value={acc.accountNumber.replace(/-/g, "")}
+                      label={t("accountNumber")}
+                    />
+                  </div>
                 );
               })}
             </div>

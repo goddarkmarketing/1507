@@ -200,15 +200,22 @@
     "selectVehicle": "选择车型",
     "legPrice": "本段价格",
     "customerTitle": "客户信息",
+    "customerSubtitle": "确认前请准备身份证/驾驶证、往返机票，以及可联系的电话。",
     "fullName": "姓名 *",
     "phone": "电话 *",
+    "phoneHint": "请填写当天可联系到的号码。",
     "email": "邮箱 *",
     "flightOptional": "航班号（可选）",
+    "flightLabel": "航班号（建议填写往返）",
+    "flightHint": "请准备客人姓名的往返机票，以便确认租车。",
+    "reqHintId": "请准备身份证或驾驶证。",
+    "reqHintFlight": "请准备客人姓名的往返机票。",
+    "reqHintPhone": "请提供可联系到的电话号码。",
     "specialRequests": "特殊要求",
     "phName": "张三",
     "phPhone": "+66 ...",
     "phEmail": "电子邮件@example.com",
-    "phFlight": "FD1234",
+    "phFlight": "FD1234 / 回程航班",
     "phNotes": "儿童座椅、额外停靠等",
     "paymentTitle": "付款",
     "paymentSubtitle": "选择付款方式 — 银行、二维码与卡片字段为演示数据",
@@ -226,6 +233,20 @@
     "confirmPromptPay": "确认 PromptPay 付款",
     "confirmCash": "确认现金预订",
     "cancelPolicyNote": "出发前 {hours} 小时可免费取消，之后收取 {percent}% 费用。",
+    "policyBoxTitle": "预订与付款说明",
+    "policyBoxHint": "点击查看取消、押金与机场接送说明",
+    "cancelTitle": "取消政策",
+    "depositTitle": "租车押金",
+    "depositSmallLabel": "小型车",
+    "depositSmallAmount": "฿3,000",
+    "depositLargeLabel": "大型车",
+    "depositLargeAmount": "฿5,000",
+    "depositStepAdvance": "确认车辆后，请先支付预付押金 ฿500。",
+    "depositStepContract": "租金与剩余押金于签订合同当日支付。",
+    "depositStepRefund": "还车并检查无误后退还押金。",
+    "airportTitle": "机场接送",
+    "depositNote": "租车押金：小型车 ฿3,000 · 大型车 ฿5,000。确认车辆后先付预付押金 ฿500；租金与剩余押金于签订合同当日支付。还车检查无误后退还押金。",
+    "airportTransferNote": "租车客户免费甲米机场接送。",
     "processing": "处理中...",
     "demoNote": "演示付款 — 不真实扣款 · 确认后签发电子凭证",
     "at": "于",
@@ -325,6 +346,10 @@
       "8": {
         "q": "如何收到电子凭证？",
         "a": "确认预订后立即显示含二维码的电子凭证，之后也可在预订页再次打开。上车时出示给司机。"
+      },
+      "9": {
+        "q": "租车需要哪些证件和押金？",
+        "a": "请准备身份证或驾驶证、客人姓名的往返机票，以及可联系的电话。小型车押金 ฿3,000，大型车 ฿5,000。确认车辆后先支付预付押金 ฿500；租金与剩余押金于签订合同时支付。还车并检查无误后退还押金。含免费甲米机场接送。"
       }
     },
     "policies": {
@@ -363,6 +388,10 @@
       "refund": {
         "title": "退款",
         "content": "获批退款将在 5–7 个工作日内退回原支付方式。"
+      },
+      "rental-deposit": {
+        "title": "租车押金",
+        "content": "小型车押金 ฿3,000，大型车 ฿5,000。确认车辆后先付预付押金 ฿500；租金与剩余押金于签订合同时支付。还车并检查无误后退还押金。含免费甲米机场接送。"
       }
     }
   },
@@ -781,6 +810,25 @@
     "address": "地址",
     "lineTitle": "LINE 官方账号",
     "lineSubtitle": "与我们聊天以获得快速支持"
+  },
+  "RentalConditions": {
+    "eyebrow": "租车",
+    "title": "预订条件",
+    "subtitle": "确认租车前请准备以下证件与押金。",
+    "requirementsTitle": "预订所需材料",
+    "reqId": "身份证 / 驾驶证",
+    "reqFlight": "客人姓名的往返机票",
+    "reqPhone": "可联系到的电话号码",
+    "depositTitle": "押金条件",
+    "smallCar": "小型车押金",
+    "smallDeposit": "฿3,000",
+    "largeCar": "大型车押金",
+    "largeDeposit": "฿5,000",
+    "stepConfirm": "确认车辆后，请先支付预付押金 ฿500。",
+    "stepContract": "租金与剩余押金于签订租车合同当日支付。",
+    "stepRefund": "还车并检查车辆无误后，退还押金。",
+    "freeAirport": "免费甲米机场接送",
+    "thanks": "感谢您选择我们的服务。"
   },
   "FleetUi": {
     "filterAll": "全部",

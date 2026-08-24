@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { ArrowRight, Luggage, Search, Users } from "lucide-react";
 import { VehicleCard } from "@/components/shared/vehicle-card";
 import { VehicleHoverImage } from "@/components/shared/vehicle-hover-image";
+import { RentalConditions } from "@/components/shared/rental-conditions";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
   Card,
@@ -165,6 +166,7 @@ export function FleetPageContent() {
 
       {showRental && (
         <section>
+          <RentalConditions className="mb-8" />
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold">{t("rentalTitle")}</h2>
