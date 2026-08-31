@@ -29,6 +29,7 @@ import {
   getPromptPay,
   paymentMethodOptions,
 } from "@/lib/data/payment";
+import { isOmiseConfigured } from "@/lib/payment/omise-client";
 import { useSettingsRevision } from "@/lib/admin/settings-store";
 import type {
   CardPaymentDetails,
@@ -124,29 +125,15 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
-export function PaymentSection({
-  amount,
-  method,
-  onMethodChange,
-  card,
-  onCardChange,
-  transferBankSymbol,
-  onTransferBankChange,
+function ProofUpload({
   transferProof,
   onTransferProofChange,
-  transferRef,
-}: PaymentSectionProps) {
+}: {
+  transferProof: TransferProof | null;
+  onTransferProofChange: (proof: TransferProof | null) => void;
+}) {
   const t = useTranslations("Payment");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  useSettingsRevision();
-  const enabledMethods = getEnabledPaymentMethods();
-  const bankAccounts = getBankAccounts();
-  const promptPay = getPromptPay();
-
-  const promptPayQr = useMemo(
-    () => promptPay.qrPayload(amount, transferRef || "DRAFT"),
-    [amount, transferRef, promptPay]
-  );
 
   const handleProofFile = async (file: File | undefined) => {
     if (!file) return;
@@ -174,6 +161,93 @@ export function PaymentSection({
       toast.error(t("toastProofFail"));
     }
   };
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-medium">{t("attachProof")}</p>
+      <p className="text-xs text-muted-foreground">{t("proofHint")}</p>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={TRANSFER_PROOF_ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          void handleProofFile(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+
+      {transferProof ? (
+        <div className="overflow-hidden rounded-lg border bg-background">
+          <div className="flex items-center justify-between gap-2 border-b px-3 py-2">
+            <div className="flex min-w-0 items-center gap-2 text-sm">
+              <FileText className="size-4 shrink-0 text-primary" />
+              <span className="truncate font-medium">
+                {transferProof.fileName}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+              onClick={() => onTransferProofChange(null)}
+              aria-label={t("attachProof")}
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+          {transferProof.fileType.startsWith("image/") ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={transferProof.dataUrl}
+              alt={t("attachProof")}
+              className="max-h-56 w-full bg-zinc-50 object-contain"
+            />
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-6 text-sm text-muted-foreground">
+              <FileText className="size-5" />
+              {t("pdfAttached")}
+            </div>
+          )}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-background px-4 py-8 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-foreground"
+        >
+          <Upload className="size-6" />
+          <span className="font-medium">{t("uploadSlip")}</span>
+          <span className="text-xs">{t("fileTypes")}</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function PaymentSection({
+  amount,
+  method,
+  onMethodChange,
+  card,
+  onCardChange,
+  transferBankSymbol,
+  onTransferBankChange,
+  transferProof,
+  onTransferProofChange,
+  transferRef,
+}: PaymentSectionProps) {
+  const t = useTranslations("Payment");
+  useSettingsRevision();
+  const omiseReady = isOmiseConfigured();
+  const enabledMethods = getEnabledPaymentMethods();
+  const bankAccounts = getBankAccounts();
+  const promptPay = getPromptPay();
+
+  const promptPayQr = useMemo(
+    () => promptPay.qrPayload(amount, transferRef || "DRAFT"),
+    [amount, transferRef, promptPay]
+  );
 
   return (
     <div className="space-y-5">
@@ -310,71 +384,18 @@ export function PaymentSection({
 
           <Separator />
 
-          <div className="space-y-2">
-            <p className="text-sm font-medium">{t("attachProof")}</p>
-            <p className="text-xs text-muted-foreground">{t("proofHint")}</p>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={TRANSFER_PROOF_ACCEPT}
-              className="hidden"
-              onChange={(e) => {
-                void handleProofFile(e.target.files?.[0]);
-                e.target.value = "";
-              }}
-            />
-
-            {transferProof ? (
-              <div className="overflow-hidden rounded-lg border bg-background">
-                <div className="flex items-center justify-between gap-2 border-b px-3 py-2">
-                  <div className="flex min-w-0 items-center gap-2 text-sm">
-                    <FileText className="size-4 shrink-0 text-primary" />
-                    <span className="truncate font-medium">
-                      {transferProof.fileName}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                    onClick={() => onTransferProofChange(null)}
-                    aria-label={t("attachProof")}
-                  >
-                    <X className="size-4" />
-                  </button>
-                </div>
-                {transferProof.fileType.startsWith("image/") ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={transferProof.dataUrl}
-                    alt={t("attachProof")}
-                    className="max-h-56 w-full bg-zinc-50 object-contain"
-                  />
-                ) : (
-                  <div className="flex items-center gap-2 px-3 py-6 text-sm text-muted-foreground">
-                    <FileText className="size-5" />
-                    {t("pdfAttached")}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-background px-4 py-8 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-foreground"
-              >
-                <Upload className="size-6" />
-                <span className="font-medium">{t("uploadSlip")}</span>
-                <span className="text-xs">{t("fileTypes")}</span>
-              </button>
-            )}
-          </div>
+          <ProofUpload
+            transferProof={transferProof}
+            onTransferProofChange={onTransferProofChange}
+          />
         </div>
       )}
 
       {method === "card" && (
         <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
-          <p className="text-xs text-muted-foreground">{t("cardMockNote")}</p>
+          <p className="text-xs text-muted-foreground">
+            {omiseReady ? t("cardOmiseNote") : t("cardPendingNote")}
+          </p>
           <div className="space-y-2">
             <Label htmlFor="card-number">{t("cardNumber")}</Label>
             <Input
@@ -475,9 +496,16 @@ export function PaymentSection({
                   label={t("promptpayId")}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">{t("demoQrNote")}</p>
+              <p className="text-xs text-muted-foreground">{t("promptpayNote")}</p>
             </div>
           </div>
+
+          <Separator />
+
+          <ProofUpload
+            transferProof={transferProof}
+            onTransferProofChange={onTransferProofChange}
+          />
         </div>
       )}
 

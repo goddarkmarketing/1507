@@ -53,7 +53,7 @@ interface BookingStore {
   setCardField: (field: keyof CardPaymentDetails, value: string) => void;
   setTransferBank: (symbol: string) => void;
   setTransferProof: (proof: TransferProof | null) => void;
-  confirmBooking: () => Booking | null;
+  confirmBooking: (options?: { omiseTokenId?: string }) => Booking | null;
   getLegPrice: (leg: Omit<BookingLeg, "price">) => number;
   getTotalPrice: () => number;
   resetDraft: () => void;
@@ -238,7 +238,7 @@ export const useBookingStore = create<BookingStore>()(
         return draft.legs.reduce((sum, leg) => sum + getLegPrice(leg), 0);
       },
 
-      confirmBooking: () => {
+      confirmBooking: (options) => {
         const { draft, getLegPrice, getTotalPrice } = get();
         if (!draft.customerName || !draft.customerEmail || !draft.customerPhone) {
           return null;
@@ -249,6 +249,12 @@ export const useBookingStore = create<BookingStore>()(
 
         if (draft.paymentMethod === "bank-transfer") {
           if (!draft.transferBankSymbol || !draft.transferProof) {
+            return null;
+          }
+        }
+
+        if (draft.paymentMethod === "promptpay") {
+          if (!draft.transferProof) {
             return null;
           }
         }
@@ -272,7 +278,7 @@ export const useBookingStore = create<BookingStore>()(
 
         const totalPrice = getTotalPrice();
         const bookingNumber = generateBookingNumber();
-        const paidAt = new Date().toISOString();
+        const createdAt = new Date().toISOString();
 
         let payment: BookingPayment;
         if (draft.paymentMethod === "bank-transfer") {
@@ -287,9 +293,11 @@ export const useBookingStore = create<BookingStore>()(
           const last4 = draft.card.cardNumber.replace(/\s/g, "").slice(-4);
           payment = {
             method: "card",
-            summary: `Card **** ${last4}`,
-            paidAt,
-            status: "paid",
+            summary: options?.omiseTokenId
+              ? `Card **** ${last4} (Omise)`
+              : `Card **** ${last4} (pending verification)`,
+            status: "awaiting-transfer",
+            omiseTokenId: options?.omiseTokenId,
           };
         } else if (draft.paymentMethod === "cash") {
           payment = {
@@ -300,9 +308,9 @@ export const useBookingStore = create<BookingStore>()(
         } else {
           payment = {
             method: "promptpay",
-            summary: `PromptPay ${getPromptPay().id}`,
-            paidAt,
-            status: "paid",
+            summary: `PromptPay ${getPromptPay().id} (pending verification)`,
+            status: "awaiting-transfer",
+            transferProof: draft.transferProof ?? undefined,
           };
         }
 
@@ -317,12 +325,8 @@ export const useBookingStore = create<BookingStore>()(
           flightNumber: draft.flightNumber || undefined,
           notes: draft.notes || undefined,
           totalPrice,
-          createdAt: paidAt,
-          status:
-            draft.paymentMethod === "bank-transfer" ||
-            draft.paymentMethod === "cash"
-              ? "pending"
-              : "confirmed",
+          createdAt,
+          status: "pending",
           payment,
         };
 

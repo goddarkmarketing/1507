@@ -667,7 +667,8 @@ export const locations: Location[] = [
     "province": "Krabi",
     "connections": [
       "kbv-airport"
-    ]
+    ],
+    "pricingAreaId": "ao-nang-beach"
   },
   {
     "id": "rayavadee",
@@ -677,7 +678,195 @@ export const locations: Location[] = [
     "province": "Krabi",
     "connections": [
       "kbv-airport"
-    ]
+    ],
+    "pricingAreaId": "ao-nam-mao"
+  },
+  {
+    "id": "holiday-inn-ao-nang",
+    "name": "Holiday Inn Resort Krabi Ao Nang Beach",
+    "nameTh": "ฮอลิเดย์ อินน์ รีสอร์ท กระบี่ อ่าวนาง",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "ao-nang-beach"
+  },
+  {
+    "id": "amari-vogue-krabi",
+    "name": "Amari Vogue Krabi",
+    "nameTh": "อมารี วอก กระบี่",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "klong-muang"
+  },
+  {
+    "id": "pakasai-resort",
+    "name": "Pakasai Resort",
+    "nameTh": "ปากาสัย รีสอร์ท",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "ao-nang-beach"
+  },
+  {
+    "id": "aonang-villa-resort",
+    "name": "Aonang Villa Resort",
+    "nameTh": "อ่าวนาง วิลล่า รีสอร์ท",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "ao-nang-beach"
+  },
+  {
+    "id": "panan-resort",
+    "name": "Panan Resort Ao Nang",
+    "nameTh": "พนันท์ รีสอร์ท อ่าวนาง",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "ao-nang-beach"
+  },
+  {
+    "id": "dusit-thani-krabi",
+    "name": "Dusit Thani Krabi Beach Resort",
+    "nameTh": "ดุสิตธานี กระบี่ บีช รีสอร์ท",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "ao-nang-beach"
+  },
+  {
+    "id": "ibis-styles-ao-nang",
+    "name": "ibis Styles Krabi Ao Nang",
+    "nameTh": "อีบิส สไตล์ กระบี่ อ่าวนาง",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "ao-nang-beach"
+  },
+  {
+    "id": "sala-ao-nang",
+    "name": "Sala Ao Nang",
+    "nameTh": "ศาลา อ่าวนาง",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "ao-nang-beach"
+  },
+  {
+    "id": "krabi-la-playa",
+    "name": "Krabi La Playa Resort",
+    "nameTh": "กระบี่ ลา พลายา รีสอร์ท",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "ao-nang-beach"
+  },
+  {
+    "id": "sofitel-krabi",
+    "name": "Sofitel Krabi Phokeethra Golf & Spa Resort",
+    "nameTh": "โซฟิเทล กระบี่ โภคีธรา กอล์ฟ แอนด์ สปา รีสอร์ท",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "tubkaak-beach"
+  },
+  {
+    "id": "banyan-tree-krabi",
+    "name": "Banyan Tree Krabi",
+    "nameTh": "บันยันทรี กระบี่",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "tubkaak-beach"
+  },
+  {
+    "id": "nakamanda-resort",
+    "name": "Nakamanda Resort & Spa",
+    "nameTh": "นาคามันดา รีสอร์ท แอนด์ สปา",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "klong-muang"
+  },
+  {
+    "id": "tubkaak-krabi-resort",
+    "name": "The Tubkaak Krabi Boutique Resort",
+    "nameTh": "เดอะ ทับแค กระบี่ บูติก รีสอร์ท",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "tubkaak-beach"
+  },
+  {
+    "id": "phulay-bay",
+    "name": "Phulay Bay, a Ritz-Carlton Reserve",
+    "nameTh": "พูเลย์ เบย์ ริทซ์-คาร์ลตัน รีเซิร์ฟ",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "tubkaak-beach"
+  },
+  {
+    "id": "avani-krabi",
+    "name": "Avani+ Krabi Resort",
+    "nameTh": "อวานี+ กระบี่ รีสอร์ท",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "krabi-town"
+  },
+  {
+    "id": "mercure-krabi-deevana",
+    "name": "Mercure Krabi Deevana",
+    "nameTh": "เมอร์เคียวร์ กระบี่ ดีวาน่า",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "ao-nang-beach"
+  },
+  {
+    "id": "pimalai-resort",
+    "name": "Pimalai Resort & Spa",
+    "nameTh": "พิมาลัย รีสอร์ท แอนด์ สปา",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "koh-lanta-z1"
   },
   {
     "id": "emerald-pool",

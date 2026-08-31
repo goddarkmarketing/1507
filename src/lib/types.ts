@@ -66,6 +66,8 @@ export interface BookingPayment {
   /** Bank symbol when paid via transfer (KBANK / SCB / BBL) */
   bankSymbol?: string;
   transferProof?: TransferProof;
+  /** Omise token id when card is tokenized client-side */
+  omiseTokenId?: string;
 }
 
 export interface Location {
@@ -75,6 +77,8 @@ export interface Location {
   type: LocationType;
   province: string;
   connections: string[];
+  /** Inherit official route pricing from a nearby area (e.g. beach zone). */
+  pricingAreaId?: string;
 }
 
 export interface Vehicle {

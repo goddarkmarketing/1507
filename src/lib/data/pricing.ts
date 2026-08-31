@@ -61,12 +61,18 @@ function estimateRoute(fromId: string, toId: string) {
   };
 }
 
+function pricingLocationId(id: string): string {
+  return getLocation(id)?.pricingAreaId ?? id;
+}
+
 export function calculatePrice(
   fromId: string,
   toId: string,
   vehicleCode: VehicleCode
 ): RoutePrice & { totalPrice: number } {
-  const official = getOfficialRoute(fromId, toId);
+  const priceFromId = pricingLocationId(fromId);
+  const priceToId = pricingLocationId(toId);
+  const official = getOfficialRoute(priceFromId, priceToId);
   if (official) {
     return {
       fromId,
@@ -79,7 +85,7 @@ export function calculatePrice(
     };
   }
 
-  const route = estimateRoute(fromId, toId);
+  const route = estimateRoute(priceFromId, priceToId);
   const vehicle = getVehicle(vehicleCode);
   const multiplier = vehicle?.priceMultiplier ?? 1;
   const totalPrice = Math.round(route.basePrice * multiplier);

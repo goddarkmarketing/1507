@@ -1,4 +1,5 @@
 import type { PaymentMethod } from "@/lib/types";
+import { buildPromptPayQrPayload } from "@/lib/payment/promptpay";
 import {
   BANK_ICONS,
   defaultSiteSettings,
@@ -21,7 +22,7 @@ export const paymentMethodOptions: {
   {
     value: "card",
     label: "Credit / Debit Card",
-    description: "Visa, Mastercard — mock payment for demo.",
+    description: "Visa, Mastercard — secure card payment.",
   },
   {
     value: "promptpay",
@@ -56,8 +57,8 @@ export function getPromptPay() {
     idType: "mobile" as const,
     accountName: payment.promptPayAccountName,
     icon: "/banks/PromptPay.png",
-    qrPayload: (amount: number, bookingRef: string) =>
-      `PROMPTPAY|MOCK|${id}|THB${amount}|REF:${bookingRef}`,
+    qrPayload: (amount: number, _bookingRef: string) =>
+      buildPromptPayQrPayload(id, amount),
   };
 }
 
@@ -77,8 +78,8 @@ export const mockPromptPay = {
   idType: "mobile" as const,
   accountName: defaultSiteSettings().payment.promptPayAccountName,
   icon: "/banks/PromptPay.png",
-  qrPayload: (amount: number, bookingRef: string) =>
-    `PROMPTPAY|MOCK|${defaultSiteSettings().payment.promptPayId}|THB${amount}|REF:${bookingRef}`,
+  qrPayload: (amount: number, _bookingRef: string) =>
+    buildPromptPayQrPayload(defaultSiteSettings().payment.promptPayId, amount),
 };
 
 export const MAX_TRANSFER_PROOF_BYTES = 1.5 * 1024 * 1024;

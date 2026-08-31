@@ -10,6 +10,7 @@ import {
   Route,
   ShieldCheck,
 } from "lucide-react";
+import { LocationSelect } from "@/components/booking/location-select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -25,7 +26,7 @@ import { cn } from "@/lib/utils";
 import { locations } from "@/lib/data/locations";
 import { getActiveTariffVehicles } from "@/lib/data/vehicles";
 import { calculatePrice } from "@/lib/data/pricing";
-import { useVehicleCopy, useLocationName } from "@/lib/i18n-labels";
+import { useVehicleCopy } from "@/lib/i18n-labels";
 import type { VehicleCode } from "@/lib/types";
 import { useCatalogStore } from "@/lib/admin/catalog-store";
 
@@ -50,7 +51,6 @@ export function PriceChecker({
 }: PriceCheckerProps) {
   const t = useTranslations("PriceChecker");
   const { label: vehicleLabel } = useVehicleCopy();
-  const locName = useLocationName();
   const router = useRouter();
 
   const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
@@ -157,30 +157,20 @@ export function PriceChecker({
       <div className="mt-5 space-y-3">
         <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground">{t("from")}</Label>
-          <Select
+          <LocationSelect
+            role="pickup"
             value={fromId}
             onValueChange={(v) => {
-              if (!v) return;
               setFromId(v);
               if (v === toId) {
                 const next = locations.find((l) => l.id !== v);
                 if (next) setToId(next.id);
               }
             }}
-          >
-            <SelectTrigger className="h-11 w-full">
-              <SelectValue placeholder={t("from")}>
-                {locName(locations.find((l) => l.id === fromId)) || t("from")}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent align="start" className="max-h-72">
-              {locations.map((loc) => (
-                <SelectItem key={loc.id} value={loc.id}>
-                  {locName(loc)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            excludeId={toId}
+            placeholder={t("from")}
+            className="h-11 w-full"
+          />
         </div>
 
         <div className="flex justify-center">
@@ -198,22 +188,14 @@ export function PriceChecker({
 
         <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground">{t("to")}</Label>
-          <Select value={toId} onValueChange={(v) => v && setToId(v)}>
-            <SelectTrigger className="h-11 w-full">
-              <SelectValue placeholder={t("to")}>
-                {locName(locations.find((l) => l.id === toId)) || t("to")}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent align="start" className="max-h-72">
-              {locations
-                .filter((loc) => loc.id !== fromId)
-                .map((loc) => (
-                  <SelectItem key={loc.id} value={loc.id}>
-                    {locName(loc)}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
+          <LocationSelect
+            role="dropoff"
+            value={toId}
+            onValueChange={setToId}
+            excludeId={fromId}
+            placeholder={t("to")}
+            className="h-11 w-full"
+          />
         </div>
 
         <div className="space-y-1.5">

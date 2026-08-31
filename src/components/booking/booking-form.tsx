@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
@@ -27,12 +27,20 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { LocationSelect } from "@/components/booking/location-select";
 import { PaymentSection } from "@/components/booking/payment-section";
+import { RoutePreviewDialog } from "@/components/booking/route-preview-dialog";
 import { RentalConditions } from "@/components/shared/rental-conditions";
 import { cn } from "@/lib/utils";
-import { locations } from "@/lib/data/locations";
 import { tariffVehicles, vehicles } from "@/lib/data/vehicles";
 import { useBookingStore } from "@/lib/booking/store";
+import {
+  shouldShowRoutePreview,
+} from "@/lib/booking/route-preview";
+import {
+  createOmiseCardToken,
+  isOmiseConfigured,
+} from "@/lib/payment/omise-client";
 import {
   getActiveCancelPolicy,
   useSettingsRevision,
@@ -76,6 +84,34 @@ export function BookingForm() {
   const cancelPolicy = getActiveCancelPolicy();
 
   const [paying, setPaying] = useState(false);
+  const prevDropoffRef = useRef<Map<string, string>>(new Map());
+  const [routePreview, setRoutePreview] = useState<{
+    fromId: string;
+    toId: string;
+    vehicleCode: (typeof draft.legs)[number]["vehicleCode"];
+  } | null>(null);
+
+  const isCharter =
+    draft.type === "daily-charter" || draft.type === "hourly-charter";
+
+  useEffect(() => {
+    if (isCharter) return;
+
+    for (const leg of draft.legs) {
+      const prevToId = prevDropoffRef.current.get(leg.id);
+      prevDropoffRef.current.set(leg.id, leg.toId);
+
+      if (prevToId === leg.toId) continue;
+      if (!shouldShowRoutePreview(leg.fromId, leg.toId)) continue;
+
+      setRoutePreview({
+        fromId: leg.fromId,
+        toId: leg.toId,
+        vehicleCode: leg.vehicleCode,
+      });
+      break;
+    }
+  }, [draft.legs, isCharter]);
 
   // Fill today's date client-side only (avoids SSR date mismatch)
   useEffect(() => {
@@ -136,6 +172,12 @@ export function BookingForm() {
         return;
       }
     }
+    if (draft.paymentMethod === "promptpay") {
+      if (!draft.transferProof) {
+        toast.error(tPay("toastProof"));
+        return;
+      }
+    }
     if (draft.paymentMethod === "card") {
       const digits = draft.card.cardNumber.replace(/\s/g, "");
       if (
@@ -150,9 +192,21 @@ export function BookingForm() {
     }
 
     setPaying(true);
-    await new Promise((r) => setTimeout(r, 900));
 
-    const booking = confirmBooking();
+    let omiseTokenId: string | undefined;
+    if (draft.paymentMethod === "card" && isOmiseConfigured()) {
+      try {
+        omiseTokenId = await createOmiseCardToken(draft.card);
+      } catch {
+        setPaying(false);
+        toast.error(tPay("toastCardOmise"));
+        return;
+      }
+    } else {
+      await new Promise((r) => setTimeout(r, 600));
+    }
+
+    const booking = confirmBooking({ omiseTokenId });
     setPaying(false);
 
     if (!booking) {
@@ -161,15 +215,21 @@ export function BookingForm() {
     }
 
     if (booking.payment?.status === "awaiting-transfer") {
-      toast.success(t("confirmBank"));
+      if (booking.payment.method === "cash") {
+        toast.success(t("confirmCash"));
+      } else if (booking.payment.method === "promptpay") {
+        toast.success(t("confirmPromptPay"));
+      } else if (booking.payment.method === "card") {
+        toast.success(t("confirmCard"));
+      } else {
+        toast.success(t("confirmBank"));
+      }
     } else {
-      toast.success(t("confirmCard"));
+      toast.success(t("confirmBooking"));
     }
     router.push(`/booking/voucher/?n=${booking.bookingNumber}`);
   };
 
-  const isCharter =
-    draft.type === "daily-charter" || draft.type === "hourly-charter";
   const total = getTotalPrice();
 
   const confirmLabel =
@@ -277,45 +337,25 @@ export function BookingForm() {
                   <>
                     <div className="col-span-2 space-y-1.5 sm:space-y-2">
                       <Label>{t("pickup")}</Label>
-                      <Select
+                      <LocationSelect
+                        role="pickup"
                         value={leg.fromId}
-                        onValueChange={(v) => v && updateLeg(leg.id, { fromId: v })}
-                      >
-                        <SelectTrigger className={selectTriggerClass}>
-                          <SelectValue placeholder={t("pickup")}>
-                            {locName(locations.find((l) => l.id === leg.fromId)) ||
-                              t("pickup")}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {locations.map((loc) => (
-                            <SelectItem key={loc.id} value={loc.id}>
-                              {locName(loc)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onValueChange={(v) => updateLeg(leg.id, { fromId: v })}
+                        excludeId={leg.toId}
+                        placeholder={t("pickup")}
+                        className={selectTriggerClass}
+                      />
                     </div>
                     <div className="col-span-2 space-y-1.5 sm:space-y-2">
                       <Label>{t("dropoff")}</Label>
-                      <Select
+                      <LocationSelect
+                        role="dropoff"
                         value={leg.toId}
-                        onValueChange={(v) => v && updateLeg(leg.id, { toId: v })}
-                      >
-                        <SelectTrigger className={selectTriggerClass}>
-                          <SelectValue placeholder={t("dropoff")}>
-                            {locName(locations.find((l) => l.id === leg.toId)) ||
-                              t("dropoff")}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {locations.map((loc) => (
-                            <SelectItem key={loc.id} value={loc.id}>
-                              {locName(loc)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onValueChange={(v) => updateLeg(leg.id, { toId: v })}
+                        excludeId={leg.fromId}
+                        placeholder={t("dropoff")}
+                        className={selectTriggerClass}
+                      />
                     </div>
                   </>
                 )}
@@ -650,6 +690,19 @@ export function BookingForm() {
           </Button>
         </div>
       </div>
+
+      {routePreview && (
+        <RoutePreviewDialog
+          key={`${routePreview.fromId}-${routePreview.toId}`}
+          open={Boolean(routePreview)}
+          onOpenChange={(open) => {
+            if (!open) setRoutePreview(null);
+          }}
+          fromId={routePreview.fromId}
+          toId={routePreview.toId}
+          vehicleCode={routePreview.vehicleCode}
+        />
+      )}
     </div>
   );
 }
