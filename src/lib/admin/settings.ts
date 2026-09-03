@@ -15,7 +15,10 @@ export type BankAccountSettings = {
 export type ContactSettings = {
   phone: string;
   email: string;
-  line: string;
+  whatsapp: string;
+  facebook: string;
+  /** @deprecated kept for older saved settings */
+  line?: string;
   address: string;
 };
 
@@ -83,7 +86,9 @@ export const defaultSiteSettings = (): SiteSettings => ({
   contact: {
     phone: siteConfig.phone,
     email: siteConfig.email,
-    line: siteConfig.line,
+    whatsapp: siteConfig.whatsapp,
+    facebook: siteConfig.facebook,
+    line: siteConfig.whatsapp,
     address: siteConfig.address,
   },
   payment: {

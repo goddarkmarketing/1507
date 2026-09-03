@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useSiteContact } from "@/lib/admin/settings-store";
+import { telHref, whatsappHref } from "@/lib/contact-links";
 
 export default function ContactPage() {
   const t = useTranslations("Contact");
@@ -87,7 +88,7 @@ export default function ContactPage() {
                 <div>
                   <p className="font-medium">{t("phone")}</p>
                   <a
-                    href={`tel:${site.phone}`}
+                    href={telHref(site.phone)}
                     className="text-muted-foreground hover:text-foreground"
                   >
                     {site.phone}
@@ -107,6 +108,20 @@ export default function ContactPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
+                <MessageCircle className="mt-0.5 size-5 text-primary" />
+                <div>
+                  <p className="font-medium">{t("whatsapp")}</p>
+                  <a
+                    href={whatsappHref(site.whatsapp)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    {site.whatsapp}
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 size-5 text-primary" />
                 <div>
                   <p className="font-medium">{t("address")}</p>
@@ -118,11 +133,18 @@ export default function ContactPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>{t("lineTitle")}</CardTitle>
-              <CardDescription>{t("lineSubtitle")}</CardDescription>
+              <CardTitle>{t("facebookTitle")}</CardTitle>
+              <CardDescription>{t("facebookSubtitle")}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="font-mono text-lg">{site.line}</p>
+              <a
+                href={site.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="break-all text-sm font-medium text-primary underline-offset-2 hover:underline"
+              >
+                {site.facebook}
+              </a>
             </CardContent>
           </Card>
         </div>

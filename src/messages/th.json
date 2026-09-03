@@ -104,6 +104,8 @@
   "Common": {
     "callNow": "โทรเลย",
     "chatOnLine": "แชท LINE",
+    "chatOnWhatsApp": "แชท WhatsApp",
+    "facebook": "Facebook",
     "viewAll": "ดูทั้งหมด",
     "learnMore": "ดูเพิ่มเติม",
     "startBooking": "เริ่มจอง",
@@ -853,9 +855,12 @@
     "toastOk": "ส่งข้อความแล้ว! เราจะติดต่อกลับภายใน 24 ชั่วโมง",
     "getInTouch": "ช่องทางติดต่อ",
     "phone": "โทรศัพท์",
+    "whatsapp": "WhatsApp",
     "address": "ที่อยู่",
     "lineTitle": "ไลน์อย่างเป็นทางการ",
-    "lineSubtitle": "แชทกับเราเพื่อรับความช่วยเหลือเร็วขึ้น"
+    "lineSubtitle": "แชทกับเราเพื่อรับความช่วยเหลือเร็วขึ้น",
+    "facebookTitle": "Facebook",
+    "facebookSubtitle": "ติดตามข่าวสารและสอบถามผ่านเพจของเรา"
   },
   "RentalConditions": {
     "eyebrow": "เช่ารถ",
@@ -1290,6 +1295,8 @@
     "settingsPhone": "โทรศัพท์",
     "settingsEmail": "อีเมล",
     "settingsLine": "ไลน์ไอดี",
+    "settingsWhatsapp": "WhatsApp",
+    "settingsFacebook": "Facebook",
     "settingsAddress": "ที่อยู่",
     "settingsEnabled": "เปิดใช้",
     "settingsBankName": "ชื่อธนาคาร",

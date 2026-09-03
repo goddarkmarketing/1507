@@ -5,9 +5,12 @@ export const siteConfig = {
   slogan: "เชื่อมทุกเส้นทางของภาคใต้",
   sloganEn: "Your Trusted Southern Thailand Transfer Network",
   tagline: "Southern Thailand Travel & Transportation Platform",
-  phone: "+66 75 123 456",
-  email: "booking@krabilinkstaxi.com",
-  line: "@krabilinkstaxi",
+  phone: "088 443 3309",
+  email: "krabilinkstaxi.social@gmail.com",
+  whatsapp: "+66 88 443 3309",
+  facebook: "https://www.facebook.com/Krabilinkstaxi",
+  /** @deprecated use whatsapp */
+  line: "+66 88 443 3309",
   address: "Krabi Town, Krabi 81000, Thailand",
 };
 

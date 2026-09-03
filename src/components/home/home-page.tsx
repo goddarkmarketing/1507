@@ -41,6 +41,7 @@ import { PublicImage } from "@/components/shared/public-image";
 import { Link } from "@/i18n/navigation";
 import { siteConfig } from "@/lib/site-config";
 import { useSiteContact } from "@/lib/admin/settings-store";
+import { telHref, whatsappHref } from "@/lib/contact-links";
 import { faqIds } from "@/lib/data/content";
 
 const serviceDefs = [
@@ -154,7 +155,7 @@ export function HomePage() {
 
           <div className="flex flex-wrap items-center justify-start gap-3 lg:justify-end">
             <ButtonLink
-              href={`tel:${site.phone.replace(/\s/g, "")}`}
+              href={telHref(site.phone)}
               size="lg"
               className="shadow-md"
             >
@@ -162,23 +163,33 @@ export function HomePage() {
               {tc("callNow")}
             </ButtonLink>
             <ButtonLink
-              href={`https://line.me/ti/p/${encodeURIComponent(site.line)}`}
+              href={whatsappHref(site.whatsapp)}
               target="_blank"
               rel="noopener noreferrer"
               size="lg"
               className="bg-white text-zinc-950 shadow-md hover:bg-white/90 hover:brightness-100"
             >
               <MessageCircle data-icon="inline-start" />
-              {tc("chatOnLine")}
+              {tc("chatOnWhatsApp")}
+            </ButtonLink>
+            <ButtonLink
+              href={site.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              size="lg"
+              variant="outline"
+              className="border-white/40 bg-white/10 text-white shadow-md hover:bg-white/20 hover:text-white"
+            >
+              {tc("facebook")}
             </ButtonLink>
             <div className="rounded-xl bg-white p-2 shadow-md">
               <QRCodeSVG
-                value={`https://line.me/ti/p/${encodeURIComponent(site.line)}`}
+                value={whatsappHref(site.whatsapp)}
                 size={72}
                 level="M"
                 bgColor="#ffffff"
                 fgColor="#09090b"
-                title={`LINE ${site.line}`}
+                title={`WhatsApp ${site.whatsapp}`}
               />
             </div>
           </div>

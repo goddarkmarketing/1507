@@ -19,6 +19,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { navIcons } from "@/lib/nav-icons";
 import { navItems, siteConfig, type NavItem } from "@/lib/site-config";
 import { useSiteContact } from "@/lib/admin/settings-store";
+import { telHref } from "@/lib/contact-links";
 import { cn } from "@/lib/utils";
 
 function isActivePath(pathname: string, href: string) {
@@ -189,7 +190,7 @@ export function MobileMenu() {
               {t("bookNow")}
             </ButtonLink>
             <a
-              href={`tel:${site.phone}`}
+              href={telHref(site.phone)}
               className="flex h-9 items-center justify-center gap-2 rounded-lg border border-zinc-200 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
             >
               <Phone className="size-4" />

@@ -72,7 +72,13 @@ function live(): SiteSettings {
 }
 
 export function getActiveContact() {
-  return { ...siteConfig, ...live().contact };
+  const contact = live().contact;
+  return {
+    ...siteConfig,
+    ...contact,
+    whatsapp: contact.whatsapp || contact.line || siteConfig.whatsapp,
+    facebook: contact.facebook || siteConfig.facebook,
+  };
 }
 
 export function getActivePaymentSettings() {
@@ -97,7 +103,12 @@ export function getActiveStaff() {
 
 export function useSiteContact() {
   const contact = useSettingsStore((s) => s.contact);
-  return { ...siteConfig, ...contact };
+  return {
+    ...siteConfig,
+    ...contact,
+    whatsapp: contact.whatsapp || contact.line || siteConfig.whatsapp,
+    facebook: contact.facebook || siteConfig.facebook,
+  };
 }
 
 export function useSettingsRevision() {

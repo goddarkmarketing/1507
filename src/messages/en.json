@@ -104,6 +104,8 @@
   "Common": {
     "callNow": "Call Now",
     "chatOnLine": "Chat on LINE",
+    "chatOnWhatsApp": "Chat on WhatsApp",
+    "facebook": "Facebook",
     "viewAll": "View All",
     "learnMore": "Learn More",
     "startBooking": "Start Booking",
@@ -853,9 +855,12 @@
     "toastOk": "Message sent! We'll get back to you within 24 hours.",
     "getInTouch": "Get in Touch",
     "phone": "Phone",
+    "whatsapp": "WhatsApp",
     "address": "Address",
     "lineTitle": "LINE Official",
-    "lineSubtitle": "Chat with us for quick support"
+    "lineSubtitle": "Chat with us for quick support",
+    "facebookTitle": "Facebook",
+    "facebookSubtitle": "Follow updates and message us on our page"
   },
   "RentalConditions": {
     "eyebrow": "Car rental",
@@ -1290,6 +1295,8 @@
     "settingsPhone": "Phone",
     "settingsEmail": "Email",
     "settingsLine": "LINE ID",
+    "settingsWhatsapp": "WhatsApp",
+    "settingsFacebook": "Facebook",
     "settingsAddress": "Address",
     "settingsEnabled": "Enabled",
     "settingsBankName": "Bank name",

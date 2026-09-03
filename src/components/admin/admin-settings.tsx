@@ -83,7 +83,16 @@ function Section({
 export function AdminSettingsPage() {
   const t = useTranslations("Admin");
   const stored = useSettingsStore();
-  const [contact, setContact] = useState<ContactSettings>(stored.contact);
+  const [contact, setContact] = useState<ContactSettings>(() => ({
+    ...defaultSiteSettings().contact,
+    ...stored.contact,
+    whatsapp:
+      stored.contact.whatsapp ||
+      stored.contact.line ||
+      defaultSiteSettings().contact.whatsapp,
+    facebook:
+      stored.contact.facebook || defaultSiteSettings().contact.facebook,
+  }));
   const [payment, setPayment] = useState<PaymentSettings>(stored.payment);
   const [charter, setCharter] = useState<CharterSettings>(stored.charter);
   const [policy, setPolicy] = useState<CancelPolicySettings>(
@@ -138,7 +147,9 @@ export function AdminSettingsPage() {
             stored.saveContact({
               phone: contact.phone.trim(),
               email: contact.email.trim(),
-              line: contact.line.trim(),
+              whatsapp: contact.whatsapp.trim(),
+              facebook: contact.facebook.trim(),
+              line: contact.whatsapp.trim(),
               address: contact.address.trim(),
             });
             saveOk();
@@ -164,12 +175,21 @@ export function AdminSettingsPage() {
                 }
               />
             </Field>
-            <Field label={t("settingsLine")}>
+            <Field label={t("settingsWhatsapp")}>
               <Input
                 className={fieldClass()}
-                value={contact.line}
+                value={contact.whatsapp}
                 onChange={(e) =>
-                  setContact((s) => ({ ...s, line: e.target.value }))
+                  setContact((s) => ({ ...s, whatsapp: e.target.value }))
+                }
+              />
+            </Field>
+            <Field label={t("settingsFacebook")}>
+              <Input
+                className={fieldClass()}
+                value={contact.facebook}
+                onChange={(e) =>
+                  setContact((s) => ({ ...s, facebook: e.target.value }))
                 }
               />
             </Field>

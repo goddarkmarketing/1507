@@ -12,6 +12,7 @@ import { Link } from "@/i18n/navigation";
 import { navIcons } from "@/lib/nav-icons";
 import { siteConfig, navItems, type NavItem } from "@/lib/site-config";
 import { useSiteContact } from "@/lib/admin/settings-store";
+import { telHref } from "@/lib/contact-links";
 
 function NavDropdown({
   label,
@@ -105,7 +106,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <LocaleSwitcher className="hidden sm:inline-flex" />
           <a
-            href={`tel:${site.phone}`}
+            href={telHref(site.phone)}
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
               "hidden xl:inline-flex"

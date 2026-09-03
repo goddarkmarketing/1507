@@ -1,12 +1,13 @@
 "use client";
 
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Separator } from "@/components/ui/separator";
 import { SiteLogo } from "@/components/shared/site-logo";
 import { Link } from "@/i18n/navigation";
 import { siteConfig, navItems } from "@/lib/site-config";
 import { useSiteContact } from "@/lib/admin/settings-store";
+import { telHref, whatsappHref } from "@/lib/contact-links";
 
 export function Footer() {
   const t = useTranslations("Nav");
@@ -92,11 +93,29 @@ export function Footer() {
             </li>
             <li className="flex items-center gap-2 pt-2">
               <Phone className="size-4 shrink-0" />
-              {site.phone}
+              <a href={telHref(site.phone)} className="hover:text-foreground">
+                {site.phone}
+              </a>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="size-4 shrink-0" />
-              {site.email}
+              <a
+                href={`mailto:${site.email}`}
+                className="hover:text-foreground"
+              >
+                {site.email}
+              </a>
+            </li>
+            <li className="flex items-center gap-2">
+              <MessageCircle className="size-4 shrink-0" />
+              <a
+                href={whatsappHref(site.whatsapp)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground"
+              >
+                WhatsApp {site.whatsapp}
+              </a>
             </li>
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 size-4 shrink-0" />

@@ -104,6 +104,8 @@
   "Common": {
     "callNow": "立即致电",
     "chatOnLine": "LINE 聊天",
+    "chatOnWhatsApp": "WhatsApp 聊天",
+    "facebook": "Facebook",
     "viewAll": "查看全部",
     "learnMore": "了解更多",
     "startBooking": "开始预订",
@@ -853,9 +855,12 @@
     "toastOk": "消息已发送！我们将在 24 小时内回复。",
     "getInTouch": "联系方式",
     "phone": "电话",
+    "whatsapp": "WhatsApp",
     "address": "地址",
     "lineTitle": "LINE 官方账号",
-    "lineSubtitle": "与我们聊天以获得快速支持"
+    "lineSubtitle": "与我们聊天以获得快速支持",
+    "facebookTitle": "Facebook",
+    "facebookSubtitle": "关注并私信我们的专页"
   },
   "RentalConditions": {
     "eyebrow": "租车",
@@ -1290,6 +1295,8 @@
     "settingsPhone": "电话",
     "settingsEmail": "邮箱",
     "settingsLine": "线路编号",
+    "settingsWhatsapp": "WhatsApp",
+    "settingsFacebook": "Facebook",
     "settingsAddress": "地址",
     "settingsEnabled": "启用",
     "settingsBankName": "银行名称",
