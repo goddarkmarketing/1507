@@ -30,6 +30,7 @@ export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=2048}"
 
 npm install --no-audit --no-fund
 npm run build
+node scripts/rewrite-next-dir.mjs
 
 DEST=""
 if [ -d "$REPO_ROOT/../httpdocs" ] && [ "$(basename "$REPO_ROOT")" != "httpdocs" ]; then

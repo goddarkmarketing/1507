@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:host": "next build",
+    "build:host": "next build && node scripts/rewrite-next-dir.mjs",
     "deploy:plesk": "bash scripts/plesk-deploy.sh",
     "start": "next start",
     "lint": "eslint",

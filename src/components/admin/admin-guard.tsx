@@ -105,8 +105,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let alive = true;
     const finish = () => {
+      if (!alive) return;
       if (
-        !alive ||
         !useAdminStore.persist.hasHydrated() ||
         !useSettingsStore.persist.hasHydrated()
       ) {
@@ -115,10 +115,16 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       setReady(true);
     };
     finish();
-    useAdminStore.persist.onFinishHydration(finish);
-    useSettingsStore.persist.onFinishHydration(finish);
+    const unsubAdmin = useAdminStore.persist.onFinishHydration(finish);
+    const unsubSettings = useSettingsStore.persist.onFinishHydration(finish);
+    const timeout = window.setTimeout(() => {
+      if (alive) setReady(true);
+    }, 600);
     return () => {
       alive = false;
+      window.clearTimeout(timeout);
+      unsubAdmin?.();
+      unsubSettings?.();
     };
   }, []);
 
