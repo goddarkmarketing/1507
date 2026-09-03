@@ -1,7 +1,12 @@
 #!/bin/bash
-# Plesk Git — Additional deployment script
-# In Plesk: Git → Repository → Deploy files to a folder named "git"
-# (NOT httpdocs), then set additional commands to:
+# Plesk Git — Additional deployment script (requires Node.js on the server).
+#
+# Prefer the no-Node flow when Node is unavailable on HostAtom:
+#   GitHub Actions (.github/workflows/deploy-host.yml) publishes branch `host`.
+#   In Plesk Git: track branch `host`, Deploy files to `/httpdocs`, no extra script.
+#
+# With Node enabled instead:
+#   Deploy repo to a folder named "git" (NOT httpdocs), then:
 #   bash scripts/plesk-deploy.sh
 set -euo pipefail
 

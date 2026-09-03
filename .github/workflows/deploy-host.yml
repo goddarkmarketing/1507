@@ -1,0 +1,47 @@
+# Build static site (no GitHub Pages basePath) and publish to branch `host`.
+# Plesk: Git → branch `host` → Deploy files to `/httpdocs` (not master / not source).
+# Optional: enable auto-deploy on push. Keep `.well-known` if Plesk asks.
+name: Deploy HostAtom (host branch)
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-host
+  cancel-in-progress: true
+
+jobs:
+  deploy-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm install --no-fund --no-audit
+
+      - name: Build for HostAtom
+        run: npm run build:host
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      - name: Publish out/ to host branch
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: host
+          folder: out
+          clean: true
+          single-commit: true
+          commit-message: Deploy HostAtom static build
