@@ -10,7 +10,11 @@ import {
   OPS_STATUSES,
   useRouteLabel,
 } from "@/components/admin/admin-ui";
+import { bookingDisplayAmount } from "@/lib/admin/booking-money";
+import { TransferProofPreview } from "@/components/admin/transfer-proof-preview";
 import type { OpsStatus } from "@/lib/admin/types";
+import type { BookingService } from "@/lib/booking/booking-mode";
+import type { PaymentMethod } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,7 +24,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export function AdminBookingsPage() {
   const t = useTranslations("Admin");
@@ -33,24 +43,41 @@ export function AdminBookingsPage() {
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<OpsStatus | "all">("all");
+  const [serviceFilter, setServiceFilter] = useState<BookingService | "all">(
+    "all"
+  );
+  const [paymentFilter, setPaymentFilter] = useState<PaymentMethod | "all">(
+    "all"
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return bookings.filter((b) => {
       const statusOk = filter === "all" || b.opsStatus === filter;
+      const serviceOk =
+        serviceFilter === "all" || b.service === serviceFilter;
+      const paymentOk =
+        paymentFilter === "all" || b.payment?.method === paymentFilter;
       const textOk =
         !q ||
         b.bookingNumber.toLowerCase().includes(q) ||
         b.customerName.toLowerCase().includes(q) ||
         b.customerPhone.toLowerCase().includes(q) ||
         b.customerEmail.toLowerCase().includes(q);
-      return statusOk && textOk;
+      return statusOk && serviceOk && paymentOk && textOk;
     });
-  }, [bookings, query, filter]);
+  }, [bookings, query, filter, serviceFilter, paymentFilter]);
 
-  const selected =
-    bookings.find((b) => b.id === selectedId) ?? filtered[0] ?? null;
+  const selected = selectedId
+    ? (bookings.find((b) => b.id === selectedId) ?? null)
+    : null;
+
+  const openDetail = (id: string) => {
+    setSelectedId(id);
+    setDetailOpen(true);
+  };
 
   return (
     <div className="space-y-8">
@@ -63,7 +90,7 @@ export function AdminBookingsPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -74,8 +101,8 @@ export function AdminBookingsPage() {
           value={filter}
           onValueChange={(v) => v && setFilter(v as OpsStatus | "all")}
         >
-          <SelectTrigger className="h-10 rounded-xl border-zinc-200 bg-white sm:w-52">
-            <SelectValue />
+          <SelectTrigger className="h-10 rounded-xl border-zinc-200 bg-white sm:w-48">
+            <SelectValue placeholder={t("filterStatus")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("filterAll")}</SelectItem>
@@ -86,86 +113,152 @@ export function AdminBookingsPage() {
             ))}
           </SelectContent>
         </Select>
+        <Select
+          value={serviceFilter}
+          onValueChange={(v) =>
+            v && setServiceFilter(v as BookingService | "all")
+          }
+        >
+          <SelectTrigger className="h-10 rounded-xl border-zinc-200 bg-white sm:w-44">
+            <SelectValue placeholder={t("filterService")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("filterAll")}</SelectItem>
+            <SelectItem value="transfer">{t("serviceTransfer")}</SelectItem>
+            <SelectItem value="rental">{t("serviceRental")}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={paymentFilter}
+          onValueChange={(v) =>
+            v && setPaymentFilter(v as PaymentMethod | "all")
+          }
+        >
+          <SelectTrigger className="h-10 rounded-xl border-zinc-200 bg-white sm:w-44">
+            <SelectValue placeholder={t("filterPayment")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("filterAll")}</SelectItem>
+            <SelectItem value="bank-transfer">
+              {t("settingsMethod.bank-transfer")}
+            </SelectItem>
+            <SelectItem value="promptpay">
+              {t("settingsMethod.promptpay")}
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[680px] text-sm">
-              <thead className="border-b border-zinc-100 bg-zinc-50/80 text-left text-xs text-zinc-500">
-                <tr>
-                  <th className="px-5 py-3.5 font-medium">{t("colBooking")}</th>
-                  <th className="px-5 py-3.5 font-medium">{t("colCustomer")}</th>
-                  <th className="px-5 py-3.5 font-medium">{t("colRoute")}</th>
-                  <th className="px-5 py-3.5 font-medium">{t("colWhen")}</th>
-                  <th className="px-5 py-3.5 font-medium">{t("colStatus")}</th>
-                  <th className="px-5 py-3.5 font-medium text-right">
-                    {t("colAmount")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((b) => {
-                  const leg = b.legs[0];
-                  const active = selected?.id === b.id;
-                  return (
-                    <tr
-                      key={b.id}
-                      className={cn(
-                        "cursor-pointer border-t border-zinc-100 transition-colors",
-                        active ? "bg-amber-50/60" : "hover:bg-zinc-50/80"
+      <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px] text-sm">
+            <thead className="border-b border-zinc-100 bg-zinc-50/80 text-left text-xs text-zinc-500">
+              <tr>
+                <th className="px-5 py-3.5 font-medium">{t("colBooking")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("colCustomer")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("colRoute")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("colService")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("colWhen")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("colStatus")}</th>
+                <th className="px-5 py-3.5 font-medium text-right">
+                  {t("colAmount")}
+                </th>
+                <th className="px-5 py-3.5 font-medium text-right">
+                  {t("colActions")}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((b) => {
+                const leg = b.legs[0];
+                return (
+                  <tr
+                    key={b.id}
+                    className="border-t border-zinc-100 transition-colors hover:bg-zinc-50/80"
+                  >
+                    <td className="px-5 py-4 font-medium text-zinc-950">
+                      #{b.bookingNumber}
+                    </td>
+                    <td className="px-5 py-4 text-zinc-700">{b.customerName}</td>
+                    <td className="min-w-[240px] px-5 py-4 text-zinc-500">
+                      {routeLabel(b)}
+                    </td>
+                    <td className="px-5 py-4 text-zinc-600">
+                      {b.service === "rental"
+                        ? t("serviceRental")
+                        : t("serviceTransfer")}
+                    </td>
+                    <td className="px-5 py-4 text-zinc-500 tabular-nums">
+                      {leg ? `${leg.date} ${leg.time}` : "—"}
+                    </td>
+                    <td className="px-5 py-4">
+                      <OpsBadge
+                        status={b.opsStatus}
+                        label={t(`ops.${b.opsStatus}`)}
+                      />
+                    </td>
+                    <td className="px-5 py-4 text-right tabular-nums text-zinc-950">
+                      <p className="font-semibold">
+                        {money(bookingDisplayAmount(b))}
+                      </p>
+                      {b.service === "rental" && (
+                        <p className="text-xs text-zinc-500">
+                          / {money(b.totalPrice)}
+                        </p>
                       )}
-                      onClick={() => setSelectedId(b.id)}
-                    >
-                      <td className="px-5 py-4 font-medium text-zinc-950">
-                        #{b.bookingNumber}
-                      </td>
-                      <td className="px-5 py-4 text-zinc-700">
-                        {b.customerName}
-                      </td>
-                      <td className="max-w-[200px] truncate px-5 py-4 text-zinc-500">
-                        {routeLabel(b)}
-                      </td>
-                      <td className="px-5 py-4 text-zinc-500 tabular-nums">
-                        {leg ? `${leg.date} ${leg.time}` : "—"}
-                      </td>
-                      <td className="px-5 py-4">
-                        <OpsBadge
-                          status={b.opsStatus}
-                          label={t(`ops.${b.opsStatus}`)}
-                        />
-                      </td>
-                      <td className="px-5 py-4 text-right font-semibold tabular-nums text-zinc-950">
-                        {money(b.totalPrice)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          {filtered.length === 0 && (
-            <p className="px-5 py-12 text-center text-sm text-zinc-500">
-              {t("emptyBookings")}
-            </p>
-          )}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 rounded-lg border-zinc-200 px-3"
+                        onClick={() => openDetail(b.id)}
+                      >
+                        {t("manageDetail")}
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
+        {filtered.length === 0 && (
+          <p className="px-5 py-12 text-center text-sm text-zinc-500">
+            {t("emptyBookings")}
+          </p>
+        )}
+      </div>
 
-        <aside className="h-fit rounded-2xl border border-zinc-200/80 bg-white p-5 sm:p-6 xl:sticky xl:top-24">
-          {selected ? (
+      <Dialog
+        open={detailOpen && !!selected}
+        onOpenChange={(open) => {
+          setDetailOpen(open);
+          if (!open) setSelectedId(null);
+        }}
+      >
+        <DialogContent className="max-h-[min(90vh,820px)] w-full overflow-y-auto sm:max-w-lg">
+          {selected && (
             <div className="space-y-5">
-              <div className="space-y-2">
+              <DialogHeader>
                 <p className="text-[11px] font-semibold tracking-wide text-zinc-400 uppercase">
                   {t("detailTitle")}
                 </p>
-                <h2 className="text-lg font-semibold tracking-tight text-zinc-950">
+                <DialogTitle className="text-lg font-semibold tracking-tight text-zinc-950">
                   #{selected.bookingNumber}
-                </h2>
-                <OpsBadge
-                  status={selected.opsStatus}
-                  label={t(`ops.${selected.opsStatus}`)}
-                />
-              </div>
+                </DialogTitle>
+                <DialogDescription className="sr-only">
+                  {t("detailTitle")} #{selected.bookingNumber}
+                </DialogDescription>
+                <div className="pt-1">
+                  <OpsBadge
+                    status={selected.opsStatus}
+                    label={t(`ops.${selected.opsStatus}`)}
+                  />
+                </div>
+              </DialogHeader>
+
               <dl className="space-y-4 text-sm">
                 <div className="space-y-1">
                   <dt className="text-xs text-zinc-400">{t("colCustomer")}</dt>
@@ -186,6 +279,36 @@ export function AdminBookingsPage() {
                   </div>
                 )}
                 <div className="space-y-1">
+                  <dt className="text-xs text-zinc-400">{t("colService")}</dt>
+                  <dd className="text-zinc-700">
+                    {selected.service === "rental"
+                      ? t("serviceRental")
+                      : t("serviceTransfer")}
+                  </dd>
+                </div>
+                {selected.service === "rental" && selected.rentalDays && (
+                  <div className="space-y-1">
+                    <dt className="text-xs text-zinc-400">{t("rentalDays")}</dt>
+                    <dd className="text-zinc-700">
+                      {t("rentalDaysValue", { days: selected.rentalDays })}
+                    </dd>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <dt className="text-xs text-zinc-400">{t("colAmount")}</dt>
+                  <dd className="text-zinc-700">
+                    {t("payToday")}: {money(bookingDisplayAmount(selected))}
+                    {selected.service === "rental" && (
+                      <span className="block text-sm text-zinc-500">
+                        {t("estimatedTotal")}: {money(selected.totalPrice)}
+                        {selected.balanceDue != null && selected.balanceDue > 0
+                          ? ` · ${t("rentalBalanceDue", { amount: money(selected.balanceDue) })}`
+                          : ""}
+                      </span>
+                    )}
+                  </dd>
+                </div>
+                <div className="space-y-1">
                   <dt className="text-xs text-zinc-400">{t("payment")}</dt>
                   <dd className="text-zinc-700">
                     {selected.payment?.summary ?? "—"}
@@ -193,6 +316,14 @@ export function AdminBookingsPage() {
                       {" "}
                       ({selected.payment?.status ?? "—"})
                     </span>
+                  </dd>
+                </div>
+                <div className="space-y-2">
+                  <dt className="text-xs text-zinc-400">{t("transferProof")}</dt>
+                  <dd>
+                    <TransferProofPreview
+                      proof={selected.payment?.transferProof}
+                    />
                   </dd>
                 </div>
               </dl>
@@ -276,13 +407,9 @@ export function AdminBookingsPage() {
                 {t("cancelBooking")}
               </Button>
             </div>
-          ) : (
-            <p className="py-8 text-center text-sm text-zinc-500">
-              {t("selectBooking")}
-            </p>
           )}
-        </aside>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

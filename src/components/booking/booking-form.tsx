@@ -32,17 +32,29 @@ import { PaymentSection } from "@/components/booking/payment-section";
 import { RoutePreviewDialog } from "@/components/booking/route-preview-dialog";
 import { RentalConditions } from "@/components/shared/rental-conditions";
 import { cn } from "@/lib/utils";
+import {
+  getActiveRentalPackages,
+  getRentalPackage,
+} from "@/lib/data/rental-packages";
 import { tariffVehicles, vehicles } from "@/lib/data/vehicles";
 import { useBookingStore } from "@/lib/booking/store";
+import {
+  getAmountDueNow,
+  getBookingService,
+  getRemainingBalance,
+  isCarRentalService,
+} from "@/lib/booking/booking-mode";
+import {
+  bookingFieldClass,
+  bookingSelectTriggerClass,
+  bookingSummaryBarClass,
+} from "@/lib/booking/form-field-styles";
 import {
   shouldShowRoutePreview,
 } from "@/lib/booking/route-preview";
 import {
-  createOmiseCardToken,
-  isOmiseConfigured,
-} from "@/lib/payment/omise-client";
-import {
   getActiveCancelPolicy,
+  getActiveRentalDeposits,
   useSettingsRevision,
 } from "@/lib/admin/settings-store";
 import { getLocation } from "@/lib/data/locations";
@@ -72,6 +84,9 @@ export function BookingForm() {
     removeLeg,
     updateLeg,
     setCustomer,
+    setService,
+    setRentalPackage,
+    setRentalDays,
     setPaymentMethod,
     setCardField,
     setTransferBank,
@@ -79,9 +94,33 @@ export function BookingForm() {
     confirmBooking,
     getLegPrice,
     getTotalPrice,
+    ensureTransferRef,
   } = useBookingStore();
   useSettingsRevision();
   const cancelPolicy = getActiveCancelPolicy();
+  const rentalDeposits = getActiveRentalDeposits();
+  const formatDeposit = (amount: number) =>
+    `฿${amount.toLocaleString("en-US")}`;
+  const isRentalBooking = isCarRentalService(
+    getBookingService(searchParams.get("service"))
+  );
+  const bookingService = draft.service;
+
+  useEffect(() => {
+    setService(isRentalBooking ? "rental" : "transfer");
+  }, [isRentalBooking, setService]);
+
+  useEffect(() => {
+    ensureTransferRef();
+  }, [ensureTransferRef]);
+
+  useEffect(() => {
+    if (!isRentalBooking) return;
+    const packageId = searchParams.get("package");
+    if (packageId && getRentalPackage(packageId)) {
+      setRentalPackage(packageId);
+    }
+  }, [isRentalBooking, searchParams, setRentalPackage]);
 
   const [paying, setPaying] = useState(false);
   const prevDropoffRef = useRef<Map<string, string>>(new Map());
@@ -95,7 +134,7 @@ export function BookingForm() {
     draft.type === "daily-charter" || draft.type === "hourly-charter";
 
   useEffect(() => {
-    if (isCharter) return;
+    if (isCharter || isRentalBooking) return;
 
     for (const leg of draft.legs) {
       const prevToId = prevDropoffRef.current.get(leg.id);
@@ -111,7 +150,7 @@ export function BookingForm() {
       });
       break;
     }
-  }, [draft.legs, isCharter]);
+  }, [draft.legs, isCharter, isRentalBooking]);
 
   // Fill today's date client-side only (avoids SSR date mismatch)
   useEffect(() => {
@@ -178,35 +217,11 @@ export function BookingForm() {
         return;
       }
     }
-    if (draft.paymentMethod === "card") {
-      const digits = draft.card.cardNumber.replace(/\s/g, "");
-      if (
-        digits.length < 15 ||
-        !draft.card.cardName.trim() ||
-        draft.card.expiry.length < 4 ||
-        draft.card.cvv.length < 3
-      ) {
-        toast.error(tPay("toastCard"));
-        return;
-      }
-    }
 
     setPaying(true);
+    await new Promise((r) => setTimeout(r, 600));
 
-    let omiseTokenId: string | undefined;
-    if (draft.paymentMethod === "card" && isOmiseConfigured()) {
-      try {
-        omiseTokenId = await createOmiseCardToken(draft.card);
-      } catch {
-        setPaying(false);
-        toast.error(tPay("toastCardOmise"));
-        return;
-      }
-    } else {
-      await new Promise((r) => setTimeout(r, 600));
-    }
-
-    const booking = confirmBooking({ omiseTokenId });
+    const booking = confirmBooking({ service: bookingService });
     setPaying(false);
 
     if (!booking) {
@@ -215,12 +230,8 @@ export function BookingForm() {
     }
 
     if (booking.payment?.status === "awaiting-transfer") {
-      if (booking.payment.method === "cash") {
-        toast.success(t("confirmCash"));
-      } else if (booking.payment.method === "promptpay") {
+      if (booking.payment.method === "promptpay") {
         toast.success(t("confirmPromptPay"));
-      } else if (booking.payment.method === "card") {
-        toast.success(t("confirmCard"));
       } else {
         toast.success(t("confirmBank"));
       }
@@ -231,27 +242,81 @@ export function BookingForm() {
   };
 
   const total = getTotalPrice();
+  const amountDue = getAmountDueNow(total, bookingService);
+  const balanceDue = getRemainingBalance(total, bookingService);
 
   const confirmLabel =
     draft.paymentMethod === "bank-transfer"
       ? t("confirmBank")
-      : draft.paymentMethod === "card"
-        ? t("confirmCard")
-        : draft.paymentMethod === "promptpay"
-          ? t("confirmPromptPay")
-          : draft.paymentMethod === "cash"
-            ? t("confirmCash")
-            : t("confirmBooking");
+      : draft.paymentMethod === "promptpay"
+        ? t("confirmPromptPay")
+        : t("confirmBooking");
 
-  const fieldClass = "h-10 text-base md:h-8 md:text-sm";
-  const selectTriggerClass = cn("w-full min-w-0", fieldClass);
+  const fieldClass = bookingFieldClass;
+  const selectTriggerClass = bookingSelectTriggerClass;
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-32 sm:space-y-8 sm:px-4 sm:py-8 md:pb-8 lg:px-8">
-      <RentalConditions />
+      {isRentalBooking && <RentalConditions />}
 
       <div className="grid gap-5 sm:gap-8 lg:grid-cols-3">
       <div className="space-y-4 sm:space-y-6 lg:col-span-2">
+        {isRentalBooking ? (
+          <Card className="md:[--card-spacing:--spacing(4)]" size="sm">
+            <CardHeader className="gap-1">
+              <CardTitle className="text-base sm:text-lg">
+                {t("rentalBookingTitle")}
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                {t("rentalBookingSubtitle")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <div className="col-span-2 space-y-1.5 sm:space-y-2">
+                <Label>{t("rentalModel")}</Label>
+                <Select
+                  value={draft.rentalPackageId}
+                  onValueChange={(v) => v && setRentalPackage(v)}
+                >
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue placeholder={t("rentalModel")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getActiveRentalPackages().map((pkg) => (
+                      <SelectItem key={pkg.id} value={pkg.id}>
+                        {pkg.model} ({pkg.category})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label>{t("rentalDays")}</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={30}
+                  className={fieldClass}
+                  value={draft.rentalDays}
+                  onChange={(e) =>
+                    setRentalDays(Number.parseInt(e.target.value, 10) || 1)
+                  }
+                />
+              </div>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label>{t("estimatedTotal")}</Label>
+                <div className={bookingSummaryBarClass}>
+                  <span className="text-sm leading-none text-muted-foreground">
+                    {getRentalPackage(draft.rentalPackageId)?.model ?? "—"}
+                  </span>
+                  <span className="text-sm font-bold leading-none">
+                    ฿{total.toLocaleString("en-US")}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
         <Card className="md:[--card-spacing:--spacing(4)]" size="sm">
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">{t("typeTitle")}</CardTitle>
@@ -300,13 +365,19 @@ export function BookingForm() {
             </p>
           </CardContent>
         </Card>
+        )}
 
         <div className="space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-base font-semibold sm:text-lg">
-              {isCharter ? t("charterDetails") : t("routeDetails")}
+              {isRentalBooking
+                ? t("rentalPickupTitle")
+                : isCharter
+                  ? t("charterDetails")
+                  : t("routeDetails")}
             </h2>
-            {(draft.type === "multi-route" || draft.type === "multi-day") && (
+            {!isRentalBooking &&
+              (draft.type === "multi-route" || draft.type === "multi-day") && (
               <Button variant="outline" size="sm" onClick={addLeg}>
                 <Plus className="size-4" />
                 {t("addRoute")}
@@ -381,6 +452,7 @@ export function BookingForm() {
                   />
                 </div>
 
+                {!isRentalBooking && (
                 <div className="col-span-2 space-y-1.5 sm:space-y-2">
                   <Label>{t("vehicle")}</Label>
                   <Select
@@ -411,13 +483,18 @@ export function BookingForm() {
                     </SelectContent>
                   </Select>
                 </div>
+                )}
 
-                <div className="col-span-2 flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5 sm:px-4 sm:py-3">
-                  <span className="text-sm text-muted-foreground">{t("legPrice")}</span>
-                  <span className="text-base font-bold sm:text-lg">
+                {!isRentalBooking && (
+                <div className={bookingSummaryBarClass}>
+                  <span className="text-sm leading-none text-muted-foreground">
+                    {t("legPrice")}
+                  </span>
+                  <span className="text-sm font-bold leading-none">
                     ฿{getLegPrice(leg).toLocaleString()}
                   </span>
                 </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -427,10 +504,13 @@ export function BookingForm() {
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">{t("customerTitle")}</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              {t("customerSubtitle")}
+              {isRentalBooking
+                ? t("customerSubtitleRental")
+                : t("customerSubtitleTransfer")}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+            {isRentalBooking && (
             <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
               <ul className="space-y-1.5 rounded-xl border border-amber-200/80 bg-amber-50/70 px-3 py-2.5 text-xs text-amber-950 sm:text-sm">
                 <li>{t("reqHintId")}</li>
@@ -438,6 +518,7 @@ export function BookingForm() {
                 <li>{t("reqHintPhone")}</li>
               </ul>
             </div>
+            )}
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="name">{t("fullName")}</Label>
               <Input
@@ -476,7 +557,9 @@ export function BookingForm() {
               />
             </div>
             <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="flight">{t("flightLabel")}</Label>
+              <Label htmlFor="flight">
+                {isRentalBooking ? t("flightLabelRental") : t("flightLabelTransfer")}
+              </Label>
               <Input
                 id="flight"
                 className={fieldClass}
@@ -484,7 +567,9 @@ export function BookingForm() {
                 onChange={(e) => setCustomer("flightNumber", e.target.value)}
                 placeholder={t("phFlight")}
               />
-              <p className="text-[11px] text-muted-foreground">{t("flightHint")}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {isRentalBooking ? t("flightHintRental") : t("flightHintTransfer")}
+              </p>
             </div>
             <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
               <Label htmlFor="notes">{t("specialRequests")}</Label>
@@ -503,7 +588,9 @@ export function BookingForm() {
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">{t("paymentTitle")}</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              {t("paymentSubtitle")}
+              {isRentalBooking
+                ? t("paymentSubtitleRental")
+                : t("paymentSubtitleTransfer")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -511,10 +598,14 @@ export function BookingForm() {
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-left sm:px-4 [&::-webkit-details-marker]:hidden">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-amber-950">
-                    {t("policyBoxTitle")}
+                    {isRentalBooking
+                      ? t("policyBoxTitle")
+                      : t("policyBoxTitleTransfer")}
                   </p>
                   <p className="text-[11px] text-amber-900/70 sm:text-xs">
-                    {t("policyBoxHint")}
+                    {isRentalBooking
+                      ? t("policyBoxHint")
+                      : t("policyBoxHintTransfer")}
                   </p>
                 </div>
                 <ChevronDown className="size-4 shrink-0 text-amber-800 transition-transform group-open:rotate-180" />
@@ -533,9 +624,21 @@ export function BookingForm() {
                         percent: cancelPolicy.lateFeePercent,
                       })}
                     </p>
+                    <p className="text-xs leading-relaxed text-amber-900/90 sm:text-sm">
+                      {t("noShowPolicyNote", {
+                        percent: cancelPolicy.noShowPercent,
+                      })}
+                    </p>
+                    <p className="text-xs leading-relaxed text-amber-900/90 sm:text-sm">
+                      {t("refundPolicyNote", {
+                        days: cancelPolicy.refundBusinessDays,
+                      })}
+                    </p>
                   </div>
                 </div>
 
+                {isRentalBooking && (
+                <>
                 <div className="flex gap-3 px-3 py-3 sm:px-4">
                   <Wallet className="mt-0.5 size-4 shrink-0 text-amber-800" />
                   <div className="min-w-0 flex-1 space-y-2.5">
@@ -548,7 +651,7 @@ export function BookingForm() {
                           {t("depositSmallLabel")}
                         </p>
                         <p className="text-sm font-bold text-amber-950">
-                          {t("depositSmallAmount")}
+                          {formatDeposit(rentalDeposits.smallCarDeposit)}
                         </p>
                       </div>
                       <div className="rounded-lg bg-white/90 px-2.5 py-2 ring-1 ring-amber-200/70">
@@ -556,12 +659,16 @@ export function BookingForm() {
                           {t("depositLargeLabel")}
                         </p>
                         <p className="text-sm font-bold text-amber-950">
-                          {t("depositLargeAmount")}
+                          {formatDeposit(rentalDeposits.largeCarDeposit)}
                         </p>
                       </div>
                     </div>
                     <ol className="list-decimal space-y-1 pl-4 text-xs leading-relaxed text-amber-900/90 sm:text-sm">
-                      <li>{t("depositStepAdvance")}</li>
+                      <li>
+                        {t("depositStepAdvance", {
+                          amount: formatDeposit(rentalDeposits.advanceDeposit),
+                        })}
+                      </li>
                       <li>{t("depositStepContract")}</li>
                       <li>{t("depositStepRefund")}</li>
                     </ol>
@@ -579,10 +686,14 @@ export function BookingForm() {
                     </p>
                   </div>
                 </div>
+                </>
+                )}
               </div>
             </details>
             <PaymentSection
-              amount={total}
+              amount={amountDue}
+              fullAmount={isRentalBooking ? total : undefined}
+              isRentalDeposit={isRentalBooking}
               method={draft.paymentMethod}
               onMethodChange={setPaymentMethod}
               card={draft.card}
@@ -591,7 +702,7 @@ export function BookingForm() {
               onTransferBankChange={setTransferBank}
               transferProof={draft.transferProof}
               onTransferProofChange={setTransferProof}
-              transferRef="KLT-PENDING"
+              transferRef={draft.transferRef || "KLT-PENDING"}
             />
           </CardContent>
         </Card>
@@ -607,8 +718,17 @@ export function BookingForm() {
           </CardHeader>
           <CardContent className="space-y-3 sm:space-y-4">
             <Badge variant="secondary" className="capitalize">
-              {draft.type.replace("-", " ")}
+              {isRentalBooking
+                ? t("serviceRentalBadge")
+                : draft.type.replace("-", " ")}
             </Badge>
+
+            {isRentalBooking && (
+              <p className="text-sm text-muted-foreground">
+                {getRentalPackage(draft.rentalPackageId)?.model} ·{" "}
+                {t("rentalDaysValue", { days: draft.rentalDays })}
+              </p>
+            )}
 
             {draft.legs.map((leg, i) => {
               const from = getLocation(leg.fromId);
@@ -622,12 +742,15 @@ export function BookingForm() {
                       : `${locName(from).split("(")[0].trim()} → ${locName(to).split("(")[0].trim()}`}
                   </p>
                   <p className="text-muted-foreground">
-                    {leg.date} {t("at")} {leg.time} ·{" "}
-                    {vehicle ? vehicleName(vehicle.code) : ""}
+                    {leg.date} {t("at")} {leg.time}
+                    {!isRentalBooking &&
+                      ` · ${vehicle ? vehicleName(vehicle.code) : ""}`}
                   </p>
-                  <p className="font-medium">
-                    ฿{getLegPrice(leg).toLocaleString("en-US")}
-                  </p>
+                  {!isRentalBooking && (
+                    <p className="font-medium">
+                      ฿{getLegPrice(leg).toLocaleString("en-US")}
+                    </p>
+                  )}
                   {i < draft.legs.length - 1 && <Separator className="my-3" />}
                 </div>
               );
@@ -635,21 +758,43 @@ export function BookingForm() {
 
             <Separator />
 
-            <div className="flex items-center justify-between">
-              <span className="text-base font-semibold sm:text-lg">{t("total")}</span>
-              <span className="text-xl font-bold text-primary sm:text-2xl">
-                ฿{total.toLocaleString("en-US")}
-              </span>
-            </div>
+            {isRentalBooking ? (
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>{t("estimatedTotal")}</span>
+                  <span>฿{total.toLocaleString("en-US")}</span>
+                </div>
+                <div className="flex items-center justify-between font-semibold text-primary">
+                  <span>{t("payToday")}</span>
+                  <span className="text-lg sm:text-xl">
+                    ฿{amountDue.toLocaleString("en-US")}
+                  </span>
+                </div>
+                {balanceDue > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("balanceDue", {
+                      amount: balanceDue.toLocaleString("en-US"),
+                    })}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <span className="text-base font-semibold sm:text-lg">
+                  {t("total")}
+                </span>
+                <span className="text-xl font-bold text-primary sm:text-2xl">
+                  ฿{total.toLocaleString("en-US")}
+                </span>
+              </div>
+            )}
 
             {draft.paymentMethod && (
               <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
                 {t("paymentMethod")}{" "}
                 <span className="font-medium text-foreground">
                   {draft.paymentMethod === "bank-transfer" && t("bankTransfer")}
-                  {draft.paymentMethod === "card" && t("card")}
                   {draft.paymentMethod === "promptpay" && t("promptpay")}
-                  {draft.paymentMethod === "cash" && t("cash")}
                 </span>
               </p>
             )}
@@ -675,9 +820,11 @@ export function BookingForm() {
       <div className="fixed inset-x-0 bottom-[4.75rem] z-40 border-t border-border/70 bg-background/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-background/90 md:bottom-0 lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] leading-none text-muted-foreground">{t("total")}</p>
+            <p className="text-[11px] leading-none text-muted-foreground">
+              {isRentalBooking ? t("payToday") : t("total")}
+            </p>
             <p className="truncate text-lg font-bold text-primary">
-              ฿{total.toLocaleString("en-US")}
+              ฿{amountDue.toLocaleString("en-US")}
             </p>
           </div>
           <Button

@@ -8,6 +8,7 @@ import {
   type CharterSettings,
   type ContactSettings,
   type PaymentSettings,
+  type RentalDepositSettings,
   type SiteSettings,
   type StaffAccount,
 } from "@/lib/admin/settings";
@@ -19,6 +20,7 @@ interface SettingsState extends SiteSettings {
   savePayment: (payment: PaymentSettings) => void;
   saveCharter: (charter: CharterSettings) => void;
   saveCancelPolicy: (cancelPolicy: CancelPolicySettings) => void;
+  saveRentalDeposits: (rentalDeposits: RentalDepositSettings) => void;
   saveStaff: (staff: StaffAccount[]) => void;
   resetSettings: () => void;
 }
@@ -35,6 +37,8 @@ export const useSettingsStore = create<SettingsState>()(
       saveCharter: (charter) => set({ charter, updatedAt: mark() }),
       saveCancelPolicy: (cancelPolicy) =>
         set({ cancelPolicy, updatedAt: mark() }),
+      saveRentalDeposits: (rentalDeposits) =>
+        set({ rentalDeposits, updatedAt: mark() }),
       saveStaff: (staff) => set({ staff, updatedAt: mark() }),
       resetSettings: () =>
         set({ ...defaultSiteSettings(), updatedAt: null }),
@@ -46,6 +50,7 @@ export const useSettingsStore = create<SettingsState>()(
         payment: state.payment,
         charter: state.charter,
         cancelPolicy: state.cancelPolicy,
+        rentalDeposits: state.rentalDeposits,
         staff: state.staff,
         updatedAt: state.updatedAt,
       }),
@@ -61,6 +66,7 @@ function live(): SiteSettings {
     payment: state.payment,
     charter: state.charter,
     cancelPolicy: state.cancelPolicy,
+    rentalDeposits: state.rentalDeposits,
     staff: state.staff,
   };
 }
@@ -79,6 +85,10 @@ export function getActiveCharterRates() {
 
 export function getActiveCancelPolicy() {
   return live().cancelPolicy;
+}
+
+export function getActiveRentalDeposits() {
+  return live().rentalDeposits;
 }
 
 export function getActiveStaff() {

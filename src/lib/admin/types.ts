@@ -3,6 +3,9 @@ import type { Booking, BookingPayment, VehicleCode } from "@/lib/types";
 export type OpsStatus =
   | "new"
   | "payment_review"
+  | "awaiting_contract"
+  | "balance_due"
+  | "deposit_refund_pending"
   | "assigned"
   | "in_progress"
   | "completed"
@@ -38,6 +41,13 @@ export function deriveOpsStatus(booking: Booking): OpsStatus {
   if (booking.payment?.method === "cash") return "new";
   if (booking.payment?.status === "awaiting-transfer") return "payment_review";
   if (booking.status === "pending") return "payment_review";
+  if (
+    booking.service === "rental" &&
+    booking.payment?.status === "paid" &&
+    (booking.balanceDue ?? 0) > 0
+  ) {
+    return "awaiting_contract";
+  }
   if (booking.status === "confirmed") return "new";
   return "new";
 }
@@ -68,8 +78,8 @@ export function markPayment(
     paidAt:
       status === "paid" ? payment.paidAt ?? new Date().toISOString() : payment.paidAt,
     summary:
-      status === "paid" && payment.method === "bank-transfer"
-        ? payment.summary.replace("(pending verification)", "(verified)")
+      status === "paid"
+        ? payment.summary.replace(/\(pending verification\)/gi, "(verified)")
         : payment.summary,
   };
 }

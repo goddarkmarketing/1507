@@ -166,7 +166,12 @@ export function FleetPageContent() {
 
       {showRental && (
         <section>
-          <RentalConditions className="mb-8" />
+          <RentalConditions className="mb-6" />
+          <div className="mb-8 flex justify-center sm:justify-start">
+            <ButtonLink href="/booking?service=rental" size="lg">
+              {t("bookRental")}
+            </ButtonLink>
+          </div>
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold">{t("rentalTitle")}</h2>

@@ -15,6 +15,7 @@ import {
   type CharterSettings,
   type ContactSettings,
   type PaymentSettings,
+  type RentalDepositSettings,
   type StaffAccount,
   type StaffRole,
 } from "@/lib/admin/settings";
@@ -87,6 +88,9 @@ export function AdminSettingsPage() {
   const [charter, setCharter] = useState<CharterSettings>(stored.charter);
   const [policy, setPolicy] = useState<CancelPolicySettings>(
     stored.cancelPolicy
+  );
+  const [rentalDeposits, setRentalDeposits] = useState(
+    stored.rentalDeposits
   );
   const [staff, setStaff] = useState<StaffAccount[]>(stored.staff);
   const [newStaff, setNewStaff] = useState({
@@ -390,6 +394,69 @@ export function AdminSettingsPage() {
         </Section>
 
         <Section
+          title={t("settingsRentalDepositTitle")}
+          help={t("settingsRentalDepositHelp")}
+          saveLabel={t("settingsSave")}
+          onSave={() => {
+            if (
+              rentalDeposits.advanceDeposit < 1 ||
+              rentalDeposits.smallCarDeposit < 1 ||
+              rentalDeposits.largeCarDeposit < 1
+            ) {
+              toast.error(t("settingsRentalDepositInvalid"));
+              return;
+            }
+            stored.saveRentalDeposits(rentalDeposits);
+            saveOk();
+          }}
+        >
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label={t("settingsAdvanceDeposit")}>
+              <Input
+                type="number"
+                min={1}
+                className={fieldClass()}
+                value={rentalDeposits.advanceDeposit}
+                onChange={(e) =>
+                  setRentalDeposits((s) => ({
+                    ...s,
+                    advanceDeposit: Number(e.target.value),
+                  }))
+                }
+              />
+            </Field>
+            <Field label={t("settingsSmallCarDeposit")}>
+              <Input
+                type="number"
+                min={1}
+                className={fieldClass()}
+                value={rentalDeposits.smallCarDeposit}
+                onChange={(e) =>
+                  setRentalDeposits((s) => ({
+                    ...s,
+                    smallCarDeposit: Number(e.target.value),
+                  }))
+                }
+              />
+            </Field>
+            <Field label={t("settingsLargeCarDeposit")}>
+              <Input
+                type="number"
+                min={1}
+                className={fieldClass()}
+                value={rentalDeposits.largeCarDeposit}
+                onChange={(e) =>
+                  setRentalDeposits((s) => ({
+                    ...s,
+                    largeCarDeposit: Number(e.target.value),
+                  }))
+                }
+              />
+            </Field>
+          </div>
+        </Section>
+
+        <Section
           title={t("settingsPolicyTitle")}
           help={t("settingsPolicyHelp")}
           saveLabel={t("settingsSave")}
@@ -610,6 +677,7 @@ export function AdminSettingsPage() {
               setContact(defaults.contact);
               setPayment(defaults.payment);
               setCharter(defaults.charter);
+              setRentalDeposits(defaults.rentalDeposits);
               setPolicy(defaults.cancelPolicy);
               setStaff(defaults.staff);
               toast.success(t("settingsResetOk"));

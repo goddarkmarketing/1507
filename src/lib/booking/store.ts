@@ -5,6 +5,15 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { calculatePrice } from "@/lib/data/pricing";
 import { getPromptPay } from "@/lib/data/payment";
+import {
+  getAmountDueNow,
+  getRemainingBalance,
+  type BookingService,
+} from "@/lib/booking/booking-mode";
+import {
+  calculateRentalTotal,
+  getDefaultRentalPackageId,
+} from "@/lib/booking/rental-pricing";
 import { getActiveCharterRates } from "@/lib/admin/settings-store";
 import type {
   Booking,
@@ -18,6 +27,10 @@ import type {
 } from "@/lib/types";
 
 interface BookingDraft {
+  service: BookingService;
+  transferRef: string;
+  rentalPackageId: string;
+  rentalDays: number;
   type: BookingType;
   legs: Omit<BookingLeg, "price">[];
   customerName: string;
@@ -49,14 +62,22 @@ interface BookingStore {
     >,
     value: string
   ) => void;
+  setService: (service: BookingService) => void;
+  setRentalPackage: (packageId: string) => void;
+  setRentalDays: (days: number) => void;
   setPaymentMethod: (method: PaymentMethod) => void;
   setCardField: (field: keyof CardPaymentDetails, value: string) => void;
   setTransferBank: (symbol: string) => void;
   setTransferProof: (proof: TransferProof | null) => void;
-  confirmBooking: (options?: { omiseTokenId?: string }) => Booking | null;
+  confirmBooking: (options?: {
+    omiseTokenId?: string;
+    service?: BookingService;
+  }) => Booking | null;
+  patchConfirmedBooking: (id: string, patch: Partial<Booking>) => void;
   getLegPrice: (leg: Omit<BookingLeg, "price">) => number;
   getTotalPrice: () => number;
   resetDraft: () => void;
+  ensureTransferRef: () => void;
 }
 
 /** Stable initial leg — no Date/UUID so SSR and client match */
@@ -70,6 +91,10 @@ const INITIAL_LEG: Omit<BookingLeg, "price"> = {
 };
 
 const INITIAL_DRAFT: BookingDraft = {
+  service: "transfer",
+  transferRef: "",
+  rentalPackageId: getDefaultRentalPackageId(),
+  rentalDays: 1,
   type: "one-way",
   legs: [INITIAL_LEG],
   customerName: "",
@@ -109,7 +134,9 @@ function createLeg(
 function createDefaultDraft(): BookingDraft {
   return {
     ...INITIAL_DRAFT,
+    transferRef: generateBookingNumber(),
     legs: [{ ...INITIAL_LEG, date: todayISODate() }],
+    rentalPackageId: getDefaultRentalPackageId(),
   };
 }
 
@@ -178,14 +205,32 @@ export const useBookingStore = create<BookingStore>()(
           draft: { ...state.draft, [field]: value },
         })),
 
+      setService: (service) =>
+        set((state) => ({
+          draft: { ...state.draft, service },
+        })),
+
+      setRentalPackage: (packageId) =>
+        set((state) => ({
+          draft: { ...state.draft, rentalPackageId: packageId },
+        })),
+
+      setRentalDays: (days) =>
+        set((state) => ({
+          draft: {
+            ...state.draft,
+            rentalDays: Math.min(30, Math.max(1, days)),
+          },
+        })),
+
       setPaymentMethod: (method) =>
         set((state) => ({
           draft: {
             ...state.draft,
             paymentMethod: method,
-            // Clear transfer fields when switching away
-            ...(method !== "bank-transfer"
-              ? { transferProof: null, transferBankSymbol: null }
+            ...(method !== "bank-transfer" ? { transferBankSymbol: null } : {}),
+            ...(method !== "bank-transfer" && method !== "promptpay"
+              ? { transferProof: null }
               : {}),
           },
         })),
@@ -209,6 +254,9 @@ export const useBookingStore = create<BookingStore>()(
         })),
 
       getLegPrice: (leg) => {
+        if (get().draft.service === "rental") {
+          return 0;
+        }
         if (
           get().draft.type === "daily-charter" ||
           get().draft.type === "hourly-charter"
@@ -235,8 +283,18 @@ export const useBookingStore = create<BookingStore>()(
 
       getTotalPrice: () => {
         const { draft, getLegPrice } = get();
+        if (draft.service === "rental") {
+          return calculateRentalTotal(draft.rentalPackageId, draft.rentalDays);
+        }
         return draft.legs.reduce((sum, leg) => sum + getLegPrice(leg), 0);
       },
+
+      patchConfirmedBooking: (id, patch) =>
+        set((state) => ({
+          confirmedBookings: state.confirmedBookings.map((b) =>
+            b.id === id ? { ...b, ...patch } : b
+          ),
+        })),
 
       confirmBooking: (options) => {
         const { draft, getLegPrice, getTotalPrice } = get();
@@ -277,17 +335,29 @@ export const useBookingStore = create<BookingStore>()(
         }));
 
         const totalPrice = getTotalPrice();
-        const bookingNumber = generateBookingNumber();
+        const service = options?.service ?? draft.service;
+        const amountDueNow = getAmountDueNow(totalPrice, service);
+        const balanceDue = getRemainingBalance(totalPrice, service);
+        const bookingNumber = draft.transferRef || generateBookingNumber();
         const createdAt = new Date().toISOString();
+
+        const paymentBase = {
+          amountDue: amountDueNow,
+          ...(balanceDue > 0 ? { balanceDue } : {}),
+        };
 
         let payment: BookingPayment;
         if (draft.paymentMethod === "bank-transfer") {
           payment = {
             method: "bank-transfer",
-            summary: `Bank transfer ${draft.transferBankSymbol} (pending verification)`,
+            summary:
+              service === "rental"
+                ? `Rental deposit ฿${amountDueNow} via ${draft.transferBankSymbol} (pending verification)`
+                : `Bank transfer ${draft.transferBankSymbol} (pending verification)`,
             status: "awaiting-transfer",
             bankSymbol: draft.transferBankSymbol ?? undefined,
             transferProof: draft.transferProof ?? undefined,
+            ...paymentBase,
           };
         } else if (draft.paymentMethod === "card") {
           const last4 = draft.card.cardNumber.replace(/\s/g, "").slice(-4);
@@ -298,19 +368,25 @@ export const useBookingStore = create<BookingStore>()(
               : `Card **** ${last4} (pending verification)`,
             status: "awaiting-transfer",
             omiseTokenId: options?.omiseTokenId,
+            ...paymentBase,
           };
         } else if (draft.paymentMethod === "cash") {
           payment = {
             method: "cash",
             summary: "Cash to driver",
             status: "awaiting-transfer",
+            ...paymentBase,
           };
         } else {
           payment = {
             method: "promptpay",
-            summary: `PromptPay ${getPromptPay().id} (pending verification)`,
+            summary:
+              service === "rental"
+                ? `Rental deposit ฿${amountDueNow} via PromptPay ${getPromptPay().id} (pending verification)`
+                : `PromptPay ${getPromptPay().id} (pending verification)`,
             status: "awaiting-transfer",
             transferProof: draft.transferProof ?? undefined,
+            ...paymentBase,
           };
         }
 
@@ -318,6 +394,7 @@ export const useBookingStore = create<BookingStore>()(
           id: crypto.randomUUID(),
           bookingNumber,
           type: draft.type,
+          service,
           legs,
           customerName: draft.customerName,
           customerEmail: draft.customerEmail,
@@ -325,6 +402,14 @@ export const useBookingStore = create<BookingStore>()(
           flightNumber: draft.flightNumber || undefined,
           notes: draft.notes || undefined,
           totalPrice,
+          amountDueNow,
+          ...(balanceDue > 0 ? { balanceDue } : {}),
+          ...(service === "rental"
+            ? {
+                rentalPackageId: draft.rentalPackageId,
+                rentalDays: draft.rentalDays,
+              }
+            : {}),
           createdAt,
           status: "pending",
           payment,
@@ -339,6 +424,17 @@ export const useBookingStore = create<BookingStore>()(
       },
 
       resetDraft: () => set({ draft: createDefaultDraft() }),
+
+      ensureTransferRef: () =>
+        set((state) => {
+          if (state.draft.transferRef) return state;
+          return {
+            draft: {
+              ...state.draft,
+              transferRef: generateBookingNumber(),
+            },
+          };
+        }),
     }),
     {
       name: "krabi-links-bookings",

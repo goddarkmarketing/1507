@@ -192,6 +192,11 @@ export function PriceListContent() {
       {showRental && (
         <section>
           <RentalConditions className="mb-6" />
+          <div className="mb-4 flex justify-center sm:justify-start">
+            <ButtonLink href="/booking?service=rental" size="lg">
+              {t("bookRental")}
+            </ButtonLink>
+          </div>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold">{t("rentalTitle")}</h2>
@@ -421,10 +426,17 @@ export function PriceListContent() {
         </section>
       )}
 
-      <div className="text-center">
-        <ButtonLink size="lg" href="/booking">
-          {t("bookNow")}
-        </ButtonLink>
+      <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+        {showRental && (
+          <ButtonLink size="lg" href="/booking?service=rental">
+            {t("bookRental")}
+          </ButtonLink>
+        )}
+        {showTransfer && (
+          <ButtonLink size="lg" href="/booking" variant={showRental ? "outline" : "default"}>
+            {t("bookTransfer")}
+          </ButtonLink>
+        )}
       </div>
     </div>
   );

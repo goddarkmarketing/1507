@@ -5,7 +5,33 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useAdminStore } from "@/lib/admin/store";
 import { money, useRouteLabel } from "@/components/admin/admin-ui";
+import { bookingCollectedAmount } from "@/lib/admin/booking-money";
+import { getBookingAmountDue } from "@/lib/booking/booking-mode";
+import { TransferProofPreview } from "@/components/admin/transfer-proof-preview";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+function ServiceBadge({
+  service,
+  label,
+}: {
+  service?: string;
+  label: string;
+}) {
+  const isRental = service === "rental";
+  return (
+    <span
+      className={cn(
+        "inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+        isRental
+          ? "bg-violet-100 text-violet-800"
+          : "bg-sky-100 text-sky-800"
+      )}
+    >
+      {label}
+    </span>
+  );
+}
 
 export function AdminPaymentsPage() {
   const t = useTranslations("Admin");
@@ -58,48 +84,67 @@ export function AdminPaymentsPage() {
         ) : (
           <ul className="divide-y divide-zinc-100">
             {pending.map((b) => (
-              <li
-                key={b.id}
-                className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
-              >
-                <div className="space-y-1">
-                  <p className="font-medium text-zinc-950">
-                    #{b.bookingNumber}
-                    <span className="mx-1.5 text-zinc-300">·</span>
-                    {b.customerName}
-                  </p>
-                  <p className="text-sm text-zinc-500">
-                    {routeLabel(b)}
-                    <span className="mx-1.5 text-zinc-300">·</span>
-                    {b.payment?.summary}
-                  </p>
-                  <p className="pt-1 text-sm font-semibold tabular-nums text-zinc-950">
-                    {money(b.totalPrice)}
-                  </p>
+              <li key={b.id} className="space-y-4 px-5 py-5 sm:px-6">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-zinc-950">
+                        #{b.bookingNumber}
+                      </p>
+                      <ServiceBadge
+                        service={b.service}
+                        label={
+                          b.service === "rental"
+                            ? t("serviceRental")
+                            : t("serviceTransfer")
+                        }
+                      />
+                    </div>
+                    <p className="text-sm text-zinc-700">{b.customerName}</p>
+                    <p className="text-sm text-zinc-500">{routeLabel(b)}</p>
+                    <p className="text-sm text-zinc-500">{b.payment?.summary}</p>
+                    <div className="pt-1 text-sm">
+                      <span className="font-semibold tabular-nums text-zinc-950">
+                        {t("payToday")}: {money(getBookingAmountDue(b))}
+                      </span>
+                      {b.service === "rental" && (
+                        <span className="mt-1 block text-xs text-zinc-500">
+                          {t("estimatedTotal")}: {money(b.totalPrice)}
+                          {b.balanceDue != null && b.balanceDue > 0 && (
+                            <>
+                              {" "}
+                              · {t("rentalBalanceDue", { amount: money(b.balanceDue) })}
+                            </>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button
+                      size="sm"
+                      className="h-9 rounded-lg"
+                      onClick={() => {
+                        verifyPayment(b.id, true);
+                        toast.success(t("toastPaymentOk"));
+                      }}
+                    >
+                      {t("approve")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-9 rounded-lg border-zinc-200"
+                      onClick={() => {
+                        verifyPayment(b.id, false);
+                        toast.message(t("toastPaymentReject"));
+                      }}
+                    >
+                      {t("reject")}
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="h-9 rounded-lg"
-                    onClick={() => {
-                      verifyPayment(b.id, true);
-                      toast.success(t("toastPaymentOk"));
-                    }}
-                  >
-                    {t("approve")}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-9 rounded-lg border-zinc-200"
-                    onClick={() => {
-                      verifyPayment(b.id, false);
-                      toast.message(t("toastPaymentReject"));
-                    }}
-                  >
-                    {t("reject")}
-                  </Button>
-                </div>
+                <TransferProofPreview proof={b.payment?.transferProof} />
               </li>
             ))}
           </ul>
@@ -127,7 +172,7 @@ export function AdminPaymentsPage() {
                 </p>
               </div>
               <p className="shrink-0 text-sm font-semibold tabular-nums text-zinc-950">
-                {money(b.totalPrice)}
+                {money(bookingCollectedAmount(b))}
               </p>
             </li>
           ))}

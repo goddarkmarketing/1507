@@ -24,7 +24,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div className="space-y-3">
           <Link href="/" aria-label={siteConfig.name}>
-            <SiteLogo height={48} />
+            <SiteLogo height={72} />
           </Link>
           <p className="text-sm text-muted-foreground">{ts("slogan")}</p>
         </div>

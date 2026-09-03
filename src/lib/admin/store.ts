@@ -5,15 +5,34 @@ import { persist } from "zustand/middleware";
 import { DEMO_ADMIN, seedAdminBookings, seedDrivers } from "@/lib/admin/seed";
 import { getActiveStaff } from "@/lib/admin/settings-store";
 import type { StaffRole } from "@/lib/admin/settings";
+import { mergeBookings } from "@/lib/admin/merge-bookings";
 import {
   markPayment,
-  withAdminFields,
   type AdminBooking,
   type AdminBookingPatch,
   type Driver,
   type OpsStatus,
 } from "@/lib/admin/types";
 import type { Booking } from "@/lib/types";
+import { useBookingStore } from "@/lib/booking/store";
+
+function bookingPatchFromAdmin(booking: AdminBooking): Partial<Booking> {
+  return {
+    status: booking.status,
+    payment: booking.payment,
+    amountDueNow: booking.amountDueNow,
+    balanceDue: booking.balanceDue,
+    service: booking.service,
+    rentalPackageId: booking.rentalPackageId,
+    rentalDays: booking.rentalDays,
+  };
+}
+
+function syncToCustomerStore(booking: AdminBooking) {
+  useBookingStore
+    .getState()
+    .patchConfirmedBooking(booking.id, bookingPatchFromAdmin(booking));
+}
 
 interface AdminState {
   authenticated: boolean;
@@ -32,31 +51,6 @@ interface AdminState {
   upsertDriver: (driver: Driver) => void;
   removeDriver: (driverId: string) => void;
   resetDemoData: () => void;
-}
-
-function mergeBookings(
-  existing: AdminBooking[],
-  incoming: Booking[]
-): AdminBooking[] {
-  const byId = new Map(existing.map((b) => [b.id, b]));
-  for (const raw of incoming) {
-    const prev = byId.get(raw.id);
-    if (prev) {
-      byId.set(raw.id, {
-        ...prev,
-        ...raw,
-        opsStatus: prev.opsStatus,
-        driverId: prev.driverId,
-        adminNotes: prev.adminNotes,
-        updatedAt: prev.updatedAt,
-      });
-    } else {
-      byId.set(raw.id, withAdminFields(raw));
-    }
-  }
-  return Array.from(byId.values()).sort(
-    (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)
-  );
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -100,17 +94,20 @@ export const useAdminStore = create<AdminState>()(
       },
 
       updateBooking: (id, patch) => {
-        set({
-          bookings: get().bookings.map((b) =>
-            b.id === id
-              ? {
-                  ...b,
-                  ...patch,
-                  updatedAt: new Date().toISOString(),
-                }
-              : b
-          ),
-        });
+        const next = get().bookings.map((b) =>
+          b.id === id
+            ? {
+                ...b,
+                ...patch,
+                updatedAt: new Date().toISOString(),
+              }
+            : b
+        );
+        set({ bookings: next });
+        const updated = next.find((b) => b.id === id);
+        if (updated && (patch.payment || patch.status)) {
+          syncToCustomerStore(updated);
+        }
       },
 
       assignDriver: (bookingId, driverId) => {
@@ -147,7 +144,7 @@ export const useAdminStore = create<AdminState>()(
         const status =
           opsStatus === "cancelled"
             ? "cancelled"
-            : opsStatus === "completed" || opsStatus === "assigned" || opsStatus === "in_progress"
+            : opsStatus === "completed"
               ? "confirmed"
               : opsStatus === "payment_review"
                 ? "pending"
@@ -162,15 +159,24 @@ export const useAdminStore = create<AdminState>()(
         const booking = get().bookings.find((b) => b.id === bookingId);
         if (!booking) return;
         if (approve) {
+          const nextOps =
+            booking.service === "rental"
+              ? "awaiting_contract"
+              : booking.driverId
+                ? "assigned"
+                : "new";
           get().updateBooking(bookingId, {
             payment: markPayment(booking.payment, "paid"),
             status: "confirmed",
-            opsStatus: booking.driverId ? "assigned" : "new",
+            opsStatus: nextOps,
           });
         } else {
           get().updateBooking(bookingId, {
             opsStatus: "cancelled",
             status: "cancelled",
+            payment: booking.payment
+              ? { ...booking.payment, status: "awaiting-transfer" }
+              : booking.payment,
           });
         }
       },

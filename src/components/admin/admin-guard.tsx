@@ -24,6 +24,7 @@ import { useSettingsStore } from "@/lib/admin/settings-store";
 import { useBookingStore } from "@/lib/booking/store";
 import { DEMO_ADMIN } from "@/lib/admin/seed";
 import type { StaffRole } from "@/lib/admin/settings";
+import { canSeeAdminNav } from "@/lib/admin/access";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
@@ -46,20 +47,7 @@ const NAV_SYSTEM = [
 ] as const;
 
 function canSee(role: StaffRole | null, href: string) {
-  if (!role || role === "admin") return true;
-  if (role === "finance") {
-    return [
-      "/admin/dashboard",
-      "/admin/payments",
-      "/admin/prices",
-    ].includes(href);
-  }
-  if (role === "driver") {
-    return ["/admin/dashboard", "/admin/schedule", "/admin/bookings"].includes(
-      href
-    );
-  }
-  return href !== "/admin/settings";
+  return canSeeAdminNav(role, href);
 }
 
 function NavLink({
@@ -364,7 +352,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-col">
         <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-[#f7f7f5]/90 backdrop-blur-md">
-          <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6 lg:h-16 lg:px-10">
+          <div className="flex h-14 w-full items-center gap-3 px-4 sm:px-6 lg:h-16 lg:px-8 xl:px-10">
             <button
               type="button"
               className="inline-flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-700 lg:hidden"
@@ -381,7 +369,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
+        <div className="w-full flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12 xl:px-10">
           {children}
         </div>
       </div>

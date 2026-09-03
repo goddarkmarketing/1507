@@ -359,3 +359,23 @@
     transform: skewX(-22deg) translateX(-280%);
   }
 }
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .voucher-sheet {
+    break-inside: avoid;
+  }
+
+  .voucher-sheet * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}

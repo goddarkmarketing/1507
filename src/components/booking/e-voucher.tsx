@@ -20,6 +20,7 @@ import { vehicles } from "@/lib/data/vehicles";
 import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
 import { useSiteContact } from "@/lib/admin/settings-store";
 import { assetPath } from "@/lib/utils";
+import { getBookingAmountDue } from "@/lib/booking/booking-mode";
 import type { Booking } from "@/lib/types";
 
 interface EVoucherProps {
@@ -42,12 +43,13 @@ export function EVoucher({ booking }: EVoucherProps) {
   const typeLabel = tBooking(
     `types.${booking.type}.label` as "types.one-way.label"
   );
+  const amountDue = getBookingAmountDue(booking);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
-      <div className="text-center">
-        <div className="mb-3 flex justify-center">
-          <SiteLogo height={56} />
+    <div className="voucher-sheet mx-auto max-w-2xl space-y-6 px-4 py-8 print:max-w-none print:space-y-4 print:px-0 print:py-0">
+      <div className="text-center print:text-left">
+        <div className="mb-3 flex justify-center print:justify-start">
+          <SiteLogo height={96} />
         </div>
         <Badge className="mb-2">
           {booking.status === "pending" ? t("pending") : t("confirmed")}
@@ -55,7 +57,7 @@ export function EVoucher({ booking }: EVoucherProps) {
         <p className="text-muted-foreground">{tSite("slogan")}</p>
       </div>
 
-      <Card className="overflow-hidden border-2 border-primary/20">
+      <Card className="overflow-hidden border-2 border-primary/20 print:border print:shadow-none">
         <CardHeader className="bg-primary/5">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -199,7 +201,7 @@ export function EVoucher({ booking }: EVoucherProps) {
                 </div>
               )}
               {booking.payment.transferProof && (
-                <div className="space-y-2">
+                <div className="space-y-2 print:hidden">
                   <p className="font-medium">{t("transferProof")}</p>
                   <p className="text-xs text-muted-foreground">
                     {booking.payment.transferProof.fileName}
@@ -227,20 +229,37 @@ export function EVoucher({ booking }: EVoucherProps) {
             </div>
           )}
 
-          <div className="flex items-center justify-between text-lg font-bold">
-            <span>
-              {booking.payment?.status === "awaiting-transfer"
-                ? t("totalDue")
-                : t("totalPaid")}
-            </span>
-            <span className="text-primary">
-              ฿{booking.totalPrice.toLocaleString()}
-            </span>
+          <div className="space-y-2">
+            {booking.service === "rental" && (
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>{t("estimatedTotal")}</span>
+                <span>฿{booking.totalPrice.toLocaleString()}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-lg font-bold">
+              <span>
+                {booking.payment?.status === "awaiting-transfer"
+                  ? booking.service === "rental"
+                    ? t("depositDue")
+                    : t("totalDue")
+                  : t("totalPaid")}
+              </span>
+              <span className="text-primary">
+                ฿{amountDue.toLocaleString()}
+              </span>
+            </div>
+            {booking.balanceDue != null && booking.balanceDue > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {t("balanceDue", {
+                  amount: booking.balanceDue.toLocaleString(),
+                })}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+      <div className="flex flex-col gap-2 sm:flex-row sm:justify-center print:hidden">
         <Button variant="outline" onClick={() => window.print()}>
           <Download className="size-4" />
           {t("print")}

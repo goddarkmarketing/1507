@@ -67,10 +67,10 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-3 px-4 sm:h-20 sm:px-6 lg:px-8">
         <Link href="/" className="flex shrink-0 items-center" aria-label={siteConfig.name}>
-          <SiteLogo height={44} priority className="hidden sm:block" />
-          <SiteLogo height={36} priority className="sm:hidden" />
+          <SiteLogo height={60} priority className="hidden sm:block" />
+          <SiteLogo height={48} priority className="sm:hidden" />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">

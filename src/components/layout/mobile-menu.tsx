@@ -115,7 +115,7 @@ export function MobileMenu() {
       >
         <div className="flex h-full min-h-0 flex-col">
           <SheetHeader className="border-b border-zinc-100 px-4 py-4 pr-12">
-            <SiteLogo height={40} />
+            <SiteLogo height={56} />
             <SheetTitle className="sr-only">{siteConfig.name}</SheetTitle>
             <SheetDescription className="text-xs leading-relaxed text-zinc-500">
               {slogan}

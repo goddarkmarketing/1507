@@ -14,6 +14,7 @@ import {
   groupLocations,
   type LocationSelectRole,
 } from "@/lib/booking/location-groups";
+import { bookingSelectTriggerClass } from "@/lib/booking/form-field-styles";
 import { useLocationName } from "@/lib/i18n-labels";
 import type { Location, LocationType } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -101,12 +102,17 @@ export function LocationSelect({
         type="button"
         onPointerDown={(e) => e.preventDefault()}
         className={cn(
-          "flex h-10 w-full min-w-0 items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent px-2.5 py-2 text-base whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:h-8 md:text-sm dark:bg-input/30 dark:hover:bg-input/50",
-          !selected && "text-muted-foreground",
+          "transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50",
+          bookingSelectTriggerClass,
           className
         )}
       >
-        <span className="line-clamp-1 text-left">
+        <span
+          className={cn(
+            "line-clamp-1 text-left",
+            !selected && "text-muted-foreground"
+          )}
+        >
           {selected ? locName(selected) : placeholder}
         </span>
         <ChevronDown className="size-4 shrink-0 text-muted-foreground" />

@@ -11,6 +11,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { LocationSelect } from "@/components/booking/location-select";
+import { bookingSelectTriggerClass } from "@/lib/booking/form-field-styles";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -169,7 +170,6 @@ export function PriceChecker({
             }}
             excludeId={toId}
             placeholder={t("from")}
-            className="h-11 w-full"
           />
         </div>
 
@@ -194,7 +194,6 @@ export function PriceChecker({
             onValueChange={setToId}
             excludeId={fromId}
             placeholder={t("to")}
-            className="h-11 w-full"
           />
         </div>
 
@@ -204,7 +203,7 @@ export function PriceChecker({
             value={vehicleCode}
             onValueChange={(v) => v && setVehicleCode(v as VehicleCode)}
           >
-            <SelectTrigger className="h-11 w-full">
+            <SelectTrigger className={bookingSelectTriggerClass}>
               <SelectValue placeholder={t("vehicle")}>
                 {(() => {
                   const v = fleet.find((item) => item.code === vehicleCode);

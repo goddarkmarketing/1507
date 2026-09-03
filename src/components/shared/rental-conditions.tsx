@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import {
   BadgeCheck,
+  ChevronDown,
   FileText,
   Phone,
   Plane,
@@ -10,12 +11,36 @@ import {
   ShieldCheck,
   Wallet,
 } from "lucide-react";
+import { getActiveRentalDeposits } from "@/lib/admin/settings-store";
+import { useSettingsRevision } from "@/lib/admin/settings-store";
 import { cn } from "@/lib/utils";
+
+function formatDeposit(amount: number) {
+  return `฿${amount.toLocaleString("en-US")}`;
+}
 
 const requirementIcons = [FileText, Plane, Phone] as const;
 
-export function RentalConditions({ className }: { className?: string }) {
+function RentalConditionsHeader() {
   const t = useTranslations("RentalConditions");
+
+  return (
+    <>
+      <p className="text-xs font-semibold tracking-wide text-amber-900/70 uppercase">
+        {t("eyebrow")}
+      </p>
+      <h3 className="mt-1 text-xl font-bold tracking-tight text-zinc-950 sm:text-2xl">
+        {t("title")}
+      </h3>
+      <p className="mt-1 text-sm text-zinc-600">{t("subtitle")}</p>
+    </>
+  );
+}
+
+function RentalConditionsBody() {
+  const t = useTranslations("RentalConditions");
+  useSettingsRevision();
+  const deposits = getActiveRentalDeposits();
 
   const requirements = [
     t("reqId"),
@@ -24,28 +49,13 @@ export function RentalConditions({ className }: { className?: string }) {
   ] as const;
 
   const depositSteps = [
-    t("stepConfirm"),
+    t("stepConfirm", { amount: formatDeposit(deposits.advanceDeposit) }),
     t("stepContract"),
     t("stepRefund"),
   ] as const;
 
   return (
-    <aside
-      className={cn(
-        "overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-sky-50",
-        className
-      )}
-    >
-      <div className="border-b border-amber-200/70 bg-amber-100/50 px-5 py-4 sm:px-6">
-        <p className="text-xs font-semibold tracking-wide text-amber-900/70 uppercase">
-          {t("eyebrow")}
-        </p>
-        <h3 className="mt-1 text-xl font-bold tracking-tight text-zinc-950 sm:text-2xl">
-          {t("title")}
-        </h3>
-        <p className="mt-1 text-sm text-zinc-600">{t("subtitle")}</p>
-      </div>
-
+    <>
       <div className="grid gap-6 px-5 py-5 sm:px-6 lg:grid-cols-2">
         <div>
           <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-zinc-900">
@@ -79,7 +89,7 @@ export function RentalConditions({ className }: { className?: string }) {
                 {t("smallCar")}
               </p>
               <p className="mt-1 text-lg font-bold text-zinc-950">
-                {t("smallDeposit")}
+                {formatDeposit(deposits.smallCarDeposit)}
               </p>
             </div>
             <div className="rounded-xl bg-white px-3 py-3 ring-1 ring-zinc-200/70">
@@ -87,7 +97,7 @@ export function RentalConditions({ className }: { className?: string }) {
                 {t("largeCar")}
               </p>
               <p className="mt-1 text-lg font-bold text-zinc-950">
-                {t("largeDeposit")}
+                {formatDeposit(deposits.largeCarDeposit)}
               </p>
             </div>
           </div>
@@ -108,6 +118,34 @@ export function RentalConditions({ className }: { className?: string }) {
           {t("freeAirport")}
         </p>
         <p className="text-sm text-zinc-600">{t("thanks")}</p>
+      </div>
+    </>
+  );
+}
+
+export function RentalConditions({ className }: { className?: string }) {
+  return (
+    <aside
+      className={cn(
+        "overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-sky-50",
+        className
+      )}
+    >
+      <details className="group md:hidden">
+        <summary className="flex cursor-pointer list-none items-start justify-between gap-3 border-b border-amber-200/70 bg-amber-100/50 px-5 py-4 [&::-webkit-details-marker]:hidden">
+          <div className="min-w-0">
+            <RentalConditionsHeader />
+          </div>
+          <ChevronDown className="mt-1 size-4 shrink-0 text-amber-800 transition-transform group-open:rotate-180" />
+        </summary>
+        <RentalConditionsBody />
+      </details>
+
+      <div className="hidden md:block">
+        <div className="border-b border-amber-200/70 bg-amber-100/50 px-5 py-4 sm:px-6">
+          <RentalConditionsHeader />
+        </div>
+        <RentalConditionsBody />
       </div>
     </aside>
   );

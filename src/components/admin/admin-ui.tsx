@@ -8,6 +8,9 @@ import { cn } from "@/lib/utils";
 export const OPS_STATUSES: OpsStatus[] = [
   "new",
   "payment_review",
+  "awaiting_contract",
+  "balance_due",
+  "deposit_refund_pending",
   "assigned",
   "in_progress",
   "completed",
@@ -20,6 +23,12 @@ export function opsBadgeClass(status: OpsStatus) {
       return "bg-sky-50 text-sky-800 ring-sky-200";
     case "payment_review":
       return "bg-amber-50 text-amber-900 ring-amber-200";
+    case "awaiting_contract":
+      return "bg-orange-50 text-orange-900 ring-orange-200";
+    case "balance_due":
+      return "bg-rose-50 text-rose-900 ring-rose-200";
+    case "deposit_refund_pending":
+      return "bg-teal-50 text-teal-900 ring-teal-200";
     case "assigned":
       return "bg-violet-50 text-violet-800 ring-violet-200";
     case "in_progress":

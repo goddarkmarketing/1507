@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useAdminStore } from "@/lib/admin/store";
 import { money } from "@/components/admin/admin-ui";
+import { bookingCollectedAmount } from "@/lib/admin/booking-money";
 
 export function AdminCustomersPage() {
   const t = useTranslations("Admin");
@@ -30,12 +31,12 @@ export function AdminCustomersPage() {
           email: b.customerEmail,
           phone: b.customerPhone,
           count: 1,
-          spent: b.status === "cancelled" ? 0 : b.totalPrice,
+          spent: b.status === "cancelled" ? 0 : bookingCollectedAmount(b),
           lastAt: b.createdAt,
         });
       } else {
         prev.count += 1;
-        if (b.status !== "cancelled") prev.spent += b.totalPrice;
+        if (b.status !== "cancelled") prev.spent += bookingCollectedAmount(b);
         if (b.createdAt > prev.lastAt) prev.lastAt = b.createdAt;
       }
     }

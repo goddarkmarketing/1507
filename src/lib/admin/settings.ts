@@ -47,11 +47,18 @@ export type StaffAccount = {
   role: StaffRole;
 };
 
+export type RentalDepositSettings = {
+  advanceDeposit: number;
+  smallCarDeposit: number;
+  largeCarDeposit: number;
+};
+
 export type SiteSettings = {
   contact: ContactSettings;
   payment: PaymentSettings;
   charter: CharterSettings;
   cancelPolicy: CancelPolicySettings;
+  rentalDeposits: RentalDepositSettings;
   staff: StaffAccount[];
 };
 
@@ -82,9 +89,9 @@ export const defaultSiteSettings = (): SiteSettings => ({
   payment: {
     methods: {
       "bank-transfer": true,
-      card: true,
+      card: false,
       promptpay: true,
-      cash: true,
+      cash: false,
     },
     banks: [
       {
@@ -125,6 +132,11 @@ export const defaultSiteSettings = (): SiteSettings => ({
     lateFeePercent: 50,
     noShowPercent: 100,
     refundBusinessDays: 7,
+  },
+  rentalDeposits: {
+    advanceDeposit: 500,
+    smallCarDeposit: 3000,
+    largeCarDeposit: 5000,
   },
   staff: [],
 });

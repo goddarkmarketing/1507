@@ -15,10 +15,14 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Header />
-      <main className="flex-1 pb-20 md:pb-0">{children}</main>
-      <Footer />
-      <MobileBottomBar />
+      <div className="print:hidden">
+        <Header />
+      </div>
+      <main className="flex-1 pb-20 md:pb-0 print:pb-0">{children}</main>
+      <div className="print:hidden">
+        <Footer />
+        <MobileBottomBar />
+      </div>
     </>
   );
 }

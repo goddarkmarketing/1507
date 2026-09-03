@@ -2,17 +2,17 @@ import { cn, assetPath } from "@/lib/utils";
 
 interface SiteLogoProps {
   className?: string;
-  /** Visual height in px — width scales with logo aspect (~2.5:1) */
+  /** Visual height in px — width matches square logo (1:1) */
   height?: number;
   priority?: boolean;
 }
 
 export function SiteLogo({
   className,
-  height = 40,
+  height = 48,
   priority = false,
 }: SiteLogoProps) {
-  const width = Math.round(height * (612 / 242));
+  const width = height;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element

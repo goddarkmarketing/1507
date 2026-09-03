@@ -30,6 +30,7 @@ import {
   paymentMethodOptions,
 } from "@/lib/data/payment";
 import { isOmiseConfigured } from "@/lib/payment/omise-client";
+import { bookingFieldClass } from "@/lib/booking/form-field-styles";
 import { useSettingsRevision } from "@/lib/admin/settings-store";
 import type {
   CardPaymentDetails,
@@ -59,6 +60,8 @@ const methodCopyKey: Record<
 
 interface PaymentSectionProps {
   amount: number;
+  fullAmount?: number;
+  isRentalDeposit?: boolean;
   method: PaymentMethod | null;
   onMethodChange: (method: PaymentMethod) => void;
   card: CardPaymentDetails;
@@ -227,6 +230,8 @@ function ProofUpload({
 
 export function PaymentSection({
   amount,
+  fullAmount,
+  isRentalDeposit = false,
   method,
   onMethodChange,
   card,
@@ -249,10 +254,31 @@ export function PaymentSection({
     [amount, transferRef, promptPay]
   );
 
+  const balanceDue =
+    isRentalDeposit && fullAmount != null
+      ? Math.max(0, fullAmount - amount)
+      : 0;
+
   return (
     <div className="space-y-5">
+      {isRentalDeposit && fullAmount != null && (
+        <div className="rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-3 text-sm sm:px-4">
+          <p className="font-semibold text-amber-950">
+            {t("rentalDepositPayToday", {
+              amount: amount.toLocaleString("en-US"),
+            })}
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-amber-900/80 sm:text-sm">
+            {t("rentalDepositBalance", {
+              total: fullAmount.toLocaleString("en-US"),
+              balance: balanceDue.toLocaleString("en-US"),
+            })}
+          </p>
+        </div>
+      )}
+
       <RadioGroup
-        value={method ?? undefined}
+        value={method ?? ""}
         onValueChange={(v) => v && onMethodChange(v as PaymentMethod)}
         className="grid gap-3"
       >
@@ -306,9 +332,13 @@ export function PaymentSection({
       {method === "bank-transfer" && (
         <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
           <p className="text-sm font-medium">
-            {t("transferIntro", {
-              amount: amount.toLocaleString("en-US"),
-            })}
+            {isRentalDeposit
+              ? t("rentalDepositIntro", {
+                  amount: amount.toLocaleString("en-US"),
+                })
+              : t("transferIntro", {
+                  amount: amount.toLocaleString("en-US"),
+                })}
           </p>
           <p className="text-xs text-muted-foreground">
             {t("referenceNote", {
@@ -400,6 +430,7 @@ export function PaymentSection({
             <Label htmlFor="card-number">{t("cardNumber")}</Label>
             <Input
               id="card-number"
+              className={bookingFieldClass}
               inputMode="numeric"
               autoComplete="cc-number"
               placeholder="4242 4242 4242 4242"
@@ -413,6 +444,7 @@ export function PaymentSection({
             <Label htmlFor="card-name">{t("nameOnCard")}</Label>
             <Input
               id="card-name"
+              className={bookingFieldClass}
               autoComplete="cc-name"
               placeholder="JOHN SMITH"
               value={card.cardName}
@@ -426,6 +458,7 @@ export function PaymentSection({
               <Label htmlFor="card-expiry">{t("expiry")}</Label>
               <Input
                 id="card-expiry"
+                className={bookingFieldClass}
                 inputMode="numeric"
                 autoComplete="cc-exp"
                 placeholder="MM/YY"
@@ -439,6 +472,7 @@ export function PaymentSection({
               <Label htmlFor="card-cvv">{t("cvv")}</Label>
               <Input
                 id="card-cvv"
+                className={bookingFieldClass}
                 inputMode="numeric"
                 autoComplete="cc-csc"
                 placeholder="123"

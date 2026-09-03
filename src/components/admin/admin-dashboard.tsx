@@ -5,6 +5,10 @@ import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAdminStore } from "@/lib/admin/store";
+import {
+  bookingCollectedAmount,
+  bookingDisplayAmount,
+} from "@/lib/admin/booking-money";
 import { money, OpsBadge, useRouteLabel } from "@/components/admin/admin-ui";
 import { Button } from "@/components/ui/button";
 
@@ -26,7 +30,7 @@ export function AdminDashboard() {
     );
     const revenue = bookings
       .filter((b) => b.payment?.status === "paid" && b.status !== "cancelled")
-      .reduce((sum, b) => sum + b.totalPrice, 0);
+      .reduce((sum, b) => sum + bookingCollectedAmount(b), 0);
     return {
       open: open.length,
       payReview: payReview.length,
@@ -115,7 +119,7 @@ export function AdminDashboard() {
                   label={t(`ops.${b.opsStatus}`)}
                 />
                 <p className="min-w-[4.5rem] text-right text-sm font-semibold tabular-nums text-zinc-950">
-                  {money(b.totalPrice)}
+                  {money(bookingDisplayAmount(b))}
                 </p>
               </div>
             </li>
