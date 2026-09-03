@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:host": "next build",
+    "deploy:plesk": "bash scripts/plesk-deploy.sh",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
