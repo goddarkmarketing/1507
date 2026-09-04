@@ -74,6 +74,7 @@ const extras = [
     nameTh: "ท่าเรืออ่าวนาง",
     type: "pier",
     province: "Krabi",
+    pricingAreaId: "ao-nang-beach",
   },
   {
     id: "phi-phi-pier",
@@ -88,6 +89,7 @@ const extras = [
     nameTh: "หาดไร่เลย์",
     type: "beach",
     province: "Krabi",
+    pricingAreaId: "ao-nang-beach",
   },
   {
     id: "centara-ao-nang",

@@ -75,7 +75,7 @@ export function TransferPageTemplate({ pageKey }: TransferPageTemplateProps) {
   const featuredRoutes = config.featuredRoutes
     .map(([fromId, toId]) => {
       const route = calculatePrice(fromId, toId, "ECO");
-      if (!route) return null;
+      if (!route?.isOfficial) return null;
       const from = getLocation(fromId);
       const to = getLocation(toId);
       if (!from || !to) return null;

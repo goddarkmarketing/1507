@@ -165,11 +165,15 @@ export function RoutePreviewDialog({
                   {vehicleName(vehicleCode)}
                 </p>
                 <p className="mt-0.5 text-sm font-semibold text-foreground">
-                  {t("routePreviewEstimate")}
+                  {quote.isOfficial
+                    ? t("routePreviewOfficial")
+                    : t("routePreviewEstimate")}
                 </p>
               </div>
               <p className="text-3xl font-bold tracking-tight text-gold-gradient">
-                ฿{quote.totalPrice.toLocaleString("en-US")}
+                {quote.isOfficial
+                  ? `฿${quote.totalPrice.toLocaleString("en-US")}`
+                  : t("routePreviewOnRequest")}
               </p>
             </div>
           </div>

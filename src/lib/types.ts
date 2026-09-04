@@ -40,9 +40,13 @@ export type BookingType =
   | "daily-charter"
   | "hourly-charter";
 
-import type { BookingService } from "@/lib/booking/booking-mode";
+import type {
+  BookingService,
+  PaymentPlan,
+} from "@/lib/booking/booking-mode";
 
 export type PaymentMethod = "bank-transfer" | "card" | "promptpay" | "cash";
+export type { PaymentPlan };
 
 export interface CardPaymentDetails {
   cardNumber: string;
@@ -69,7 +73,7 @@ export interface BookingPayment {
   amountDue?: number;
   /** Remaining balance after deposit (rental) */
   balanceDue?: number;
-  /** Bank symbol when paid via transfer (KBANK / SCB / BBL) */
+  /** Bank symbol when paid via transfer (KBANK / BAY / …) */
   bankSymbol?: string;
   transferProof?: TransferProof;
   /** Omise token id when card is tokenized client-side */
@@ -127,9 +131,11 @@ export interface Booking {
   totalPrice: number;
   /** transfer = pay full total; rental = pay advance deposit online */
   service?: BookingService;
-  /** Rental advance collected online; full fare for transfer */
+  /** Customer choice: pay driver | deposit | full */
+  paymentPlan?: PaymentPlan;
+  /** Amount collected online now (0 for pay-driver) */
   amountDueNow?: number;
-  /** Rental balance due at contract signing */
+  /** Remaining balance (driver / contract) */
   balanceDue?: number;
   rentalPackageId?: string;
   rentalDays?: number;

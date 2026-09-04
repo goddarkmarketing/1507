@@ -181,7 +181,10 @@
     "mins": "约 {mins} 分钟",
     "tolls": "含过路费与停车费",
     "meetGreet": "举牌迎接 · 机场免费等候（60 分钟）",
-    "bookNow": "立即预订"
+    "bookNow": "立即预订",
+    "officialPrice": "官方价目表价格",
+    "onRequest": "询价",
+    "onRequestHint": "此路线不在锁定价目表中 — 请联系我们报价"
   },
   "Booking": {
     "title": "预订接送",
@@ -259,7 +262,7 @@
     "paymentTitle": "付款",
     "paymentSubtitle": "选择付款方式 — 预订可使用全部付款渠道",
     "paymentSubtitleTransfer": "银行转账或 PromptPay — 上传凭证以确认预订",
-    "paymentSubtitleRental": "通过银行转账或 PromptPay 支付 ฿500 预付押金 — 余款于签约日支付",
+    "paymentSubtitleRental": "选择付款方案：按档位订金或全额 — 余款稍后支付",
     "summaryTitle": "预订摘要",
     "summarySubtitle": "确认前请核对",
     "total": "合计",
@@ -293,10 +296,10 @@
     "depositStepContract": "租金与剩余押金于签订合同当日支付。",
     "depositStepRefund": "还车并检查无误后退还押金。",
     "airportTitle": "机场接送",
-    "depositNote": "租车押金：小型车 ฿3,000 · 大型车 ฿5,000。确认车辆后先付预付押金 ฿500；租金与剩余押金于签订合同当日支付。还车检查无误后退还押金。",
+    "depositNote": "租车保证金：小型车 ฿3,000 · 大型车 ฿5,000。线上订金档位：≤฿1,000 → ฿200；฿1,001–฿2,999 → ฿500；≥฿3,000 → ฿1,000。余款稍后支付。还车验车后退还保证金。",
     "airportTransferNote": "租车客户免费甲米机场接送。",
     "processing": "处理中...",
-    "demoNote": "确认后签发电子凭证 · 付款由团队核实",
+    "demoNote": "付给司机需员工确认后才开具电子凭证 · 线上转账由团队核验凭证",
     "at": "于",
     "toastCustomer": "请填写完整客户信息",
     "toastPayment": "请选择付款方式",
@@ -332,7 +335,16 @@
         "desc": "最少 3 小时",
         "detail": "最少 3 小时 — 包车时段内可灵活停靠。"
       }
-    }
+    },
+    "paymentSubtitlePlans": "请选择付给司机、支付订金或全额支付，然后填写付款详情",
+    "payAtPickup": "上车时支付",
+    "balanceDueDriver": "上车时以现金向司机支付 ฿{amount}",
+    "paymentPlanLabel": "付款方案：",
+    "confirmPayDriver": "提交预订（等待员工确认）",
+    "depositStepAdvanceTier": "线上订金档位：≤฿1,000 → ฿200 · ฿1,001–฿2,999 → ฿500 · ≥฿3,000 → ฿1,000",
+    "toastPaymentPlan": "请选择付款方案",
+    "routePreviewOfficial": "官方价目",
+    "routePreviewOnRequest": "询价"
   },
   "Pages": {
     "fleet": "我们的车队",
@@ -879,7 +891,8 @@
     "stepContract": "租金与剩余押金于签订租车合同当日支付。",
     "stepRefund": "还车并检查车辆无误后，退还押金。",
     "freeAirport": "免费甲米机场接送",
-    "thanks": "感谢您选择我们的服务。"
+    "thanks": "感谢您选择我们的服务。",
+    "stepConfirmTiers": "线上订金档位：≤฿1,000 → ฿200 · ฿1,001–฿2,999 → ฿500 · ≥฿3,000 → ฿1,000"
   },
   "FleetUi": {
     "filterAll": "全部",
@@ -930,7 +943,7 @@
     "fromPerDay": "起 ฿{price}/天",
     "notes": "备注：价格为按租期的每日泰铢价。Hyundai H-1 容量因布局而异。",
     "transferTitle": "接送路线",
-    "transferSubtitle": "官方单程价 — 喀比机场 55 条线路，以及普吉机场、奥南海滩与兰塔岛",
+    "transferSubtitle": "官方单程价目：Set 1（甲米机场 55 条）与 Set 2 — 与预订页相同",
     "allRoutes": "全部路线",
     "route": "路线",
     "emptyRental": "没有符合筛选的租车套餐。",
@@ -955,7 +968,7 @@
     "promptpayDesc": "扫描二维码或支付至 PromptPay ID。",
     "cash": "上车付现",
     "cashDesc": "与司机见面时以泰铢现金支付。",
-    "cashNote": "上车时以现金（泰铢）付给司机。行程完成前预订保持待确认。",
+    "cashNote": "上车时以现金付给司机。员工确认订单后才能开具电子凭证。",
     "transferIntro": "请将 ฿{amount} 转入以下任一账户。",
     "rentalDepositIntro": "请将 ฿{amount} 押金转入以下任一账户。",
     "rentalDepositPayToday": "今日预付押金：฿{amount}",
@@ -991,7 +1004,22 @@
     "toastCardOmise": "无法处理卡片，请检查信息后重试。",
     "toastProofOk": "转账凭证已上传",
     "toastProofFail": "无法读取文件，请尝试更小的图片或 PDF。",
-    "toastProofSize": "文件过大，最大 1.5 MB。"
+    "toastProofSize": "文件过大，最大 1.5 MB。",
+    "planTitle": "付款方案",
+    "planPayDriver": "付给司机",
+    "planPayDriverDesc": "无需线上付款。员工确认订单后才能开具电子凭证。",
+    "planDeposit": "支付订金",
+    "planDepositDesc": "按档位在线上支付订金，余款稍后支付。",
+    "planFull": "全额支付",
+    "planFullDesc": "现在线上支付全部金额。",
+    "channelTitle": "付款方式",
+    "payDriverNote": "您选择付给司机。提交后员工将核实订单，确认后才能查看电子凭证。",
+    "depositPlanBalance": "订单总额 ฿{total} — 余款 ฿{balance} 稍后支付（司机或签约日）。",
+    "depositTierNote": "订金档位：≤฿1,000 → 最低 ฿200 · 超过 ฿1,000 未满 ฿3,000 → 最低 ฿500 · ฿3,000 起 → ฿1,000",
+    "fullPayToday": "今日全额支付 ฿{amount}",
+    "scanBankQr": "扫描银行二维码付款",
+    "staticQrNote": "官方 PromptPay 二维码（任意金额）",
+    "amountQrNote": "或扫描含订单金额的二维码"
   },
   "Voucher": {
     "pending": "电子凭证 · 待付款",
@@ -1028,7 +1056,11 @@
     "loading": "正在加载凭证...",
     "notFoundTitle": "未找到凭证",
     "notFoundBody": "在浏览器存储中找不到此预订。请重新预订以生成凭证。",
-    "makeNew": "重新预订"
+    "makeNew": "重新预订",
+    "awaitingStaffTitle": "等待员工确认",
+    "awaitingStaffBody": "付给司机的订单需经员工核实后，才能开具电子凭证。",
+    "awaitingStaffHint": "请保存订单号。确认后请重新打开此凭证链接。",
+    "backHome": "返回首页"
   },
   "Listing": {
     "searchArticles": "搜索文章…",
@@ -1345,7 +1377,14 @@
       "badLocation": "未知出发地/目的地",
       "sameLocation": "出发地与目的地相同",
       "missingPrice": "缺少车型价格"
-    }
+    },
+    "confirmOrder": "确认订单",
+    "orderConfirmDue": "订单总额",
+    "toastOrderOk": "订单已确认 — 可开具凭证",
+    "planPayDriver": "付给司机",
+    "planDeposit": "订金",
+    "planFull": "全额",
+    "settingsAdvanceDepositTiers": "线上订金按订单总额自动计算：<=1000 -> 200 · 1001-2999 -> 500 · >=3000 -> 1000（不可编辑）"
   },
   "Tours": {
     "categories": {

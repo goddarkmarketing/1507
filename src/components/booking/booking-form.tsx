@@ -87,6 +87,7 @@ export function BookingForm() {
     setService,
     setRentalPackage,
     setRentalDays,
+    setPaymentPlan,
     setPaymentMethod,
     setCardField,
     setTransferBank,
@@ -197,24 +198,30 @@ export function BookingForm() {
       toast.error(t("toastCustomer"));
       return;
     }
+    if (!draft.paymentPlan) {
+      toast.error(t("toastPaymentPlan"));
+      return;
+    }
     if (!draft.paymentMethod) {
       toast.error(t("toastPayment"));
       return;
     }
-    if (draft.paymentMethod === "bank-transfer") {
-      if (!draft.transferBankSymbol) {
-        toast.error(tPay("toastBank"));
-        return;
+    if (draft.paymentPlan !== "pay-driver") {
+      if (draft.paymentMethod === "bank-transfer") {
+        if (!draft.transferBankSymbol) {
+          toast.error(tPay("toastBank"));
+          return;
+        }
+        if (!draft.transferProof) {
+          toast.error(tPay("toastProof"));
+          return;
+        }
       }
-      if (!draft.transferProof) {
-        toast.error(tPay("toastProof"));
-        return;
-      }
-    }
-    if (draft.paymentMethod === "promptpay") {
-      if (!draft.transferProof) {
-        toast.error(tPay("toastProof"));
-        return;
+      if (draft.paymentMethod === "promptpay") {
+        if (!draft.transferProof) {
+          toast.error(tPay("toastProof"));
+          return;
+        }
       }
     }
 
@@ -229,7 +236,9 @@ export function BookingForm() {
       return;
     }
 
-    if (booking.payment?.status === "awaiting-transfer") {
+    if (booking.paymentPlan === "pay-driver") {
+      toast.success(t("confirmPayDriver"));
+    } else if (booking.payment?.status === "awaiting-transfer") {
       if (booking.payment.method === "promptpay") {
         toast.success(t("confirmPromptPay"));
       } else {
@@ -242,15 +251,21 @@ export function BookingForm() {
   };
 
   const total = getTotalPrice();
-  const amountDue = getAmountDueNow(total, bookingService);
-  const balanceDue = getRemainingBalance(total, bookingService);
+  const amountDue = getAmountDueNow(total, bookingService, draft.paymentPlan);
+  const balanceDue = getRemainingBalance(
+    total,
+    bookingService,
+    draft.paymentPlan
+  );
 
   const confirmLabel =
-    draft.paymentMethod === "bank-transfer"
-      ? t("confirmBank")
-      : draft.paymentMethod === "promptpay"
-        ? t("confirmPromptPay")
-        : t("confirmBooking");
+    draft.paymentPlan === "pay-driver"
+      ? t("confirmPayDriver")
+      : draft.paymentMethod === "bank-transfer"
+        ? t("confirmBank")
+        : draft.paymentMethod === "promptpay"
+          ? t("confirmPromptPay")
+          : t("confirmBooking");
 
   const fieldClass = bookingFieldClass;
   const selectTriggerClass = bookingSelectTriggerClass;
@@ -587,11 +602,9 @@ export function BookingForm() {
         <Card size="sm">
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">{t("paymentTitle")}</CardTitle>
-            <CardDescription className="text-xs sm:text-sm">
-              {isRentalBooking
-                ? t("paymentSubtitleRental")
-                : t("paymentSubtitleTransfer")}
-            </CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
+                {t("paymentSubtitlePlans")}
+              </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <details className="group overflow-hidden rounded-xl border border-amber-200/80 bg-amber-50/80 open:bg-amber-50">
@@ -664,11 +677,7 @@ export function BookingForm() {
                       </div>
                     </div>
                     <ol className="list-decimal space-y-1 pl-4 text-xs leading-relaxed text-amber-900/90 sm:text-sm">
-                      <li>
-                        {t("depositStepAdvance", {
-                          amount: formatDeposit(rentalDeposits.advanceDeposit),
-                        })}
-                      </li>
+                      <li>{t("depositStepAdvanceTier")}</li>
                       <li>{t("depositStepContract")}</li>
                       <li>{t("depositStepRefund")}</li>
                     </ol>
@@ -692,8 +701,10 @@ export function BookingForm() {
             </details>
             <PaymentSection
               amount={amountDue}
-              fullAmount={isRentalBooking ? total : undefined}
-              isRentalDeposit={isRentalBooking}
+              fullAmount={total}
+              isRentalDeposit={draft.paymentPlan === "deposit"}
+              paymentPlan={draft.paymentPlan}
+              onPaymentPlanChange={setPaymentPlan}
               method={draft.paymentMethod}
               onMethodChange={setPaymentMethod}
               card={draft.card}
@@ -758,23 +769,33 @@ export function BookingForm() {
 
             <Separator />
 
-            {isRentalBooking ? (
+            {isRentalBooking ||
+            draft.paymentPlan === "deposit" ||
+            draft.paymentPlan === "pay-driver" ? (
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between text-muted-foreground">
                   <span>{t("estimatedTotal")}</span>
                   <span>฿{total.toLocaleString("en-US")}</span>
                 </div>
                 <div className="flex items-center justify-between font-semibold text-primary">
-                  <span>{t("payToday")}</span>
+                  <span>
+                    {draft.paymentPlan === "pay-driver"
+                      ? t("payAtPickup")
+                      : t("payToday")}
+                  </span>
                   <span className="text-lg sm:text-xl">
                     ฿{amountDue.toLocaleString("en-US")}
                   </span>
                 </div>
                 {balanceDue > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {t("balanceDue", {
-                      amount: balanceDue.toLocaleString("en-US"),
-                    })}
+                    {draft.paymentPlan === "pay-driver"
+                      ? t("balanceDueDriver", {
+                          amount: balanceDue.toLocaleString("en-US"),
+                        })
+                      : t("balanceDue", {
+                          amount: balanceDue.toLocaleString("en-US"),
+                        })}
                   </p>
                 )}
               </div>
@@ -789,13 +810,33 @@ export function BookingForm() {
               </div>
             )}
 
-            {draft.paymentMethod && (
+            {(draft.paymentPlan || draft.paymentMethod) && (
               <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                {t("paymentMethod")}{" "}
-                <span className="font-medium text-foreground">
-                  {draft.paymentMethod === "bank-transfer" && t("bankTransfer")}
-                  {draft.paymentMethod === "promptpay" && t("promptpay")}
-                </span>
+                {draft.paymentPlan && (
+                  <>
+                    {t("paymentPlanLabel")}{" "}
+                    <span className="font-medium text-foreground">
+                      {draft.paymentPlan === "pay-driver" &&
+                        tPay("planPayDriver")}
+                      {draft.paymentPlan === "deposit" && tPay("planDeposit")}
+                      {draft.paymentPlan === "full" && tPay("planFull")}
+                    </span>
+                  </>
+                )}
+                {draft.paymentPlan &&
+                  draft.paymentPlan !== "pay-driver" &&
+                  draft.paymentMethod &&
+                  " · "}
+                {draft.paymentPlan !== "pay-driver" && draft.paymentMethod && (
+                  <>
+                    {t("paymentMethod")}{" "}
+                    <span className="font-medium text-foreground">
+                      {draft.paymentMethod === "bank-transfer" &&
+                        t("bankTransfer")}
+                      {draft.paymentMethod === "promptpay" && t("promptpay")}
+                    </span>
+                  </>
+                )}
               </p>
             )}
 
@@ -821,7 +862,11 @@ export function BookingForm() {
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] leading-none text-muted-foreground">
-              {isRentalBooking ? t("payToday") : t("total")}
+              {draft.paymentPlan === "pay-driver"
+                ? t("payAtPickup")
+                : draft.paymentPlan === "deposit" || isRentalBooking
+                  ? t("payToday")
+                  : t("total")}
             </p>
             <p className="truncate text-lg font-bold text-primary">
               ฿{amountDue.toLocaleString("en-US")}

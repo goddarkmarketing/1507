@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { PublicImage } from "@/components/shared/public-image";
 import {
@@ -14,7 +14,6 @@ import {
   X,
   FileText,
 } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -37,6 +36,7 @@ import type {
   PaymentMethod,
   TransferProof,
 } from "@/lib/types";
+import type { PaymentPlan } from "@/lib/booking/booking-mode";
 
 const methodIcons = {
   "bank-transfer": Building2,
@@ -58,10 +58,34 @@ const methodCopyKey: Record<
   cash: { label: "cash", desc: "cashDesc" },
 };
 
+const PLAN_OPTIONS: {
+  value: PaymentPlan;
+  label: "planPayDriver" | "planDeposit" | "planFull";
+  desc: "planPayDriverDesc" | "planDepositDesc" | "planFullDesc";
+}[] = [
+  {
+    value: "pay-driver",
+    label: "planPayDriver",
+    desc: "planPayDriverDesc",
+  },
+  {
+    value: "deposit",
+    label: "planDeposit",
+    desc: "planDepositDesc",
+  },
+  {
+    value: "full",
+    label: "planFull",
+    desc: "planFullDesc",
+  },
+];
+
 interface PaymentSectionProps {
   amount: number;
   fullAmount?: number;
   isRentalDeposit?: boolean;
+  paymentPlan: PaymentPlan | null;
+  onPaymentPlanChange: (plan: PaymentPlan) => void;
   method: PaymentMethod | null;
   onMethodChange: (method: PaymentMethod) => void;
   card: CardPaymentDetails;
@@ -231,7 +255,9 @@ function ProofUpload({
 export function PaymentSection({
   amount,
   fullAmount,
-  isRentalDeposit = false,
+  isRentalDeposit: _isRentalDeposit = false,
+  paymentPlan,
+  onPaymentPlanChange,
   method,
   onMethodChange,
   card,
@@ -245,23 +271,60 @@ export function PaymentSection({
   const t = useTranslations("Payment");
   useSettingsRevision();
   const omiseReady = isOmiseConfigured();
-  const enabledMethods = getEnabledPaymentMethods();
+  const enabledMethods = getEnabledPaymentMethods().filter(
+    (m): m is Exclude<PaymentMethod, "cash"> => m !== "cash"
+  );
   const bankAccounts = getBankAccounts();
   const promptPay = getPromptPay();
-
-  const promptPayQr = useMemo(
-    () => promptPay.qrPayload(amount, transferRef || "DRAFT"),
-    [amount, transferRef, promptPay]
-  );
+  const isPayDriver = paymentPlan === "pay-driver";
+  const showOnlineChannels =
+    paymentPlan === "deposit" || paymentPlan === "full";
 
   const balanceDue =
-    isRentalDeposit && fullAmount != null
-      ? Math.max(0, fullAmount - amount)
-      : 0;
+    fullAmount != null ? Math.max(0, fullAmount - amount) : 0;
 
   return (
     <div className="space-y-5">
-      {isRentalDeposit && fullAmount != null && (
+      <div className="space-y-2">
+        <p className="text-sm font-semibold">{t("planTitle")}</p>
+        <RadioGroup
+          value={paymentPlan ?? ""}
+          onValueChange={(v) => v && onPaymentPlanChange(v as PaymentPlan)}
+          className="grid gap-3"
+        >
+          {PLAN_OPTIONS.map((opt) => {
+            const selected = paymentPlan === opt.value;
+            return (
+              <Label
+                key={opt.value}
+                htmlFor={`plan-${opt.value}`}
+                className={cn(
+                  "flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-colors",
+                  selected
+                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                    : "border-border hover:border-primary/40 hover:bg-muted/40"
+                )}
+              >
+                <RadioGroupItem
+                  id={`plan-${opt.value}`}
+                  value={opt.value}
+                  className="mt-1"
+                />
+                <span className="min-w-0 space-y-0.5">
+                  <span className="block text-sm font-semibold leading-none">
+                    {t(opt.label)}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {t(opt.desc)}
+                  </span>
+                </span>
+              </Label>
+            );
+          })}
+        </RadioGroup>
+      </div>
+
+      {paymentPlan === "deposit" && fullAmount != null && (
         <div className="rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-3 text-sm sm:px-4">
           <p className="font-semibold text-amber-950">
             {t("rentalDepositPayToday", {
@@ -269,21 +332,47 @@ export function PaymentSection({
             })}
           </p>
           <p className="mt-1 text-xs leading-relaxed text-amber-900/80 sm:text-sm">
-            {t("rentalDepositBalance", {
+            {t("depositPlanBalance", {
               total: fullAmount.toLocaleString("en-US"),
               balance: balanceDue.toLocaleString("en-US"),
+            })}
+          </p>
+          <p className="mt-2 text-[11px] leading-relaxed text-amber-900/70">
+            {t("depositTierNote")}
+          </p>
+        </div>
+      )}
+
+      {paymentPlan === "full" && (
+        <div className="rounded-xl border bg-muted/40 px-3 py-3 text-sm sm:px-4">
+          <p className="font-semibold">
+            {t("fullPayToday", {
+              amount: amount.toLocaleString("en-US"),
             })}
           </p>
         </div>
       )}
 
+      {isPayDriver && (
+        <div className="rounded-xl border border-sky-200/80 bg-sky-50/80 px-3 py-3 text-sm leading-relaxed text-sky-950 sm:px-4">
+          {t("payDriverNote")}
+        </div>
+      )}
+
+      {showOnlineChannels && (
+      <>
+      <p className="text-sm font-semibold">{t("channelTitle")}</p>
       <RadioGroup
         value={method ?? ""}
         onValueChange={(v) => v && onMethodChange(v as PaymentMethod)}
         className="grid gap-3"
       >
         {paymentMethodOptions
-          .filter((opt) => enabledMethods.includes(opt.value))
+          .filter(
+            (opt): opt is (typeof paymentMethodOptions)[number] & {
+              value: Exclude<PaymentMethod, "cash">;
+            } => enabledMethods.includes(opt.value as Exclude<PaymentMethod, "cash">)
+          )
           .map((opt) => {
           const Icon = methodIcons[opt.value];
           const selected = method === opt.value;
@@ -328,11 +417,14 @@ export function PaymentSection({
           );
         })}
       </RadioGroup>
+      </>
+      )}
 
-      {method === "bank-transfer" && (
+
+      {showOnlineChannels && method === "bank-transfer" && (
         <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
           <p className="text-sm font-medium">
-            {isRentalDeposit
+            {paymentPlan === "deposit"
               ? t("rentalDepositIntro", {
                   amount: amount.toLocaleString("en-US"),
                 })
@@ -414,6 +506,29 @@ export function PaymentSection({
 
           <Separator />
 
+          {transferBankSymbol &&
+            (() => {
+              const selectedBank = bankAccounts.find(
+                (b) => b.symbol === transferBankSymbol
+              );
+              if (!selectedBank?.qrImage) return null;
+              return (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">{t("scanBankQr")}</p>
+                  <div className="mx-auto max-w-[280px] overflow-hidden rounded-xl border bg-white p-2 shadow-sm">
+                    <PublicImage
+                      src={selectedBank.qrImage}
+                      alt={t("scanBankQr")}
+                      width={520}
+                      height={720}
+                      className="h-auto w-full object-contain"
+                      unoptimized
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+
           <ProofUpload
             transferProof={transferProof}
             onTransferProofChange={onTransferProofChange}
@@ -421,7 +536,7 @@ export function PaymentSection({
         </div>
       )}
 
-      {method === "card" && (
+      {showOnlineChannels && method === "card" && (
         <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
           <p className="text-xs text-muted-foreground">
             {omiseReady ? t("cardOmiseNote") : t("cardPendingNote")}
@@ -490,7 +605,7 @@ export function PaymentSection({
         </div>
       )}
 
-      {method === "promptpay" && (
+      {showOnlineChannels && method === "promptpay" && (
         <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
           <div className="flex items-center gap-2">
             <PublicImage
@@ -505,11 +620,19 @@ export function PaymentSection({
               {t("scanQr", { amount: amount.toLocaleString("en-US") })}
             </p>
           </div>
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
-            <div className="rounded-xl border bg-white p-3 shadow-sm">
-              <QRCodeSVG value={promptPayQr} size={160} />
+
+          <div className="mx-auto w-full max-w-[280px] space-y-3">
+            <div className="overflow-hidden rounded-xl border bg-white p-2 shadow-sm">
+              <PublicImage
+                src={promptPay.qrImage}
+                alt={t("promptpay")}
+                width={480}
+                height={640}
+                className="h-auto w-full object-contain"
+                unoptimized
+              />
             </div>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-1.5 text-sm">
               <p>
                 <span className="text-muted-foreground">
                   {t("accountName")}:
@@ -526,11 +649,13 @@ export function PaymentSection({
                   </span>
                 </p>
                 <CopyButton
-                  value={promptPay.id}
+                  value={promptPay.id.replace(/\D/g, "")}
                   label={t("promptpayId")}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">{t("promptpayNote")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("promptpayNote")}
+              </p>
             </div>
           </div>
 
@@ -543,11 +668,6 @@ export function PaymentSection({
         </div>
       )}
 
-      {method === "cash" && (
-        <div className="rounded-xl border bg-muted/30 p-4 text-sm text-muted-foreground">
-          {t("cashNote")}
-        </div>
-      )}
     </div>
   );
 }

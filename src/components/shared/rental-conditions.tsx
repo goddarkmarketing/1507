@@ -49,7 +49,7 @@ function RentalConditionsBody() {
   ] as const;
 
   const depositSteps = [
-    t("stepConfirm", { amount: formatDeposit(deposits.advanceDeposit) }),
+    t("stepConfirmTiers"),
     t("stepContract"),
     t("stepRefund"),
   ] as const;

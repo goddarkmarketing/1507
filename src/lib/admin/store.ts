@@ -23,6 +23,7 @@ function bookingPatchFromAdmin(booking: AdminBooking): Partial<Booking> {
     amountDueNow: booking.amountDueNow,
     balanceDue: booking.balanceDue,
     service: booking.service,
+    paymentPlan: booking.paymentPlan,
     rentalPackageId: booking.rentalPackageId,
     rentalDays: booking.rentalDays,
   };
@@ -159,12 +160,28 @@ export const useAdminStore = create<AdminState>()(
         const booking = get().bookings.find((b) => b.id === bookingId);
         if (!booking) return;
         if (approve) {
+          const isPayDriver =
+            booking.paymentPlan === "pay-driver" ||
+            booking.payment?.method === "cash";
+
+          if (isPayDriver) {
+            // Staff confirmed the order — voucher may be issued; cash still at pickup
+            get().updateBooking(bookingId, {
+              status: "confirmed",
+              opsStatus: booking.driverId ? "assigned" : "new",
+            });
+            return;
+          }
+
+          const balance = booking.balanceDue ?? 0;
           const nextOps =
-            booking.service === "rental"
+            booking.service === "rental" && balance > 0
               ? "awaiting_contract"
-              : booking.driverId
-                ? "assigned"
-                : "new";
+              : booking.paymentPlan === "deposit" && balance > 0
+                ? "balance_due"
+                : booking.driverId
+                  ? "assigned"
+                  : "new";
           get().updateBooking(bookingId, {
             payment: markPayment(booking.payment, "paid"),
             status: "confirmed",

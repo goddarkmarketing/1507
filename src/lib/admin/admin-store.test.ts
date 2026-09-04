@@ -103,6 +103,7 @@ describe("admin store workflows", () => {
       type: "one-way",
       status: "pending",
       service: "rental",
+      paymentPlan: "deposit",
       rentalPackageId: "toyota-yaris",
       rentalDays: 3,
       legs: [
@@ -120,8 +121,8 @@ describe("admin store workflows", () => {
       customerEmail: "r@example.com",
       customerPhone: "+66814444444",
       totalPrice: 3000,
-      amountDueNow: 500,
-      balanceDue: 2500,
+      amountDueNow: 1000,
+      balanceDue: 2000,
       createdAt: "2026-09-03T00:00:00.000Z",
       payment: {
         method: "bank-transfer",
@@ -138,6 +139,50 @@ describe("admin store workflows", () => {
       .bookings.find((b) => b.id === rental.id);
     expect(approved?.opsStatus).toBe("awaiting_contract");
     expect(approved?.payment?.status).toBe("paid");
+  });
+
+  it("confirms pay-driver orders without marking cash as paid", () => {
+    const cashOrder = withAdminFields({
+      id: "pay-driver-1",
+      bookingNumber: "KLTDRV001",
+      type: "one-way",
+      status: "pending",
+      service: "transfer",
+      paymentPlan: "pay-driver",
+      legs: [
+        {
+          id: "leg1",
+          fromId: "kbv-airport",
+          toId: "ao-nang",
+          date: "2026-09-20",
+          time: "10:00",
+          vehicleCode: "ECO",
+          price: 800,
+        },
+      ],
+      customerName: "Cash Guest",
+      customerEmail: "c@example.com",
+      customerPhone: "+66815555555",
+      totalPrice: 800,
+      amountDueNow: 0,
+      balanceDue: 800,
+      createdAt: "2026-09-03T00:00:00.000Z",
+      payment: {
+        method: "cash",
+        status: "awaiting-transfer",
+        summary: "Pay driver in cash (awaiting staff confirmation)",
+      },
+    } satisfies Booking);
+
+    useAdminStore.setState({ bookings: [cashOrder] });
+    useAdminStore.getState().verifyPayment(cashOrder.id, true);
+
+    const approved = useAdminStore
+      .getState()
+      .bookings.find((b) => b.id === cashOrder.id);
+    expect(approved?.status).toBe("confirmed");
+    expect(approved?.opsStatus).toBe("new");
+    expect(approved?.payment?.status).toBe("awaiting-transfer");
   });
 
   it("rejects payment and cancels booking", () => {

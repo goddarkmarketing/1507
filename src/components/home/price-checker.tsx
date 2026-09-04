@@ -83,13 +83,14 @@ export function PriceChecker({
     return calculatePrice(fromId, toId, vehicleCode);
   }, [fromId, toId, vehicleCode]);
 
-  const oneWayPrice = quote?.totalPrice ?? 0;
+  const hasOfficialPrice = Boolean(quote?.isOfficial);
+  const oneWayPrice = hasOfficialPrice ? (quote?.totalPrice ?? 0) : 0;
   const totalPrice =
-    tripMode === "round-trip"
+    tripMode === "round-trip" && hasOfficialPrice
       ? Math.round(oneWayPrice * 2 * (1 - ROUND_TRIP_DISCOUNT))
       : oneWayPrice;
   const savings =
-    tripMode === "round-trip"
+    tripMode === "round-trip" && hasOfficialPrice
       ? Math.round(oneWayPrice * 2 * ROUND_TRIP_DISCOUNT)
       : 0;
 
@@ -225,11 +226,19 @@ export function PriceChecker({
       <div className="mt-4 rounded-xl bg-muted/70 px-4 py-3">
         <div className="flex items-end justify-between gap-3">
           <div>
-            <p className="text-xs text-muted-foreground">{t("estimated")}</p>
-            <p className="text-3xl font-bold tracking-tight">
-              {quote ? <>฿{totalPrice.toLocaleString("en-US")}</> : "—"}
+            <p className="text-xs text-muted-foreground">
+              {hasOfficialPrice ? t("officialPrice") : t("estimated")}
             </p>
-            {tripMode === "round-trip" && quote && (
+            <p className="text-3xl font-bold tracking-tight">
+              {hasOfficialPrice ? (
+                <>฿{totalPrice.toLocaleString("en-US")}</>
+              ) : quote ? (
+                t("onRequest")
+              ) : (
+                "—"
+              )}
+            </p>
+            {tripMode === "round-trip" && hasOfficialPrice && (
               <p className="mt-0.5 text-xs text-muted-foreground">
                 <span className="line-through">
                   ฿{(oneWayPrice * 2).toLocaleString("en-US")}
@@ -239,8 +248,13 @@ export function PriceChecker({
                 </span>
               </p>
             )}
+            {quote && !hasOfficialPrice && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("onRequestHint")}
+              </p>
+            )}
           </div>
-          {quote && (
+          {hasOfficialPrice && quote && (
             <div className="space-y-1 text-right text-xs text-muted-foreground">
               <p className="inline-flex items-center gap-1">
                 <Route className="size-3.5" />

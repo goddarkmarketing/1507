@@ -7,7 +7,7 @@ import {
 } from "@/lib/admin/settings";
 import { getActivePaymentSettings } from "@/lib/admin/settings-store";
 
-export type ThaiBankSymbol = "KBANK" | "SCB" | "BBL" | "PromptPay";
+export type ThaiBankSymbol = "KBANK" | "BAY" | "SCB" | "BBL" | "PromptPay";
 
 export const paymentMethodOptions: {
   value: PaymentMethod;
@@ -49,14 +49,18 @@ export function getBankAccounts(): (BankAccountSettings & { icon: string })[] {
     .map((bank) => ({ ...bank, icon: BANK_ICONS[bank.symbol] }));
 }
 
+export const PROMPTPAY_QR_IMAGE = "/banks/qr-promptpay.png";
+
 export function getPromptPay() {
   const payment = getActivePaymentSettings();
-  const id = payment.promptPayId || defaultSiteSettings().payment.promptPayId;
+  const defaults = defaultSiteSettings().payment;
+  const id = payment.promptPayId || defaults.promptPayId;
   return {
     id,
     idType: "mobile" as const,
-    accountName: payment.promptPayAccountName,
+    accountName: payment.promptPayAccountName || defaults.promptPayAccountName,
     icon: "/banks/PromptPay.png",
+    qrImage: PROMPTPAY_QR_IMAGE,
     qrPayload: (amount: number, _bookingRef: string) =>
       buildPromptPayQrPayload(id, amount),
   };

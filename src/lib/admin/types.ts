@@ -38,9 +38,17 @@ export type AdminBookingPatch = Partial<
 
 export function deriveOpsStatus(booking: Booking): OpsStatus {
   if (booking.status === "cancelled") return "cancelled";
-  if (booking.payment?.method === "cash") return "new";
-  if (booking.payment?.status === "awaiting-transfer") return "payment_review";
   if (booking.status === "pending") return "payment_review";
+
+  if (
+    booking.paymentPlan === "pay-driver" ||
+    booking.payment?.method === "cash"
+  ) {
+    return "new";
+  }
+
+  if (booking.payment?.status === "awaiting-transfer") return "payment_review";
+
   if (
     booking.service === "rental" &&
     booking.payment?.status === "paid" &&
@@ -48,6 +56,15 @@ export function deriveOpsStatus(booking: Booking): OpsStatus {
   ) {
     return "awaiting_contract";
   }
+
+  if (
+    booking.paymentPlan === "deposit" &&
+    booking.payment?.status === "paid" &&
+    (booking.balanceDue ?? 0) > 0
+  ) {
+    return "balance_due";
+  }
+
   if (booking.status === "confirmed") return "new";
   return "new";
 }

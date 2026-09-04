@@ -405,10 +405,12 @@ export function PriceListContent() {
                             route.fromId,
                             route.toId,
                             v.code
-                          ).totalPrice;
+                          );
                           return (
                             <td key={v.code} className="px-3 py-3 text-right">
-                              ฿{price.toLocaleString("en-US")}
+                              {price.isOfficial
+                                ? `฿${price.totalPrice.toLocaleString("en-US")}`
+                                : tFleet("onRequest")}
                             </td>
                           );
                         })}

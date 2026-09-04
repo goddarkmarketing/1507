@@ -432,18 +432,9 @@ export function AdminSettingsPage() {
         >
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label={t("settingsAdvanceDeposit")}>
-              <Input
-                type="number"
-                min={1}
-                className={fieldClass()}
-                value={rentalDeposits.advanceDeposit}
-                onChange={(e) =>
-                  setRentalDeposits((s) => ({
-                    ...s,
-                    advanceDeposit: Number(e.target.value),
-                  }))
-                }
-              />
+              <p className="rounded-lg border bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-600">
+                {t("settingsAdvanceDepositTiers")}
+              </p>
             </Field>
             <Field label={t("settingsSmallCarDeposit")}>
               <Input

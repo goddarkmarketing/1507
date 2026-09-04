@@ -637,7 +637,8 @@ export const locations: Location[] = [
     "province": "Krabi",
     "connections": [
       "kbv-airport"
-    ]
+    ],
+    "pricingAreaId": "ao-nang-beach"
   },
   {
     "id": "phi-phi-pier",
@@ -657,7 +658,8 @@ export const locations: Location[] = [
     "province": "Krabi",
     "connections": [
       "kbv-airport"
-    ]
+    ],
+    "pricingAreaId": "ao-nang-beach"
   },
   {
     "id": "centara-ao-nang",

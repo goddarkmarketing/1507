@@ -45,6 +45,27 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: "klt-settings",
+      version: 2,
+      migrate: (persistedState, version) => {
+        const state = (persistedState ?? {}) as Partial<SettingsState>;
+        if (version < 2) {
+          // Replace demo payment accounts with live KRABI LINKS TAXI details
+          return {
+            ...state,
+            ...defaultSiteSettings(),
+            contact: state.contact ?? defaultSiteSettings().contact,
+            charter: state.charter ?? defaultSiteSettings().charter,
+            cancelPolicy:
+              state.cancelPolicy ?? defaultSiteSettings().cancelPolicy,
+            rentalDeposits:
+              state.rentalDeposits ?? defaultSiteSettings().rentalDeposits,
+            staff: state.staff ?? [],
+            payment: defaultSiteSettings().payment,
+            updatedAt: state.updatedAt ?? null,
+          };
+        }
+        return state as SettingsState;
+      },
       partialize: (state) => ({
         contact: state.contact,
         payment: state.payment,

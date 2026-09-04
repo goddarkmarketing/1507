@@ -80,6 +80,40 @@ describe("deriveOpsStatus", () => {
     ).toBe("awaiting_contract");
   });
 
+  it("puts paid transfer deposit with balance into balance_due", () => {
+    expect(
+      deriveOpsStatus(
+        baseBooking({
+          status: "confirmed",
+          paymentPlan: "deposit",
+          balanceDue: 1200,
+          amountDueNow: 500,
+          payment: {
+            method: "promptpay",
+            status: "paid",
+            summary: "Deposit (verified)",
+          },
+        })
+      )
+    ).toBe("balance_due");
+  });
+
+  it("puts pending pay-driver into payment_review", () => {
+    expect(
+      deriveOpsStatus(
+        baseBooking({
+          status: "pending",
+          paymentPlan: "pay-driver",
+          payment: {
+            method: "cash",
+            status: "awaiting-transfer",
+            summary: "Pay driver",
+          },
+        })
+      )
+    ).toBe("payment_review");
+  });
+
   it("marks confirmed transfer as new", () => {
     expect(
       deriveOpsStatus(

@@ -9,6 +9,7 @@ import {
   getAmountDueNow,
   getRemainingBalance,
   type BookingService,
+  type PaymentPlan,
 } from "@/lib/booking/booking-mode";
 import {
   calculateRentalTotal,
@@ -38,6 +39,7 @@ interface BookingDraft {
   customerPhone: string;
   flightNumber: string;
   notes: string;
+  paymentPlan: PaymentPlan | null;
   paymentMethod: PaymentMethod | null;
   card: CardPaymentDetails;
   transferBankSymbol: string | null;
@@ -65,6 +67,7 @@ interface BookingStore {
   setService: (service: BookingService) => void;
   setRentalPackage: (packageId: string) => void;
   setRentalDays: (days: number) => void;
+  setPaymentPlan: (plan: PaymentPlan) => void;
   setPaymentMethod: (method: PaymentMethod) => void;
   setCardField: (field: keyof CardPaymentDetails, value: string) => void;
   setTransferBank: (symbol: string) => void;
@@ -102,6 +105,7 @@ const INITIAL_DRAFT: BookingDraft = {
   customerPhone: "",
   flightNumber: "",
   notes: "",
+  paymentPlan: null,
   paymentMethod: null,
   card: {
     cardNumber: "",
@@ -223,6 +227,23 @@ export const useBookingStore = create<BookingStore>()(
           },
         })),
 
+      setPaymentPlan: (plan) =>
+        set((state) => ({
+          draft: {
+            ...state.draft,
+            paymentPlan: plan,
+            ...(plan === "pay-driver"
+              ? {
+                  paymentMethod: "cash" as const,
+                  transferBankSymbol: null,
+                  transferProof: null,
+                }
+              : state.draft.paymentMethod === "cash"
+                ? { paymentMethod: null }
+                : {}),
+          },
+        })),
+
       setPaymentMethod: (method) =>
         set((state) => ({
           draft: {
@@ -301,17 +322,22 @@ export const useBookingStore = create<BookingStore>()(
         if (!draft.customerName || !draft.customerEmail || !draft.customerPhone) {
           return null;
         }
+        if (!draft.paymentPlan) {
+          return null;
+        }
         if (!draft.paymentMethod) {
           return null;
         }
 
-        if (draft.paymentMethod === "bank-transfer") {
+        const isPayDriver = draft.paymentPlan === "pay-driver";
+
+        if (!isPayDriver && draft.paymentMethod === "bank-transfer") {
           if (!draft.transferBankSymbol || !draft.transferProof) {
             return null;
           }
         }
 
-        if (draft.paymentMethod === "promptpay") {
+        if (!isPayDriver && draft.paymentMethod === "promptpay") {
           if (!draft.transferProof) {
             return null;
           }
@@ -336,8 +362,9 @@ export const useBookingStore = create<BookingStore>()(
 
         const totalPrice = getTotalPrice();
         const service = options?.service ?? draft.service;
-        const amountDueNow = getAmountDueNow(totalPrice, service);
-        const balanceDue = getRemainingBalance(totalPrice, service);
+        const paymentPlan = draft.paymentPlan;
+        const amountDueNow = getAmountDueNow(totalPrice, service, paymentPlan);
+        const balanceDue = getRemainingBalance(totalPrice, service, paymentPlan);
         const bookingNumber = draft.transferRef || generateBookingNumber();
         const createdAt = new Date().toISOString();
 
@@ -347,12 +374,19 @@ export const useBookingStore = create<BookingStore>()(
         };
 
         let payment: BookingPayment;
-        if (draft.paymentMethod === "bank-transfer") {
+        if (isPayDriver || draft.paymentMethod === "cash") {
+          payment = {
+            method: "cash",
+            summary: "Pay driver in cash (awaiting staff confirmation)",
+            status: "awaiting-transfer",
+            ...paymentBase,
+          };
+        } else if (draft.paymentMethod === "bank-transfer") {
           payment = {
             method: "bank-transfer",
             summary:
-              service === "rental"
-                ? `Rental deposit ฿${amountDueNow} via ${draft.transferBankSymbol} (pending verification)`
+              paymentPlan === "deposit"
+                ? `Deposit ฿${amountDueNow} via ${draft.transferBankSymbol} (pending verification)`
                 : `Bank transfer ${draft.transferBankSymbol} (pending verification)`,
             status: "awaiting-transfer",
             bankSymbol: draft.transferBankSymbol ?? undefined,
@@ -370,19 +404,12 @@ export const useBookingStore = create<BookingStore>()(
             omiseTokenId: options?.omiseTokenId,
             ...paymentBase,
           };
-        } else if (draft.paymentMethod === "cash") {
-          payment = {
-            method: "cash",
-            summary: "Cash to driver",
-            status: "awaiting-transfer",
-            ...paymentBase,
-          };
         } else {
           payment = {
             method: "promptpay",
             summary:
-              service === "rental"
-                ? `Rental deposit ฿${amountDueNow} via PromptPay ${getPromptPay().id} (pending verification)`
+              paymentPlan === "deposit"
+                ? `Deposit ฿${amountDueNow} via PromptPay ${getPromptPay().id} (pending verification)`
                 : `PromptPay ${getPromptPay().id} (pending verification)`,
             status: "awaiting-transfer",
             transferProof: draft.transferProof ?? undefined,
@@ -395,6 +422,7 @@ export const useBookingStore = create<BookingStore>()(
           bookingNumber,
           type: draft.type,
           service,
+          paymentPlan,
           legs,
           customerName: draft.customerName,
           customerEmail: draft.customerEmail,

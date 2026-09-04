@@ -6,6 +6,12 @@ import {
 import { getVehicle } from "@/lib/data/vehicles";
 import type { RoutePrice, TransferCategory, VehicleCode } from "@/lib/types";
 
+export type PricedRoute = RoutePrice & {
+  totalPrice: number;
+  /** True when price comes from the locked official tariff sheet */
+  isOfficial: boolean;
+};
+
 const categoryBase: Record<TransferCategory, number> = {
   airport: 800,
   pier: 600,
@@ -69,7 +75,7 @@ export function calculatePrice(
   fromId: string,
   toId: string,
   vehicleCode: VehicleCode
-): RoutePrice & { totalPrice: number } {
+): PricedRoute {
   const priceFromId = pricingLocationId(fromId);
   const priceToId = pricingLocationId(toId);
   const official = getOfficialRoute(priceFromId, priceToId);
@@ -82,6 +88,7 @@ export function calculatePrice(
       distanceKm: official.distanceKm,
       category: official.category,
       totalPrice: official.prices[vehicleCode],
+      isOfficial: true,
     };
   }
 
@@ -98,9 +105,11 @@ export function calculatePrice(
     distanceKm: route.distanceKm,
     category: route.category,
     totalPrice,
+    isOfficial: false,
   };
 }
 
+/** Customer-facing sell prices — only locked official tariff rows. */
 export function getSampleRoutes(): RoutePrice[] {
   return getActiveOfficialRoutes().map((route) => ({
     fromId: route.fromId,
@@ -110,6 +119,15 @@ export function getSampleRoutes(): RoutePrice[] {
     distanceKm: route.distanceKm,
     category: route.category,
   }));
+}
+
+export function getOfficialVehiclePrice(
+  fromId: string,
+  toId: string,
+  vehicleCode: VehicleCode
+): number | null {
+  const quote = calculatePrice(fromId, toId, vehicleCode);
+  return quote.isOfficial ? quote.totalPrice : null;
 }
 
 export const charterRates = {

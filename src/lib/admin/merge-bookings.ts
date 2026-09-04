@@ -11,14 +11,19 @@ export function mergeBookings(
     const prev = byId.get(raw.id);
     if (prev) {
       const adminPaid = prev.payment?.status === "paid";
+      const staffLocked =
+        adminPaid ||
+        prev.status === "confirmed" ||
+        prev.status === "cancelled";
       byId.set(raw.id, {
         ...prev,
         ...raw,
         payment: adminPaid ? prev.payment : raw.payment ?? prev.payment,
-        status: adminPaid ? prev.status : raw.status ?? prev.status,
+        status: staffLocked ? prev.status : raw.status ?? prev.status,
         amountDueNow: raw.amountDueNow ?? prev.amountDueNow,
         balanceDue: raw.balanceDue ?? prev.balanceDue,
         service: raw.service ?? prev.service,
+        paymentPlan: raw.paymentPlan ?? prev.paymentPlan,
         rentalPackageId: raw.rentalPackageId ?? prev.rentalPackageId,
         rentalDays: raw.rentalDays ?? prev.rentalDays,
         opsStatus: prev.opsStatus,

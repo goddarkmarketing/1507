@@ -99,23 +99,35 @@ export function AdminPaymentsPage() {
                             : t("serviceTransfer")
                         }
                       />
+                      {b.paymentPlan && (
+                        <span className="inline-flex rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-700">
+                          {b.paymentPlan === "pay-driver"
+                            ? t("planPayDriver")
+                            : b.paymentPlan === "deposit"
+                              ? t("planDeposit")
+                              : t("planFull")}
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-zinc-700">{b.customerName}</p>
                     <p className="text-sm text-zinc-500">{routeLabel(b)}</p>
                     <p className="text-sm text-zinc-500">{b.payment?.summary}</p>
                     <div className="pt-1 text-sm">
                       <span className="font-semibold tabular-nums text-zinc-950">
-                        {t("payToday")}: {money(getBookingAmountDue(b))}
+                        {b.paymentPlan === "pay-driver"
+                          ? t("orderConfirmDue")
+                          : t("payToday")}
+                        :{" "}
+                        {b.paymentPlan === "pay-driver"
+                          ? money(b.totalPrice)
+                          : money(getBookingAmountDue(b))}
                       </span>
-                      {b.service === "rental" && (
+                      {(b.balanceDue ?? 0) > 0 &&
+                        b.paymentPlan !== "pay-driver" && (
                         <span className="mt-1 block text-xs text-zinc-500">
                           {t("estimatedTotal")}: {money(b.totalPrice)}
-                          {b.balanceDue != null && b.balanceDue > 0 && (
-                            <>
-                              {" "}
-                              · {t("rentalBalanceDue", { amount: money(b.balanceDue) })}
-                            </>
-                          )}
+                          {" "}
+                          · {t("rentalBalanceDue", { amount: money(b.balanceDue!) })}
                         </span>
                       )}
                     </div>
@@ -126,10 +138,18 @@ export function AdminPaymentsPage() {
                       className="h-9 rounded-lg"
                       onClick={() => {
                         verifyPayment(b.id, true);
-                        toast.success(t("toastPaymentOk"));
+                        toast.success(
+                          b.paymentPlan === "pay-driver" ||
+                            b.payment?.method === "cash"
+                            ? t("toastOrderOk")
+                            : t("toastPaymentOk")
+                        );
                       }}
                     >
-                      {t("approve")}
+                      {b.paymentPlan === "pay-driver" ||
+                      b.payment?.method === "cash"
+                        ? t("confirmOrder")
+                        : t("approve")}
                     </Button>
                     <Button
                       size="sm"

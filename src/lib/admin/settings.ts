@@ -4,12 +4,14 @@ import type { PaymentMethod, VehicleCode } from "@/lib/types";
 export type StaffRole = "admin" | "ops" | "finance" | "driver";
 
 export type BankAccountSettings = {
-  symbol: "KBANK" | "SCB" | "BBL";
+  symbol: "KBANK" | "BAY" | "SCB" | "BBL";
   bank: string;
   accountName: string;
   accountNumber: string;
   branch: string;
   enabled: boolean;
+  /** Optional static QR slip image under /public */
+  qrImage?: string;
 };
 
 export type ContactSettings = {
@@ -67,9 +69,13 @@ export type SiteSettings = {
 
 export const BANK_ICONS: Record<BankAccountSettings["symbol"], string> = {
   KBANK: "/banks/KBANK.png",
+  BAY: "/banks/BAY.png",
   SCB: "/banks/SCB.png",
   BBL: "/banks/BBL.png",
 };
+
+/** Real receiving accounts for KRABI LINKS TAXI bookings */
+export const DEFAULT_PAYMENT_ACCOUNT_NAME = "นาย จักรภัทร์ สกุลทอง";
 
 export const DRIVER_VEHICLE_CODES: VehicleCode[] = [
   "ECO",
@@ -101,31 +107,24 @@ export const defaultSiteSettings = (): SiteSettings => ({
     banks: [
       {
         symbol: "KBANK",
-        bank: "Kasikorn Bank (KBank)",
-        accountName: "KRABI LINKS TAXI CO., LTD.",
-        accountNumber: "123-4-56789-0",
-        branch: "Ao Nang",
+        bank: "Kasikorn Bank (KBank) / ธนาคารกสิกรไทย",
+        accountName: DEFAULT_PAYMENT_ACCOUNT_NAME,
+        accountNumber: "032-3-56203-2",
+        branch: "-",
         enabled: true,
+        qrImage: "/banks/qr-kbank.png",
       },
       {
-        symbol: "SCB",
-        bank: "Siam Commercial Bank (SCB)",
-        accountName: "KRABI LINKS TAXI CO., LTD.",
-        accountNumber: "987-6-54321-0",
-        branch: "Krabi Town",
-        enabled: true,
-      },
-      {
-        symbol: "BBL",
-        bank: "Bangkok Bank",
-        accountName: "KRABI LINKS TAXI CO., LTD.",
-        accountNumber: "456-7-89123-4",
-        branch: "Krabi Airport",
+        symbol: "BAY",
+        bank: "Bank of Ayudhya (Krungsri) / ธนาคารกรุงศรีอยุธยา",
+        accountName: DEFAULT_PAYMENT_ACCOUNT_NAME,
+        accountNumber: "564-1-05371-5",
+        branch: "-",
         enabled: true,
       },
     ],
-    promptPayId: "0812345678",
-    promptPayAccountName: "KRABI LINKS TAXI CO., LTD.",
+    promptPayId: "088-443-3309",
+    promptPayAccountName: DEFAULT_PAYMENT_ACCOUNT_NAME,
   },
   charter: {
     daily: 3500,

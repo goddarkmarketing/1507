@@ -181,7 +181,10 @@
     "mins": "~{mins} min",
     "tolls": "Tolls & parking included",
     "meetGreet": "Meet & greet · Free waiting at airport (60 min)",
-    "bookNow": "Book Now"
+    "bookNow": "Book Now",
+    "officialPrice": "Official tariff price",
+    "onRequest": "On request",
+    "onRequestHint": "This route is not on the locked price sheet — contact us for a quote."
   },
   "Booking": {
     "title": "Book Your Transfer",
@@ -259,7 +262,7 @@
     "paymentTitle": "Payment",
     "paymentSubtitle": "Choose how to pay — all methods are available for your booking",
     "paymentSubtitleTransfer": "Bank transfer or PromptPay — upload your slip to confirm",
-    "paymentSubtitleRental": "Pay a ฿500 advance deposit via bank transfer or PromptPay — balance due at contract signing",
+    "paymentSubtitleRental": "Choose a payment plan: tiered deposit or pay in full — balance due later",
     "summaryTitle": "Booking Summary",
     "summarySubtitle": "Review before confirming",
     "total": "Total",
@@ -293,10 +296,10 @@
     "depositStepContract": "Pay rental fee and remaining deposit on contract day.",
     "depositStepRefund": "Deposit is refunded after car return and inspection.",
     "airportTitle": "Airport transfer",
-    "depositNote": "Car rental deposit: small car ฿3,000 · large car ฿5,000. After confirmation, pay ฿500 advance first; remaining rental and deposit are paid on contract day. Deposit is refunded after return and inspection.",
+    "depositNote": "Car rental security deposit: small car ฿3,000 · large car ฿5,000. Online booking deposit uses tiers: ≤฿1,000 → ฿200; ฿1,001–฿2,999 → ฿500; ≥฿3,000 → ฿1,000. Remaining balance is paid later. Security deposit refunded after return and inspection.",
     "airportTransferNote": "Free Krabi Airport pickup & drop-off for car rental customers.",
     "processing": "Processing...",
-    "demoNote": "e-Voucher issued after confirmation · payment verified by our team",
+    "demoNote": "Pay-to-driver needs staff confirmation before e-voucher · online transfers are verified by our team",
     "at": "at",
     "toastCustomer": "Please complete all customer details",
     "toastPayment": "Please select a payment method",
@@ -332,7 +335,16 @@
         "desc": "Min 3 hours",
         "detail": "Minimum 3 hours — flexible stops within your charter period."
       }
-    }
+    },
+    "paymentSubtitlePlans": "Choose pay to driver, deposit, or pay in full — then complete payment details",
+    "payAtPickup": "Pay at pickup",
+    "balanceDueDriver": "Pay ฿{amount} in cash to the driver at pickup",
+    "paymentPlanLabel": "Payment plan:",
+    "confirmPayDriver": "Submit booking (awaiting staff confirmation)",
+    "depositStepAdvanceTier": "Online deposit tiers: ≤฿1,000 → ฿200 · ฿1,001–฿2,999 → ฿500 · ≥฿3,000 → ฿1,000.",
+    "toastPaymentPlan": "Please choose a payment plan",
+    "routePreviewOfficial": "Official tariff",
+    "routePreviewOnRequest": "On request"
   },
   "Pages": {
     "fleet": "Our Fleet",
@@ -879,7 +891,8 @@
     "stepContract": "Pay the rental fee and remaining deposit on the contract signing day.",
     "stepRefund": "The security deposit is refunded after you return the car and it passes inspection.",
     "freeAirport": "Free Krabi Airport pickup & drop-off",
-    "thanks": "Thank you for choosing our service."
+    "thanks": "Thank you for choosing our service.",
+    "stepConfirmTiers": "Online deposit tiers: ≤฿1,000 → ฿200 · ฿1,001–฿2,999 → ฿500 · ≥฿3,000 → ฿1,000."
   },
   "FleetUi": {
     "filterAll": "All",
@@ -930,7 +943,7 @@
     "fromPerDay": "From ฿{price}/day",
     "notes": "Notes: Prices are per day (THB) based on rental duration. Hyundai H-1 capacity varies by layout.",
     "transferTitle": "Transfer Routes",
-    "transferSubtitle": "Official one-way prices — Krabi Airport 55 routes plus Phuket Airport, Ao Nang and Koh Lanta",
+    "transferSubtitle": "Official one-way prices from KRABI LINKS TAXI Set 1 (Krabi Airport 55 routes) and Set 2 — same rates as booking",
     "allRoutes": "All routes",
     "route": "Route",
     "emptyRental": "No rental packages match your filters.",
@@ -955,7 +968,7 @@
     "promptpayDesc": "Scan QR or pay to our PromptPay ID.",
     "cash": "Cash to driver",
     "cashDesc": "Pay in Thai Baht when you meet the driver.",
-    "cashNote": "Pay the driver in cash (THB) at pickup. Your booking stays pending until the trip is completed.",
+    "cashNote": "Pay the driver in cash (THB) at pickup. Staff must confirm the order before your e-voucher is issued.",
     "transferIntro": "Transfer ฿{amount} to one of the accounts below.",
     "rentalDepositIntro": "Transfer the ฿{amount} deposit to one of the accounts below.",
     "rentalDepositPayToday": "Advance deposit today: ฿{amount}",
@@ -991,7 +1004,22 @@
     "toastCardOmise": "Could not process card. Please check your details and try again.",
     "toastProofOk": "Transfer proof attached",
     "toastProofFail": "Could not read file. Try a smaller image or PDF.",
-    "toastProofSize": "File is too large. Max 1.5 MB."
+    "toastProofSize": "File is too large. Max 1.5 MB.",
+    "planTitle": "Payment plan",
+    "planPayDriver": "Pay driver directly",
+    "planPayDriverDesc": "No online payment. Staff must confirm the order before your e-voucher is issued.",
+    "planDeposit": "Pay deposit",
+    "planDepositDesc": "Pay a tiered deposit online now; pay the balance later.",
+    "planFull": "Pay in full",
+    "planFullDesc": "Pay the full booking amount online now.",
+    "channelTitle": "Payment channel",
+    "payDriverNote": "You chose pay to driver. After you submit, our staff will verify the order. Your e-voucher will be available only after confirmation.",
+    "depositPlanBalance": "Booking total ฿{total} — remaining ฿{balance} due later (driver or contract day).",
+    "depositTierNote": "Deposit tiers: ≤฿1,000 → min ฿200 · over ฿1,000 under ฿3,000 → min ฿500 · ฿3,000+ → ฿1,000.",
+    "fullPayToday": "Pay in full today ฿{amount}",
+    "scanBankQr": "Scan this bank QR to pay",
+    "staticQrNote": "Official PromptPay QR (any amount)",
+    "amountQrNote": "Or scan this QR with the booking amount"
   },
   "Voucher": {
     "pending": "e-Voucher · Pending Payment",
@@ -1028,7 +1056,11 @@
     "loading": "Loading voucher...",
     "notFoundTitle": "Voucher Not Found",
     "notFoundBody": "We could not find this booking in your browser storage. Complete a new booking to generate a voucher.",
-    "makeNew": "Make a New Booking"
+    "makeNew": "Make a New Booking",
+    "awaitingStaffTitle": "Awaiting staff confirmation",
+    "awaitingStaffBody": "Pay-to-driver bookings need staff verification before the e-voucher can be issued.",
+    "awaitingStaffHint": "Save your booking number. We will confirm soon — then reopen this voucher link.",
+    "backHome": "Back to home"
   },
   "Listing": {
     "searchArticles": "Search articles…",
@@ -1345,7 +1377,14 @@
       "badLocation": "unknown from/to location",
       "sameLocation": "from and to are the same",
       "missingPrice": "missing vehicle price"
-    }
+    },
+    "confirmOrder": "Confirm order",
+    "orderConfirmDue": "Order total",
+    "toastOrderOk": "Order confirmed — voucher can be issued",
+    "planPayDriver": "Pay driver",
+    "planDeposit": "Deposit",
+    "planFull": "Full payment",
+    "settingsAdvanceDepositTiers": "Online deposit is automatic by booking total: <=1000 -> 200 / 1001-2999 -> 500 / >=3000 -> 1000 (not editable)."
   },
   "Tours": {
     "categories": {
