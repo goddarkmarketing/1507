@@ -16,7 +16,6 @@ import {
   Waves,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { QRCodeSVG } from "qrcode.react";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
   Card,
@@ -41,7 +40,8 @@ import { PublicImage } from "@/components/shared/public-image";
 import { Link } from "@/i18n/navigation";
 import { siteConfig } from "@/lib/site-config";
 import { useSiteContact } from "@/lib/admin/settings-store";
-import { telHref, whatsappHref } from "@/lib/contact-links";
+import { telHref, whatsappHref, OFFICIAL_WHATSAPP_LOCAL, OFFICIAL_WHATSAPP_QR_SRC } from "@/lib/contact-links";
+import { assetPath } from "@/lib/utils";
 import { faqIds } from "@/lib/data/content";
 
 const serviceDefs = [
@@ -128,6 +128,21 @@ export function HomePage() {
               </Link>
             ))}
           </div>
+
+          <div className="mt-8 sm:mt-10">
+            <Link
+              href="/airport-transfer"
+              className="group relative block overflow-hidden rounded-2xl ring-1 ring-zinc-200/80 transition hover:ring-zinc-300 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
+            >
+              <PublicImage
+                src="/banners/airport-transfer-promo.png"
+                alt={t("promoAirportAlt")}
+                width={1600}
+                height={560}
+                className="h-auto w-full object-cover object-center transition duration-500 group-hover:scale-[1.01]"
+              />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -163,7 +178,7 @@ export function HomePage() {
               {tc("callNow")}
             </ButtonLink>
             <ButtonLink
-              href={whatsappHref(site.whatsapp)}
+              href={whatsappHref(OFFICIAL_WHATSAPP_LOCAL)}
               target="_blank"
               rel="noopener noreferrer"
               size="lg"
@@ -182,16 +197,22 @@ export function HomePage() {
             >
               {tc("facebook")}
             </ButtonLink>
-            <div className="rounded-xl bg-white p-2 shadow-md">
-              <QRCodeSVG
-                value={whatsappHref(site.whatsapp)}
-                size={72}
-                level="M"
-                bgColor="#ffffff"
-                fgColor="#09090b"
-                title={`WhatsApp ${site.whatsapp}`}
+            <a
+              href={whatsappHref(OFFICIAL_WHATSAPP_LOCAL)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-xl bg-white p-2 shadow-md"
+              title={`WhatsApp ${OFFICIAL_WHATSAPP_LOCAL}`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={assetPath(OFFICIAL_WHATSAPP_QR_SRC)}
+                alt={`WhatsApp ${OFFICIAL_WHATSAPP_LOCAL}`}
+                width={72}
+                height={72}
+                className="size-[72px] object-contain"
               />
-            </div>
+            </a>
           </div>
         </div>
       </section>

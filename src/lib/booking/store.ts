@@ -12,6 +12,10 @@ import {
   type PaymentPlan,
 } from "@/lib/booking/booking-mode";
 import {
+  getNightDriverSurcharge,
+  hasAdvanceBooking,
+} from "@/lib/booking/booking-rules";
+import {
   calculateRentalTotal,
   getDefaultRentalPackageId,
 } from "@/lib/booking/rental-pricing";
@@ -307,7 +311,11 @@ export const useBookingStore = create<BookingStore>()(
         if (draft.service === "rental") {
           return calculateRentalTotal(draft.rentalPackageId, draft.rentalDays);
         }
-        return draft.legs.reduce((sum, leg) => sum + getLegPrice(leg), 0);
+        const legsTotal = draft.legs.reduce(
+          (sum, leg) => sum + getLegPrice(leg),
+          0
+        );
+        return legsTotal + getNightDriverSurcharge(draft.legs);
       },
 
       patchConfirmedBooking: (id, patch) =>
@@ -360,8 +368,15 @@ export const useBookingStore = create<BookingStore>()(
           price: getLegPrice(leg),
         }));
 
-        const totalPrice = getTotalPrice();
         const service = options?.service ?? draft.service;
+
+        if (service !== "rental" && !hasAdvanceBooking(legs)) {
+          return null;
+        }
+
+        const serviceCharge =
+          service === "rental" ? 0 : getNightDriverSurcharge(legs);
+        const totalPrice = getTotalPrice();
         const paymentPlan = draft.paymentPlan;
         const amountDueNow = getAmountDueNow(totalPrice, service, paymentPlan);
         const balanceDue = getRemainingBalance(totalPrice, service, paymentPlan);
@@ -430,6 +445,7 @@ export const useBookingStore = create<BookingStore>()(
           flightNumber: draft.flightNumber || undefined,
           notes: draft.notes || undefined,
           totalPrice,
+          ...(serviceCharge > 0 ? { serviceCharge } : {}),
           amountDueNow,
           ...(balanceDue > 0 ? { balanceDue } : {}),
           ...(service === "rental"

@@ -21,6 +21,7 @@ export function mergeBookings(
         payment: adminPaid ? prev.payment : raw.payment ?? prev.payment,
         status: staffLocked ? prev.status : raw.status ?? prev.status,
         amountDueNow: raw.amountDueNow ?? prev.amountDueNow,
+        serviceCharge: raw.serviceCharge ?? prev.serviceCharge,
         balanceDue: raw.balanceDue ?? prev.balanceDue,
         service: raw.service ?? prev.service,
         paymentPlan: raw.paymentPlan ?? prev.paymentPlan,

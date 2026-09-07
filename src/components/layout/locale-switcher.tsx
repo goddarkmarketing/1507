@@ -56,7 +56,13 @@ export function LocaleSwitcher({ className }: { className?: string }) {
     setOpen(false);
     setQuery("");
     if (code === locale) return;
-    router.replace(pathname, { locale: code });
+    // Keep query string (e.g. voucher ?n=…) when switching language
+    const qs =
+      typeof window !== "undefined"
+        ? window.location.search.replace(/^\?/, "")
+        : "";
+    const href = qs ? `${pathname}?${qs}` : pathname;
+    router.replace(href, { locale: code });
   };
 
   return (

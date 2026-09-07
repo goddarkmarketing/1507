@@ -362,7 +362,13 @@
 
 @media print {
   @page {
-    margin: 12mm;
+    size: A4 portrait;
+    margin: 5mm;
+  }
+
+  @page voucher-board-page {
+    size: A4 portrait;
+    margin: 5mm;
   }
 
   body {
@@ -371,11 +377,144 @@
   }
 
   .voucher-sheet {
-    break-inside: avoid;
+    max-width: none !important;
+    width: 100% !important;
   }
 
   .voucher-sheet * {
     box-shadow: none !important;
     text-shadow: none !important;
   }
+
+  /*
+   * Exact one printable page: fixed A4 content box.
+   * Middle blocks flex-grow so layout fills the sheet;
+   * footer stays at the bottom and cannot spill to page 2.
+   */
+  .voucher-form {
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 200mm !important;
+    height: 287mm !important;
+    max-height: 287mm !important;
+    min-height: 287mm !important;
+    aspect-ratio: auto !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+    break-after: page;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .voucher-form .voucher-form-header {
+    flex: 0 0 auto !important;
+    padding: 1.5mm 2mm !important;
+  }
+
+  .voucher-form .voucher-section-bar {
+    flex: 0 0 auto !important;
+    padding: 1.2mm 2mm !important;
+    font-size: 8pt !important;
+  }
+
+  .voucher-form .voucher-client {
+    flex: 0 0 auto !important;
+  }
+
+  .voucher-form .voucher-block {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .voucher-form .voucher-col {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+  }
+
+  .voucher-form .voucher-cell {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    padding: 0.8mm 1.5mm !important;
+    font-size: 8.5pt !important;
+    line-height: 1.2 !important;
+  }
+
+  .voucher-form .voucher-sign {
+    flex: 1.4 1 0 !important;
+    min-height: 0 !important;
+    padding: 1mm 1.5mm !important;
+  }
+
+  .voucher-form .voucher-note {
+    flex: 0 0 auto !important;
+    padding: 1mm 1.5mm !important;
+    font-size: 7.5pt !important;
+  }
+
+  .voucher-form .voucher-support {
+    flex: 0 0 auto !important;
+  }
+
+  .voucher-form .voucher-support .voucher-cell {
+    flex: 0 0 auto !important;
+    min-height: 5.5mm !important;
+  }
+
+  .voucher-form .voucher-footer {
+    flex: 0 0 auto !important;
+    margin-top: 0 !important;
+  }
+
+  .voucher-form .voucher-comments {
+    min-height: 10mm !important;
+    height: 10mm !important;
+  }
+
+  .voucher-form .voucher-qr-box {
+    width: 30mm !important;
+  }
+
+  .voucher-form .voucher-qr-box svg {
+    width: 18mm !important;
+    height: 18mm !important;
+  }
+
+  .voucher-board {
+    page: voucher-board-page;
+    display: flex !important;
+    box-sizing: border-box !important;
+    width: 200mm !important;
+    max-width: 200mm !important;
+    height: calc(200mm * 210 / 297) !important;
+    min-height: calc(200mm * 210 / 297) !important;
+    max-height: calc(200mm * 210 / 297) !important;
+    aspect-ratio: auto !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+    border: none !important;
+    break-before: page;
+    page-break-before: always;
+    break-after: auto;
+    page-break-after: auto;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-size: 100% 100% !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+  }
+}
+
+.voucher-board-title,
+.voucher-board-brand {
+  font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman",
+    serif;
 }

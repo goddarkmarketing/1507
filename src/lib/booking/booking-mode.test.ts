@@ -62,19 +62,22 @@ describe("booking-mode", () => {
   });
 
   it("gates voucher for pay-driver until staff confirms", () => {
+    const legs = [{ date: "2026-09-20", time: "10:00" }];
     expect(
       canIssueVoucher({
         status: "pending",
         paymentPlan: "pay-driver",
         payment: { method: "cash", status: "awaiting-transfer", summary: "x" },
-      })
+        legs,
+      }, new Date("2026-09-10T12:00:00+07:00"))
     ).toBe(false);
     expect(
       canIssueVoucher({
         status: "confirmed",
         paymentPlan: "pay-driver",
         payment: { method: "cash", status: "awaiting-transfer", summary: "x" },
-      })
+        legs,
+      }, new Date("2026-09-10T12:00:00+07:00"))
     ).toBe(true);
     expect(
       canIssueVoucher({
@@ -85,7 +88,23 @@ describe("booking-mode", () => {
           status: "awaiting-transfer",
           summary: "x",
         },
-      })
+        legs,
+      }, new Date("2026-09-10T12:00:00+07:00"))
     ).toBe(true);
+  });
+
+  it("blocks auto voucher during night hours until staff confirms", () => {
+    const legs = [{ date: "2026-09-20", time: "10:00" }];
+    expect(
+      canIssueVoucher(
+        {
+          status: "pending",
+          paymentPlan: "full",
+          payment: { method: "promptpay", status: "paid", summary: "x" },
+          legs,
+        },
+        new Date("2026-09-10T03:00:00+07:00")
+      )
+    ).toBe(false);
   });
 });

@@ -129,6 +129,8 @@ export interface Booking {
   flightNumber?: string;
   notes?: string;
   totalPrice: number;
+  /** Night driver surcharge (00:00–08:00 pickup), included in totalPrice */
+  serviceCharge?: number;
   /** transfer = pay full total; rental = pay advance deposit online */
   service?: BookingService;
   /** Customer choice: pay driver | deposit | full */

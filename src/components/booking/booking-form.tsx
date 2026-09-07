@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
-import { Plus, Trash2, CalendarClock, Wallet, PlaneTakeoff, ChevronDown } from "lucide-react";
+import { Plus, Trash2, CalendarClock, Wallet, PlaneTakeoff, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +45,14 @@ import {
   isCarRentalService,
 } from "@/lib/booking/booking-mode";
 import {
+  getNightDriverSurcharge,
+  hasAdvanceBooking,
+  isNightPickupTime,
+  minPickupInstant,
+  NIGHT_DRIVER_SURCHARGE_THB,
+  toBangkokDateInput,
+} from "@/lib/booking/booking-rules";
+import {
   bookingFieldClass,
   bookingSelectTriggerClass,
   bookingSummaryBarClass,
@@ -69,6 +77,9 @@ const bookingTypeValues: BookingType[] = [
   "daily-charter",
   "hourly-charter",
 ];
+
+type WizardStep = 1 | 2 | 3;
+const WIZARD_STEPS = 3;
 
 export function BookingForm() {
   const t = useTranslations("Booking");
@@ -124,6 +135,7 @@ export function BookingForm() {
   }, [isRentalBooking, searchParams, setRentalPackage]);
 
   const [paying, setPaying] = useState(false);
+  const [step, setStep] = useState<WizardStep>(1);
   const prevDropoffRef = useRef<Map<string, string>>(new Map());
   const [routePreview, setRoutePreview] = useState<{
     fromId: string;
@@ -133,6 +145,10 @@ export function BookingForm() {
 
   const isCharter =
     draft.type === "daily-charter" || draft.type === "hourly-charter";
+
+  useEffect(() => {
+    setStep(1);
+  }, [isRentalBooking]);
 
   useEffect(() => {
     if (isCharter || isRentalBooking) return;
@@ -153,11 +169,11 @@ export function BookingForm() {
     }
   }, [draft.legs, isCharter, isRentalBooking]);
 
-  // Fill today's date client-side only (avoids SSR date mismatch)
+  // Default pickup date = now + 24h (Bangkok), client-only to avoid SSR mismatch
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const minDate = toBangkokDateInput(minPickupInstant());
     draft.legs.forEach((leg) => {
-      if (!leg.date) updateLeg(leg.id, { date: today });
+      if (!leg.date) updateLeg(leg.id, { date: minDate });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -196,6 +212,7 @@ export function BookingForm() {
   const handleConfirm = async () => {
     if (!draft.customerName || !draft.customerEmail || !draft.customerPhone) {
       toast.error(t("toastCustomer"));
+      setStep(2);
       return;
     }
     if (!draft.paymentPlan) {
@@ -225,6 +242,15 @@ export function BookingForm() {
       }
     }
 
+    if (
+      bookingService !== "rental" &&
+      !hasAdvanceBooking(draft.legs)
+    ) {
+      toast.error(t("toastAdvance24h"));
+      setStep(1);
+      return;
+    }
+
     setPaying(true);
     await new Promise((r) => setTimeout(r, 600));
 
@@ -250,7 +276,79 @@ export function BookingForm() {
     router.push(`/booking/voucher/?n=${booking.bookingNumber}`);
   };
 
+  const validateTripStep = () => {
+    if (isRentalBooking) {
+      if (!draft.rentalPackageId) {
+        toast.error(t("toastRentalIncomplete"));
+        return false;
+      }
+      for (const leg of draft.legs) {
+        if (!leg.date || !leg.time) {
+          toast.error(t("toastRentalIncomplete"));
+          return false;
+        }
+      }
+      return true;
+    }
+
+    for (const leg of draft.legs) {
+      if (!isCharter && (!leg.fromId || !leg.toId)) {
+        toast.error(t("toastTripIncomplete"));
+        return false;
+      }
+      if (!leg.date || !leg.time || !leg.vehicleCode) {
+        toast.error(t("toastTripIncomplete"));
+        return false;
+      }
+    }
+
+    if (!hasAdvanceBooking(draft.legs)) {
+      toast.error(t("toastAdvance24h"));
+      return false;
+    }
+
+    return true;
+  };
+
+  const validateCustomerStep = () => {
+    if (!draft.customerName || !draft.customerEmail || !draft.customerPhone) {
+      toast.error(t("toastCustomer"));
+      return false;
+    }
+    return true;
+  };
+
+  const goNext = () => {
+    if (step === 1 && !validateTripStep()) return;
+    if (step === 2 && !validateCustomerStep()) return;
+    if (step < WIZARD_STEPS) {
+      setStep((s) => (s + 1) as WizardStep);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+  };
+
+  const goBack = () => {
+    if (step > 1) {
+      setStep((s) => (s - 1) as WizardStep);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+  };
+
+  const stepLabels = [
+    t("wizardStepTrip"),
+    t("wizardStepCustomer"),
+    t("wizardStepPayment"),
+  ] as const;
+
   const total = getTotalPrice();
+  const nightSurcharge =
+    bookingService === "rental" ? 0 : getNightDriverSurcharge(draft.legs);
+  const hasNightPickup = draft.legs.some((leg) => isNightPickupTime(leg.time));
+  const minLegDate = toBangkokDateInput(minPickupInstant());
   const amountDue = getAmountDueNow(total, bookingService, draft.paymentPlan);
   const balanceDue = getRemainingBalance(
     total,
@@ -271,11 +369,66 @@ export function BookingForm() {
   const selectTriggerClass = bookingSelectTriggerClass;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-32 sm:space-y-8 sm:px-4 sm:py-8 md:pb-8 lg:px-8">
+    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:space-y-8 sm:px-4 sm:py-8 md:pb-8 lg:px-8">
       {isRentalBooking && <RentalConditions />}
 
       <div className="grid gap-5 sm:gap-8 lg:grid-cols-3">
       <div className="space-y-4 sm:space-y-6 lg:col-span-2">
+        <nav
+          aria-label={t("wizardStepOf", { current: step, total: WIZARD_STEPS })}
+          className="rounded-xl border bg-card px-3 py-3 sm:px-4"
+        >
+          <p className="mb-3 text-xs font-medium text-muted-foreground sm:text-sm">
+            {t("wizardStepOf", { current: step, total: WIZARD_STEPS })}
+          </p>
+          <ol className="flex items-center gap-1.5 sm:gap-2">
+            {stepLabels.map((label, index) => {
+              const n = (index + 1) as WizardStep;
+              const active = step === n;
+              const done = step > n;
+              return (
+                <li
+                  key={label}
+                  className={cn(
+                    "flex min-w-0 items-center gap-1.5 sm:gap-2",
+                    n < WIZARD_STEPS && "flex-1"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold sm:size-8 sm:text-sm",
+                      active && "bg-primary text-primary-foreground",
+                      done && "bg-primary/15 text-primary",
+                      !active && !done && "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {n}
+                  </span>
+                  <span
+                    className={cn(
+                      "hidden truncate text-[11px] font-medium sm:inline sm:text-sm",
+                      active ? "text-foreground" : "text-muted-foreground"
+                    )}
+                  >
+                    {label}
+                  </span>
+                  {n < WIZARD_STEPS && (
+                    <span
+                      className={cn(
+                        "mx-0.5 h-px min-w-3 flex-1 sm:min-w-4",
+                        done ? "bg-primary/40" : "bg-border"
+                      )}
+                      aria-hidden
+                    />
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+
+        {step === 1 && (
+          <>
         {isRentalBooking ? (
           <Card className="md:[--card-spacing:--spacing(4)]" size="sm">
             <CardHeader className="gap-1">
@@ -452,7 +605,7 @@ export function BookingForm() {
                     type="date"
                     className={fieldClass}
                     value={leg.date}
-                    min={new Date().toISOString().split("T")[0]}
+                    min={minLegDate}
                     onChange={(e) => updateLeg(leg.id, { date: e.target.value })}
                   />
                 </div>
@@ -514,7 +667,10 @@ export function BookingForm() {
             </Card>
           ))}
         </div>
+          </>
+        )}
 
+        {step === 2 && (
         <Card size="sm">
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">{t("customerTitle")}</CardTitle>
@@ -598,7 +754,9 @@ export function BookingForm() {
             </div>
           </CardContent>
         </Card>
+        )}
 
+        {step === 3 && (
         <Card size="sm">
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">{t("paymentTitle")}</CardTitle>
@@ -717,6 +875,22 @@ export function BookingForm() {
             />
           </CardContent>
         </Card>
+        )}
+
+        <div className="hidden flex-wrap items-center gap-2 pt-1 lg:flex">
+          {step > 1 && (
+            <Button type="button" variant="outline" size="lg" onClick={goBack}>
+              <ChevronLeft className="size-4" />
+              {t("wizardBack")}
+            </Button>
+          )}
+          {step < WIZARD_STEPS && (
+            <Button type="button" size="lg" className="ml-auto" onClick={goNext}>
+              {t("wizardNext")}
+              <ChevronRight className="size-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="lg:sticky lg:top-24 lg:self-start">
@@ -768,6 +942,20 @@ export function BookingForm() {
             })}
 
             <Separator />
+
+            {hasNightPickup && nightSurcharge > 0 && (
+              <div className="space-y-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+                <div className="flex items-center justify-between font-semibold">
+                  <span>{t("nightSurchargeLabel")}</span>
+                  <span>฿{NIGHT_DRIVER_SURCHARGE_THB.toLocaleString("en-US")}</span>
+                </div>
+                <p className="text-amber-900/80">{t("nightSurchargeHint")}</p>
+              </div>
+            )}
+
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              {t("advanceBookingHint")}
+            </p>
 
             {isRentalBooking ||
             draft.paymentPlan === "deposit" ||
@@ -840,26 +1028,49 @@ export function BookingForm() {
               </p>
             )}
 
-            <Button
-              className="hidden w-full lg:inline-flex"
-              size="lg"
-              onClick={handleConfirm}
-              disabled={paying}
-            >
-              {paying ? t("processing") : confirmLabel}
-            </Button>
+            {step < WIZARD_STEPS ? (
+              <Button
+                className="hidden w-full lg:inline-flex"
+                size="lg"
+                onClick={goNext}
+              >
+                {t("wizardNext")}
+                <ChevronRight className="size-4" />
+              </Button>
+            ) : (
+              <Button
+                className="hidden w-full lg:inline-flex"
+                size="lg"
+                onClick={handleConfirm}
+                disabled={paying}
+              >
+                {paying ? t("processing") : confirmLabel}
+              </Button>
+            )}
 
             <p className="hidden text-center text-xs text-muted-foreground lg:block">
-              {t("demoNote")}
+              {step < WIZARD_STEPS ? t("wizardNextHint") : t("demoNote")}
             </p>
           </CardContent>
         </Card>
       </div>
       </div>
 
-      {/* Sticky confirm bar on small screens — above mobile bottom nav */}
-      <div className="fixed inset-x-0 bottom-[4.75rem] z-40 border-t border-border/70 bg-background/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-background/90 md:bottom-0 lg:hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-3">
+      {/* Sticky confirm bar — only while mobile bottom nav is visible */}
+      <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-40 border-t border-border/70 bg-background/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-background/90 md:hidden">
+        <div className="mx-auto flex max-w-7xl items-center gap-2">
+          {step > 1 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="shrink-0 px-3"
+              onClick={goBack}
+            >
+              <ChevronLeft className="size-4" />
+              <span className="sr-only">{t("wizardBack")}</span>
+            </Button>
+          )}
           <div className="min-w-0 flex-1">
             <p className="text-[11px] leading-none text-muted-foreground">
               {draft.paymentPlan === "pay-driver"
@@ -872,14 +1083,25 @@ export function BookingForm() {
               ฿{amountDue.toLocaleString("en-US")}
             </p>
           </div>
-          <Button
-            className="shrink-0 px-5"
-            size="lg"
-            onClick={handleConfirm}
-            disabled={paying}
-          >
-            {paying ? t("processing") : t("confirm")}
-          </Button>
+          {step < WIZARD_STEPS ? (
+            <Button
+              className="shrink-0 px-5"
+              size="lg"
+              onClick={goNext}
+            >
+              {t("wizardNext")}
+              <ChevronRight className="size-4" />
+            </Button>
+          ) : (
+            <Button
+              className="shrink-0 px-5"
+              size="lg"
+              onClick={handleConfirm}
+              disabled={paying}
+            >
+              {paying ? t("processing") : t("confirm")}
+            </Button>
+          )}
         </div>
       </div>
 

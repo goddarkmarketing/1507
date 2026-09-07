@@ -117,7 +117,7 @@ export function Header() {
           </a>
           <ButtonLink size="sm" href="/booking">
             <Car className="size-4" />
-            <span className="hidden xs:inline sm:inline">{t("bookNow")}</span>
+            <span className="hidden sm:inline">{t("bookNow")}</span>
           </ButtonLink>
           <MobileMenu />
         </div>

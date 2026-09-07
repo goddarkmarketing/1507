@@ -1,4 +1,5 @@
 import type { Booking } from "@/lib/types";
+import { getVoucherHoldReason } from "@/lib/booking/booking-rules";
 
 export type BookingService = "transfer" | "rental";
 
@@ -76,12 +77,13 @@ export function getBookingAmountDue(booking: {
   return booking.amountDueNow ?? booking.totalPrice;
 }
 
-/** Pay-to-driver bookings need staff confirmation before voucher is issued. */
-export function canIssueVoucher(booking: Pick<Booking, "status" | "paymentPlan" | "payment">): boolean {
-  const plan = booking.paymentPlan;
-  const isPayDriver =
-    plan === "pay-driver" ||
-    (!plan && booking.payment?.method === "cash");
-  if (!isPayDriver) return true;
-  return booking.status === "confirmed";
+/**
+ * Voucher gate: pay-driver / night hours (00:00–08:00) / short-notice
+ * need staff confirmation. Staff sets status to "confirmed".
+ */
+export function canIssueVoucher(
+  booking: Pick<Booking, "status" | "paymentPlan" | "payment" | "legs">,
+  now: Date = new Date()
+): boolean {
+  return getVoucherHoldReason(booking, now) === null;
 }
