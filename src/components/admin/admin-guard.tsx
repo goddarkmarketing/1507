@@ -19,7 +19,7 @@ import {
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { useAdminStore } from "@/lib/admin/store";
+import { useAdminStore, selectUnseenBookingsCount } from "@/lib/admin/store";
 import { useSettingsStore } from "@/lib/admin/settings-store";
 import { useBookingStore } from "@/lib/booking/store";
 import { reclaimLocalBookingStorage } from "@/lib/booking/slim-storage";
@@ -55,14 +55,17 @@ function NavLink({
   label,
   icon: Icon,
   active,
+  badge,
   onClick,
 }: {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   active: boolean;
+  badge?: number;
   onClick?: () => void;
 }) {
+  const showBadge = typeof badge === "number" && badge > 0;
   return (
     <Link
       href={href}
@@ -80,7 +83,18 @@ function NavLink({
           active ? "text-amber-300" : "text-zinc-400"
         )}
       />
-      <span className="truncate">{label}</span>
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {showBadge ? (
+        <span
+          className={cn(
+            "inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-semibold text-white tabular-nums",
+            active && "ring-1 ring-white/20"
+          )}
+          aria-label={`${badge}`}
+        >
+          {badge > 99 ? "99+" : badge}
+        </span>
+      ) : null}
     </Link>
   );
 }
@@ -95,6 +109,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   const login = useAdminStore((s) => s.login);
   const logout = useAdminStore((s) => s.logout);
   const syncCustomerBookings = useAdminStore((s) => s.syncCustomerBookings);
+  const markBookingsMenuSeen = useAdminStore((s) => s.markBookingsMenuSeen);
+  const bookings = useAdminStore((s) => s.bookings);
+  const unseenBookings = useAdminStore(selectUnseenBookingsCount);
   const confirmedBookings = useBookingStore((s) => s.confirmedBookings);
   const [ready, setReady] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -143,7 +160,14 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!ready || !authenticated) return;
-    void useAdminStore.getState().pullRemoteBookings();
+    void (async () => {
+      await useAdminStore.getState().pullRemoteBookings();
+      useAdminStore.getState().ensureBookingsMenuSeeded();
+    })();
+    const timer = window.setInterval(() => {
+      void useAdminStore.getState().pullRemoteBookings();
+    }, 45_000);
+    return () => window.clearInterval(timer);
   }, [ready, authenticated]);
 
   useEffect(() => {
@@ -152,6 +176,14 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       router.replace("/admin/dashboard");
     }
   }, [ready, authenticated, pathname, router]);
+
+  useEffect(() => {
+    if (!ready || !authenticated) return;
+    if (!(pathname === "/admin/bookings" || pathname.startsWith("/admin/bookings/"))) {
+      return;
+    }
+    markBookingsMenuSeen();
+  }, [ready, authenticated, pathname, bookings, markBookingsMenuSeen]);
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
@@ -272,7 +304,15 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                 label={t(`nav.${item.key}`)}
                 icon={item.icon}
                 active={isActive(item.href)}
-                onClick={() => setMenuOpen(false)}
+                badge={
+                  item.href === "/admin/bookings" ? unseenBookings : undefined
+                }
+                onClick={() => {
+                  if (item.href === "/admin/bookings") {
+                    markBookingsMenuSeen();
+                  }
+                  setMenuOpen(false);
+                }}
               />
             )
           )}

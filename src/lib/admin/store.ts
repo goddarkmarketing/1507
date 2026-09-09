@@ -50,10 +50,16 @@ interface AdminState {
   staffName: string | null;
   bookings: AdminBooking[];
   drivers: Driver[];
+  /** Booking ids already acknowledged via การจอง menu (badge clears on visit). */
+  bookingsMenuSeenIds: string[];
+  /** After first seed, only newer booking ids count toward the badge. */
+  bookingsMenuInitialized: boolean;
   login: (username: string, password: string) => boolean;
   logout: () => void;
   syncCustomerBookings: (customerBookings: Booking[]) => void;
   pullRemoteBookings: () => Promise<{ ok: boolean; error?: string }>;
+  ensureBookingsMenuSeeded: () => void;
+  markBookingsMenuSeen: () => void;
   updateBooking: (id: string, patch: AdminBookingPatch) => void;
   assignDriver: (bookingId: string, driverId: string | null) => void;
   setOpsStatus: (bookingId: string, opsStatus: OpsStatus) => void;
@@ -61,6 +67,15 @@ interface AdminState {
   toggleDriverActive: (driverId: string) => void;
   upsertDriver: (driver: Driver) => void;
   removeDriver: (driverId: string) => void;
+}
+
+export function selectUnseenBookingsCount(state: AdminState): number {
+  if (!state.bookingsMenuInitialized) return 0;
+  const seen = new Set(state.bookingsMenuSeenIds);
+  return state.bookings.reduce(
+    (n, b) => (seen.has(b.id) ? n : n + 1),
+    0
+  );
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -71,6 +86,8 @@ export const useAdminStore = create<AdminState>()(
       staffName: null,
       bookings: [],
       drivers: [],
+      bookingsMenuSeenIds: [],
+      bookingsMenuInitialized: false,
 
       login: (username, password) => {
         const user = username.trim();
@@ -112,7 +129,23 @@ export const useAdminStore = create<AdminState>()(
         set({
           bookings: mergeBookings(get().bookings, result.bookings),
         });
+        get().ensureBookingsMenuSeeded();
         return { ok: true };
+      },
+
+      ensureBookingsMenuSeeded: () => {
+        if (get().bookingsMenuInitialized) return;
+        set({
+          bookingsMenuSeenIds: get().bookings.map((b) => b.id),
+          bookingsMenuInitialized: true,
+        });
+      },
+
+      markBookingsMenuSeen: () => {
+        set({
+          bookingsMenuSeenIds: get().bookings.map((b) => b.id),
+          bookingsMenuInitialized: true,
+        });
       },
 
       updateBooking: (id, patch) => {
@@ -268,6 +301,8 @@ export const useAdminStore = create<AdminState>()(
         // Never persist base64 transfer slips — they exceed localStorage quota.
         bookings: slimBookingsForStorage(state.bookings),
         drivers: state.drivers,
+        bookingsMenuSeenIds: state.bookingsMenuSeenIds,
+        bookingsMenuInitialized: state.bookingsMenuInitialized,
       }),
     }
   )

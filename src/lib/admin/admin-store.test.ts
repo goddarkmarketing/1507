@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { useAdminStore } from "@/lib/admin/store";
+import { useAdminStore, selectUnseenBookingsCount } from "@/lib/admin/store";
 import { useSettingsStore } from "@/lib/admin/settings-store";
 import { DEMO_ADMIN, seedAdminBookings, seedDrivers } from "@/lib/admin/seed";
 import { withAdminFields } from "@/lib/admin/types";
@@ -12,6 +12,8 @@ function resetAdmin() {
     staffName: null,
     bookings: structuredClone(seedAdminBookings),
     drivers: structuredClone(seedDrivers),
+    bookingsMenuSeenIds: [],
+    bookingsMenuInitialized: false,
   });
 }
 
@@ -265,6 +267,27 @@ describe("admin store workflows", () => {
     useAdminStore.setState({ bookings: [], drivers: [] });
     expect(useAdminStore.getState().bookings).toHaveLength(0);
     expect(useAdminStore.getState().drivers).toHaveLength(0);
+  });
+
+  it("tracks unseen bookings badge until menu is opened", () => {
+    const {
+      ensureBookingsMenuSeeded,
+      markBookingsMenuSeen,
+      bookings,
+    } = useAdminStore.getState();
+    ensureBookingsMenuSeeded();
+    expect(selectUnseenBookingsCount(useAdminStore.getState())).toBe(0);
+
+    const extra = {
+      ...bookings[0],
+      id: "booking-unseen-1",
+      bookingNumber: "KLT-UNSEEN-1",
+    };
+    useAdminStore.setState({ bookings: [...bookings, extra] });
+    expect(selectUnseenBookingsCount(useAdminStore.getState())).toBe(1);
+
+    markBookingsMenuSeen();
+    expect(selectUnseenBookingsCount(useAdminStore.getState())).toBe(0);
   });
 
   it("saves rental deposit settings used by booking mode", () => {
