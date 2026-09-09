@@ -62,12 +62,18 @@ export function OpsBadge({
 export function useRouteLabel() {
   const locName = useLocationName();
   return (booking: AdminBooking) => {
-    const leg = booking.legs[0];
+    const leg = booking.legs?.[0];
     if (!leg) return "—";
-    const from = getLocation(leg.fromId);
-    const to = getLocation(leg.toId);
-    const short = (name: string) => name.split("(")[0].trim();
-    return `${short(locName(from) || leg.fromId)} → ${short(locName(to) || leg.toId)}`;
+    const fromId = leg.fromId || "";
+    const toId = leg.toId || "";
+    const from = fromId ? getLocation(fromId) : undefined;
+    const to = toId ? getLocation(toId) : undefined;
+    const short = (name: string | undefined | null) =>
+      (name || "—").split("(")[0].trim();
+    const left = short(locName(from) || fromId || null);
+    const right = short(locName(to) || toId || null);
+    if (left === "—" && right === "—") return "—";
+    return `${left} → ${right}`;
   };
 }
 

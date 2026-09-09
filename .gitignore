@@ -36,6 +36,9 @@ yarn-error.log*
 
 # Local secrets / one-off SQL with real secret
 supabase/SETUP_SECRET.local.sql
+supabase/RUN_ONCE.local.sql
+supabase/FIX_GRANTS.local.sql
+supabase/CLEAN_TEST_BOOKINGS.local.sql
 
 # vercel
 .vercel

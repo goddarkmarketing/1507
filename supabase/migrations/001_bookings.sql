@@ -26,6 +26,12 @@ insert into public.app_secrets (key, value)
 values ('booking_admin_secret', 'change-me-long-random-secret')
 on conflict (key) do nothing;
 
+-- Explicit grants required on newer Supabase projects (Data API)
+grant usage on schema public to anon, authenticated, service_role;
+grant select, insert, update on table public.bookings to anon, authenticated;
+grant all on table public.bookings to service_role;
+grant all on table public.app_secrets to service_role;
+
 alter table public.bookings enable row level security;
 alter table public.app_secrets enable row level security;
 
