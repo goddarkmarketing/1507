@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { calculatePrice } from "@/lib/data/pricing";
 import { getPromptPay } from "@/lib/data/payment";
 import {
@@ -14,7 +14,16 @@ import {
 import {
   getNightDriverSurcharge,
   hasAdvanceBooking,
+  minPickupInstant,
+  toBangkokDateInput,
 } from "@/lib/booking/booking-rules";
+import { createRemoteBooking } from "@/lib/booking/remote/bookings-remote";
+import { isBookingRemoteEnabled } from "@/lib/booking/remote/config";
+import { notifyBookingCreated } from "@/lib/booking/remote/notify";
+import {
+  createQuotaSafeStorage,
+  slimBookingsForStorage,
+} from "@/lib/booking/slim-storage";
 import {
   calculateRentalTotal,
   getDefaultRentalPackageId,
@@ -80,6 +89,11 @@ interface BookingStore {
     omiseTokenId?: string;
     service?: BookingService;
   }) => Booking | null;
+  /** Persist booking to cloud + notify (no-op if remote disabled). */
+  syncBookingRemote: (
+    booking: Booking,
+    locale?: string
+  ) => Promise<{ remote: boolean; error?: string }>;
   patchConfirmedBooking: (id: string, patch: Partial<Booking>) => void;
   getLegPrice: (leg: Omit<BookingLeg, "price">) => number;
   getTotalPrice: () => number;
@@ -121,8 +135,8 @@ const INITIAL_DRAFT: BookingDraft = {
   transferProof: null,
 };
 
-function todayISODate(): string {
-  return new Date().toISOString().slice(0, 10);
+function defaultPickupDate(): string {
+  return toBangkokDateInput(minPickupInstant());
 }
 
 function createLeg(
@@ -132,7 +146,7 @@ function createLeg(
     id: crypto.randomUUID(),
     fromId: "kbv-airport",
     toId: "ao-nang-beach",
-    date: todayISODate(),
+    date: defaultPickupDate(),
     time: "10:00",
     vehicleCode: "ECO",
     ...overrides,
@@ -143,7 +157,7 @@ function createDefaultDraft(): BookingDraft {
   return {
     ...INITIAL_DRAFT,
     transferRef: generateBookingNumber(),
-    legs: [{ ...INITIAL_LEG, date: todayISODate() }],
+    legs: [{ ...INITIAL_LEG, id: crypto.randomUUID(), date: defaultPickupDate() }],
     rentalPackageId: getDefaultRentalPackageId(),
   };
 }
@@ -167,17 +181,22 @@ export const useBookingStore = create<BookingStore>()(
           let legs = [...state.draft.legs];
           if (type === "one-way") {
             legs = [legs[0] ?? createLeg()];
-          } else if (type === "round-trip" && legs.length === 1) {
-            const first = legs[0];
-            legs = [
-              first,
-              createLeg({
-                fromId: first.toId,
-                toId: first.fromId,
-                date: first.date || todayISODate(),
-                vehicleCode: first.vehicleCode,
-              }),
-            ];
+          } else if (type === "round-trip") {
+            const first = legs[0] ?? createLeg();
+            const existingReturn = legs[1];
+            const returnLeg = createLeg({
+              ...(existingReturn ?? {}),
+              id: existingReturn?.id ?? crypto.randomUUID(),
+              fromId: first.toId,
+              toId: first.fromId,
+              date:
+                existingReturn?.date ||
+                first.date ||
+                defaultPickupDate(),
+              time: existingReturn?.time || "14:00",
+              vehicleCode: first.vehicleCode,
+            });
+            legs = [first, returnLeg];
           }
           return { draft: { ...state.draft, type, legs } };
         }),
@@ -467,6 +486,18 @@ export const useBookingStore = create<BookingStore>()(
         return booking;
       },
 
+      syncBookingRemote: async (booking, locale = "th") => {
+        if (!isBookingRemoteEnabled()) {
+          return { remote: false };
+        }
+        const result = await createRemoteBooking(booking);
+        if (!result.ok) {
+          return { remote: false, error: result.error };
+        }
+        await notifyBookingCreated(booking, locale);
+        return { remote: true };
+      },
+
       resetDraft: () => set({ draft: createDefaultDraft() }),
 
       ensureTransferRef: () =>
@@ -482,9 +513,19 @@ export const useBookingStore = create<BookingStore>()(
     }),
     {
       name: "krabi-links-bookings",
+      version: 1,
+      migrate: (persisted) => {
+        const state = (persisted ?? {}) as { confirmedBookings?: unknown };
+        // Production cutover: clear local demo/QA confirmed bookings.
+        return {
+          ...state,
+          confirmedBookings: [],
+        };
+      },
+      storage: createJSONStorage(createQuotaSafeStorage),
       // Draft must not persist — it caused SSR/client price mismatches
       partialize: (state) => ({
-        confirmedBookings: state.confirmedBookings,
+        confirmedBookings: slimBookingsForStorage(state.confirmedBookings),
       }),
     }
   )

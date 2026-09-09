@@ -10,7 +10,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
 
   if (isAdmin) {
-    return <div className="min-h-svh bg-[#f7f7f5]">{children}</div>;
+    return <div className="min-h-svh bg-white">{children}</div>;
   }
 
   return (

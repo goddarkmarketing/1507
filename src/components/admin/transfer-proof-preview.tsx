@@ -17,6 +17,15 @@ export function TransferProofPreview({
     );
   }
 
+  if (!proof.dataUrl) {
+    return (
+      <div className="flex items-start gap-2 rounded-xl border border-zinc-200 bg-zinc-50/50 px-3 py-3 text-sm text-zinc-600">
+        <FileText className="mt-0.5 size-4 shrink-0 text-zinc-500" />
+        <p>{t("proofMetaOnly", { fileName: proof.fileName })}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/50">
       <div className="flex items-center gap-2 border-b border-zinc-200 px-3 py-2 text-sm">

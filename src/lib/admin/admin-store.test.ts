@@ -262,11 +262,9 @@ describe("admin store workflows", () => {
       false
     );
 
-    useAdminStore.setState({ bookings: [] });
-    useAdminStore.getState().resetDemoData();
-    expect(useAdminStore.getState().bookings.length).toBe(
-      seedAdminBookings.length
-    );
+    useAdminStore.setState({ bookings: [], drivers: [] });
+    expect(useAdminStore.getState().bookings).toHaveLength(0);
+    expect(useAdminStore.getState().drivers).toHaveLength(0);
   });
 
   it("saves rental deposit settings used by booking mode", () => {

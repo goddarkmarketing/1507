@@ -22,9 +22,9 @@ import { Button } from "@/components/ui/button";
 import { useAdminStore } from "@/lib/admin/store";
 import { useSettingsStore } from "@/lib/admin/settings-store";
 import { useBookingStore } from "@/lib/booking/store";
-import { DEMO_ADMIN } from "@/lib/admin/seed";
-import type { StaffRole } from "@/lib/admin/settings";
+import { reclaimLocalBookingStorage } from "@/lib/booking/slim-storage";
 import { canSeeAdminNav } from "@/lib/admin/access";
+import type { StaffRole } from "@/lib/admin/settings";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
@@ -130,8 +130,21 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!ready) return;
-    syncCustomerBookings(confirmedBookings);
+    if (!reclaimLocalBookingStorage()) return;
+    useAdminStore.setState({ bookings: [], drivers: [] });
+    useBookingStore.setState({ confirmedBookings: [] });
+  }, [ready]);
+
+  useEffect(() => {
+    if (!ready) return;
+    // Read live store so a same-tick production wipe is not re-merged.
+    syncCustomerBookings(useBookingStore.getState().confirmedBookings);
   }, [ready, confirmedBookings, syncCustomerBookings]);
+
+  useEffect(() => {
+    if (!ready || !authenticated) return;
+    void useAdminStore.getState().pullRemoteBookings();
+  }, [ready, authenticated]);
 
   useEffect(() => {
     if (!ready || !authenticated) return;
@@ -151,7 +164,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-[#f7f7f5] text-sm text-muted-foreground">
+      <div className="flex min-h-svh items-center justify-center bg-white text-sm text-muted-foreground">
         {t("loading")}
       </div>
     );
@@ -159,7 +172,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   if (!authenticated) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-[#f7f7f5] px-4">
+      <div className="flex min-h-svh items-center justify-center bg-white px-4">
         <form
           className="w-full max-w-[380px] space-y-5 rounded-2xl border border-zinc-200/80 bg-white p-8 shadow-sm"
           onSubmit={(e) => {
@@ -177,10 +190,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
               {t("loginTitle")}
             </h1>
             <p className="text-sm leading-relaxed text-zinc-500">
-              {t("loginHint", {
-                user: DEMO_ADMIN.username,
-                pass: DEMO_ADMIN.password,
-              })}
+              {t("loginHint")}
             </p>
           </div>
           <div className="space-y-4">
@@ -333,7 +343,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="min-h-svh bg-[#f7f7f5] lg:grid lg:grid-cols-[260px_minmax(0,1fr)]">
+    <div className="min-h-svh bg-white lg:grid lg:grid-cols-[260px_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-svh border-r border-zinc-200/80 bg-white lg:block">
         {sidebar}
       </aside>
@@ -357,7 +367,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       )}
 
       <div className="flex min-w-0 flex-col">
-        <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-[#f7f7f5]/90 backdrop-blur-md">
+        <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/95 backdrop-blur-md">
           <div className="flex h-14 w-full items-center gap-3 px-4 sm:px-6 lg:h-16 lg:px-8 xl:px-10">
             <button
               type="button"

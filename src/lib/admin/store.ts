@@ -1,11 +1,16 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { DEMO_ADMIN, seedAdminBookings, seedDrivers } from "@/lib/admin/seed";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { DEMO_ADMIN } from "@/lib/admin/seed";
 import { getActiveStaff } from "@/lib/admin/settings-store";
 import type { StaffRole } from "@/lib/admin/settings";
 import { mergeBookings } from "@/lib/admin/merge-bookings";
+import {
+  listRemoteBookings,
+  patchRemoteBooking,
+} from "@/lib/booking/remote/bookings-remote";
+import { isBookingRemoteEnabled } from "@/lib/booking/remote/config";
 import {
   markPayment,
   type AdminBooking,
@@ -15,6 +20,10 @@ import {
 } from "@/lib/admin/types";
 import type { Booking } from "@/lib/types";
 import { useBookingStore } from "@/lib/booking/store";
+import {
+  createQuotaSafeStorage,
+  slimBookingsForStorage,
+} from "@/lib/booking/slim-storage";
 
 function bookingPatchFromAdmin(booking: AdminBooking): Partial<Booking> {
   return {
@@ -44,6 +53,7 @@ interface AdminState {
   login: (username: string, password: string) => boolean;
   logout: () => void;
   syncCustomerBookings: (customerBookings: Booking[]) => void;
+  pullRemoteBookings: () => Promise<{ ok: boolean; error?: string }>;
   updateBooking: (id: string, patch: AdminBookingPatch) => void;
   assignDriver: (bookingId: string, driverId: string | null) => void;
   setOpsStatus: (bookingId: string, opsStatus: OpsStatus) => void;
@@ -51,7 +61,6 @@ interface AdminState {
   toggleDriverActive: (driverId: string) => void;
   upsertDriver: (driver: Driver) => void;
   removeDriver: (driverId: string) => void;
-  resetDemoData: () => void;
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -60,8 +69,8 @@ export const useAdminStore = create<AdminState>()(
       authenticated: false,
       staffRole: null,
       staffName: null,
-      bookings: seedAdminBookings,
-      drivers: seedDrivers,
+      bookings: [],
+      drivers: [],
 
       login: (username, password) => {
         const user = username.trim();
@@ -94,6 +103,18 @@ export const useAdminStore = create<AdminState>()(
         });
       },
 
+      pullRemoteBookings: async () => {
+        if (!isBookingRemoteEnabled()) {
+          return { ok: false, error: "not_configured" };
+        }
+        const result = await listRemoteBookings();
+        if (!result.ok) return { ok: false, error: result.error };
+        set({
+          bookings: mergeBookings(get().bookings, result.bookings),
+        });
+        return { ok: true };
+      },
+
       updateBooking: (id, patch) => {
         const next = get().bookings.map((b) =>
           b.id === id
@@ -106,8 +127,11 @@ export const useAdminStore = create<AdminState>()(
         );
         set({ bookings: next });
         const updated = next.find((b) => b.id === id);
-        if (updated && (patch.payment || patch.status)) {
+        if (updated && (patch.payment || patch.status || patch.opsStatus || patch.driverId !== undefined || patch.adminNotes !== undefined)) {
           syncToCustomerStore(updated);
+          if (isBookingRemoteEnabled()) {
+            void patchRemoteBooking(updated);
+          }
         }
       },
 
@@ -223,20 +247,26 @@ export const useAdminStore = create<AdminState>()(
           ),
         });
       },
-
-      resetDemoData: () =>
-        set({
-          bookings: seedAdminBookings,
-          drivers: seedDrivers,
-        }),
     }),
     {
       name: "krabi-links-admin",
+      version: 3,
+      migrate: (persisted) => {
+        const state = (persisted ?? {}) as Partial<AdminState>;
+        // Production cutover: start empty (drop demo + local QA leftovers).
+        return {
+          ...state,
+          bookings: [],
+          drivers: [],
+        };
+      },
+      storage: createJSONStorage(createQuotaSafeStorage),
       partialize: (state) => ({
         authenticated: state.authenticated,
         staffRole: state.staffRole,
         staffName: state.staffName,
-        bookings: state.bookings,
+        // Never persist base64 transfer slips — they exceed localStorage quota.
+        bookings: slimBookingsForStorage(state.bookings),
         drivers: state.drivers,
       }),
     }

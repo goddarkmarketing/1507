@@ -74,4 +74,40 @@ describe("mergeBookings", () => {
     expect(merged.payment?.status).toBe("paid");
     expect(merged.status).toBe("confirmed");
   });
+
+  it("keeps slip preview from customer when admin copy has metadata only", () => {
+    const existing = withAdminFields(customerBooking(), {
+      opsStatus: "payment_review",
+      payment: {
+        method: "bank-transfer",
+        status: "awaiting-transfer",
+        summary: "Bank transfer (pending verification)",
+        transferProof: {
+          fileName: "slip.jpg",
+          fileType: "image/jpeg",
+          dataUrl: "",
+          uploadedAt: "2026-09-02T00:00:00.000Z",
+        },
+      },
+    });
+
+    const incoming = customerBooking({
+      payment: {
+        method: "bank-transfer",
+        status: "awaiting-transfer",
+        summary: "Bank transfer (pending verification)",
+        transferProof: {
+          fileName: "slip.jpg",
+          fileType: "image/jpeg",
+          dataUrl: "data:image/jpeg;base64,AAAA",
+          uploadedAt: "2026-09-02T00:00:00.000Z",
+        },
+      },
+    });
+
+    const [merged] = mergeBookings([existing], [incoming]);
+    expect(merged.payment?.transferProof?.dataUrl).toBe(
+      "data:image/jpeg;base64,AAAA"
+    );
+  });
 });

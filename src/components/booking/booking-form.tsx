@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { Plus, Trash2, CalendarClock, Wallet, PlaneTakeoff, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
@@ -84,6 +84,7 @@ const WIZARD_STEPS = 3;
 export function BookingForm() {
   const t = useTranslations("Booking");
   const tPay = useTranslations("Payment");
+  const locale = useLocale();
   const locName = useLocationName();
   const { name: vehicleName, selectLabel, luggage } = useVehicleCopy();
   const router = useRouter();
@@ -104,6 +105,7 @@ export function BookingForm() {
     setTransferBank,
     setTransferProof,
     confirmBooking,
+    syncBookingRemote,
     getLegPrice,
     getTotalPrice,
     ensureTransferRef,
@@ -255,11 +257,20 @@ export function BookingForm() {
     await new Promise((r) => setTimeout(r, 600));
 
     const booking = confirmBooking({ service: bookingService });
-    setPaying(false);
 
     if (!booking) {
+      setPaying(false);
       toast.error(t("toastFail"));
       return;
+    }
+
+    const remote = await syncBookingRemote(booking, locale);
+    setPaying(false);
+
+    if (remote.error) {
+      toast.message(t("toastRemoteSyncFail"));
+    } else if (remote.remote) {
+      toast.message(t("toastRemoteSyncOk"));
     }
 
     if (booking.paymentPlan === "pay-driver") {

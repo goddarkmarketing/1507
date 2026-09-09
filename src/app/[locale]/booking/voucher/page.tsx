@@ -1,23 +1,25 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { ButtonLink } from "@/components/ui/button-link";
 import { EVoucher } from "@/components/booking/e-voucher";
 import { canIssueVoucher } from "@/lib/booking/booking-mode";
 import { getVoucherHoldReason } from "@/lib/booking/booking-rules";
+import { getRemoteBookingByNumber } from "@/lib/booking/remote/bookings-remote";
+import { isBookingRemoteEnabled } from "@/lib/booking/remote/config";
 import {
   getBookingByNumber,
   useBookingStore,
   useBookingStoreHydrated,
 } from "@/lib/booking/store";
-import { useSiteContact } from "@/lib/admin/settings-store";
 import {
   OFFICIAL_WHATSAPP_LOCAL,
   OFFICIAL_WHATSAPP_QR_SRC,
   whatsappHref,
 } from "@/lib/contact-links";
+import type { Booking } from "@/lib/types";
 import { assetPath } from "@/lib/utils";
 
 function VoucherContent() {
@@ -26,17 +28,36 @@ function VoucherContent() {
   const bookingNumber = searchParams.get("n") ?? "";
   const hydrated = useBookingStoreHydrated();
   const confirmedBookings = useBookingStore((s) => s.confirmedBookings);
-  const booking = getBookingByNumber(bookingNumber, confirmedBookings);
+  const localBooking = getBookingByNumber(bookingNumber, confirmedBookings);
+  const [remoteBooking, setRemoteBooking] = useState<Booking | null>(null);
+  const [remoteChecked, setRemoteChecked] = useState(!isBookingRemoteEnabled());
+
+  useEffect(() => {
+    if (!bookingNumber || !isBookingRemoteEnabled()) {
+      setRemoteChecked(true);
+      return;
+    }
+    let alive = true;
+    setRemoteChecked(false);
+    getRemoteBookingByNumber(bookingNumber).then((result) => {
+      if (!alive) return;
+      if (result.ok) setRemoteBooking(result.booking);
+      setRemoteChecked(true);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [bookingNumber]);
+
+  const booking = remoteBooking ?? localBooking;
   const holdReason = booking ? getVoucherHoldReason(booking) : null;
   const waHref = whatsappHref(OFFICIAL_WHATSAPP_LOCAL);
   const waMessage = booking
-    ? encodeURIComponent(
-        t("whatsappPrefill", { n: booking.bookingNumber })
-      )
+    ? encodeURIComponent(t("whatsappPrefill", { n: booking.bookingNumber }))
     : "";
   const waLink = `${waHref}?text=${waMessage}`;
 
-  if (!hydrated) {
+  if (!hydrated || (bookingNumber && !remoteChecked && !localBooking)) {
     return (
       <div className="mx-auto max-w-md px-4 py-24 text-center text-muted-foreground">
         {t("loading")}
@@ -49,9 +70,12 @@ function VoucherContent() {
       <div className="mx-auto max-w-md px-4 py-24 text-center">
         <h1 className="text-2xl font-bold">{t("notFoundTitle")}</h1>
         <p className="mt-2 text-muted-foreground">{t("notFoundBody")}</p>
-        <ButtonLink className="mt-6" href="/booking">
-          {t("makeNew")}
-        </ButtonLink>
+        <div className="mt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
+          <ButtonLink href="/booking/status">{t("checkStatus")}</ButtonLink>
+          <ButtonLink href="/booking" variant="outline">
+            {t("makeNew")}
+          </ButtonLink>
+        </div>
       </div>
     );
   }
@@ -78,34 +102,21 @@ function VoucherContent() {
           {booking.bookingNumber}
         </p>
         <p className="text-sm text-muted-foreground">{t("whatsappHint")}</p>
+        <ButtonLink href={waLink} target="_blank" rel="noopener noreferrer">
+          {t("whatsappCta")}
+        </ButtonLink>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={assetPath(OFFICIAL_WHATSAPP_QR_SRC)}
+          alt={`WhatsApp ${OFFICIAL_WHATSAPP_LOCAL}`}
+          width={160}
+          height={160}
+          className="mx-auto size-40 rounded-xl border bg-white p-2 object-contain"
+        />
         <p className="text-xs text-muted-foreground">{t("noReplyIncomplete")}</p>
-        <a
-          href={waLink}
-          target="_blank"
-          rel="noreferrer"
-          className="mx-auto block w-fit rounded-xl border bg-white p-3 shadow-sm"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={assetPath(OFFICIAL_WHATSAPP_QR_SRC)}
-            alt={`WhatsApp ${OFFICIAL_WHATSAPP_LOCAL}`}
-            width={180}
-            height={180}
-            className="size-[180px] object-contain"
-          />
-        </a>
-        <p className="font-mono text-sm font-semibold">
-          WhatsApp {OFFICIAL_WHATSAPP_LOCAL}
-        </p>
-        <div className="flex flex-col items-center gap-2 pt-2 sm:flex-row sm:justify-center">
-          <ButtonLink href={waLink} target="_blank" rel="noreferrer">
-            {t("whatsappCta")}
-          </ButtonLink>
-          <ButtonLink variant="outline" href="/">
-            {t("backHome")}
-          </ButtonLink>
-        </div>
-        <p className="text-sm text-muted-foreground">{t("awaitingStaffHint")}</p>
+        <ButtonLink href="/booking/status" variant="outline">
+          {t("checkStatus")}
+        </ButtonLink>
       </div>
     );
   }
@@ -113,18 +124,16 @@ function VoucherContent() {
   return <EVoucher booking={booking} />;
 }
 
-function VoucherFallback() {
+export default function VoucherPage() {
   const t = useTranslations("Voucher");
   return (
-    <div className="mx-auto max-w-md px-4 py-24 text-center text-muted-foreground">
-      {t("loading")}
-    </div>
-  );
-}
-
-export default function VoucherPage() {
-  return (
-    <Suspense fallback={<VoucherFallback />}>
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-md px-4 py-24 text-center text-muted-foreground">
+          {t("loading")}
+        </div>
+      }
+    >
       <VoucherContent />
     </Suspense>
   );

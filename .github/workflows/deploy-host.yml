@@ -1,6 +1,15 @@
 # Build static site (no GitHub Pages basePath) and publish to branch `host`.
 # Plesk: Git → branch `host` → Deploy files to `/httpdocs` (not master / not source).
 # Optional: enable auto-deploy on push. Keep `.well-known` if Plesk asks.
+#
+# Required repo secrets for multi-device bookings (Settings → Secrets → Actions):
+#   NEXT_PUBLIC_SUPABASE_URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   NEXT_PUBLIC_BOOKING_ADMIN_SECRET
+#   NEXT_PUBLIC_SITE_URL
+# Optional:
+#   NEXT_PUBLIC_ADMIN_NOTIFY_WEBHOOK
+# See docs/GO_LIVE.md
 name: Deploy HostAtom (host branch)
 
 on:
@@ -36,6 +45,11 @@ jobs:
         run: npm run build:host
         env:
           NODE_OPTIONS: --max-old-space-size=4096
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_BOOKING_ADMIN_SECRET: ${{ secrets.NEXT_PUBLIC_BOOKING_ADMIN_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_ADMIN_NOTIFY_WEBHOOK: ${{ secrets.NEXT_PUBLIC_ADMIN_NOTIFY_WEBHOOK }}
 
       - name: Publish out/ to host branch
         uses: JamesIves/github-pages-deploy-action@v4
