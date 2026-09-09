@@ -1,0 +1,6 @@
+1:"$Sreact.fragment"
+2:I[22016,["/nx/static/chunks/05-c3ty_6dwfk.js","/nx/static/chunks/14mrh2-p_w84d.js","/nx/static/chunks/1rxncug86bump.js"],""]
+3:I[97367,["/nx/static/chunks/05-c3ty_6dwfk.js","/nx/static/chunks/14mrh2-p_w84d.js"],"OutletBoundary"]
+4:"$Sreact.suspense"
+0:{"rsc":["$","$1","c",{"children":[[["$","meta",null,{"httpEquiv":"refresh","content":"0;url=/th/"}],["$","script",null,{"dangerouslySetInnerHTML":{"__html":"location.replace('/th/');"}}],["$","p",null,{"className":"p-10 text-center text-sm","children":["$","$L2",null,{"href":"/th/","className":"underline","children":"KRABI LINKS TAXI — เข้าสู่เว็บไซต์"}]}]],[["$","script","script-0",{"src":"/nx/static/chunks/1rxncug86bump.js","async":true}]],["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"65zri4rXNqP7tdJ_TvjA_"}
+5:null
