@@ -38,6 +38,7 @@ import {
 } from "@/lib/data/rental-packages";
 import { tariffVehicles, vehicles } from "@/lib/data/vehicles";
 import { useBookingStore } from "@/lib/booking/store";
+import { suggestPairedLocation } from "@/lib/booking/suggest-paired-location";
 import {
   getAmountDueNow,
   getBookingService,
@@ -590,8 +591,15 @@ export function BookingForm() {
                       <LocationSelect
                         role="pickup"
                         value={leg.fromId}
-                        onValueChange={(v) => updateLeg(leg.id, { fromId: v })}
+                        onValueChange={(v) => {
+                          const paired = suggestPairedLocation(v, leg.toId);
+                          updateLeg(leg.id, {
+                            fromId: v,
+                            ...(paired ? { toId: paired } : {}),
+                          });
+                        }}
                         excludeId={leg.toId}
+                        pairedId={leg.toId}
                         placeholder={t("pickup")}
                         className={selectTriggerClass}
                       />
@@ -601,8 +609,15 @@ export function BookingForm() {
                       <LocationSelect
                         role="dropoff"
                         value={leg.toId}
-                        onValueChange={(v) => updateLeg(leg.id, { toId: v })}
+                        onValueChange={(v) => {
+                          const paired = suggestPairedLocation(v, leg.fromId);
+                          updateLeg(leg.id, {
+                            toId: v,
+                            ...(paired ? { fromId: paired } : {}),
+                          });
+                        }}
                         excludeId={leg.fromId}
+                        pairedId={leg.fromId}
                         placeholder={t("dropoff")}
                         className={selectTriggerClass}
                       />

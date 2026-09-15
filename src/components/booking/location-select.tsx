@@ -24,6 +24,8 @@ type LocationSelectProps = {
   onValueChange: (value: string) => void;
   role: LocationSelectRole;
   excludeId?: string;
+  /** Other route end — empty drop-off list shows official tariff places only. */
+  pairedId?: string;
   placeholder?: string;
   className?: string;
 };
@@ -37,6 +39,7 @@ export function LocationSelect({
   onValueChange,
   role,
   excludeId,
+  pairedId,
   placeholder,
   className,
 }: LocationSelectProps) {
@@ -52,10 +55,11 @@ export function LocationSelect({
     () =>
       groupLocations(locations, role, {
         excludeId,
+        pairedId,
         query,
         getName: locName,
       }),
-    [role, excludeId, query, locName]
+    [role, excludeId, pairedId, query, locName]
   );
 
   const typeLabel = (type: LocationType) => {

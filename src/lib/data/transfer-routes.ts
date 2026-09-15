@@ -1,5 +1,6 @@
 import type { TransferCategory, VehicleCode } from "@/lib/types";
 import { getImportedTransferRoutes } from "@/lib/admin/catalog-store";
+import { getLocation } from "@/lib/data/locations";
 
 export type OfficialVehiclePrices = Record<VehicleCode, number>;
 
@@ -1061,4 +1062,16 @@ export function getOfficialRoute(
 export function getActiveOfficialRoutes(): OfficialTransferRoute[] {
   const imported = getImportedTransferRoutes();
   return imported?.length ? imported : officialTransferRoutes;
+}
+
+/** Opposite ends of official tariff rows for a location (uses pricingAreaId when set). */
+export function getOfficialPartnerIds(locationId: string): string[] {
+  if (!locationId) return [];
+  const areaId = getLocation(locationId)?.pricingAreaId ?? locationId;
+  const partners = new Set<string>();
+  for (const route of getActiveOfficialRoutes()) {
+    if (route.fromId === areaId) partners.add(route.toId);
+    if (route.toId === areaId) partners.add(route.fromId);
+  }
+  return [...partners];
 }

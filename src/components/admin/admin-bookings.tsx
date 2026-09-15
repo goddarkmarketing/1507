@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { CalendarDays, User, MapPin, Wallet, Landmark, Settings2 } from "lucide-react";
 import { useAdminStore } from "@/lib/admin/store";
@@ -16,6 +16,8 @@ import { TransferProofPreview } from "@/components/admin/transfer-proof-preview"
 import type { OpsStatus } from "@/lib/admin/types";
 import type { BookingService } from "@/lib/booking/booking-mode";
 import type { PaymentMethod } from "@/lib/types";
+import { getLocation } from "@/lib/data/locations";
+import { locationShortName } from "@/lib/i18n-labels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -36,6 +38,7 @@ import {
 
 export function AdminBookingsPage() {
   const t = useTranslations("Admin");
+  const locale = useLocale();
   const bookings = useAdminStore((s) => s.bookings);
   const drivers = useAdminStore((s) => s.drivers);
   const assignDriver = useAdminStore((s) => s.assignDriver);
@@ -57,6 +60,13 @@ export function AdminBookingsPage() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return [...bookings]
+      .filter(
+        (b) =>
+          !(
+            b.id.startsWith("sched-demo-") ||
+            b.bookingNumber.startsWith("KLT-DEMO-")
+          )
+      )
       .sort((a, b) => {
         const ta = Date.parse(a.createdAt || a.updatedAt || "") || 0;
         const tb = Date.parse(b.createdAt || b.updatedAt || "") || 0;
@@ -88,22 +98,22 @@ export function AdminBookingsPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="max-w-xl space-y-1.5">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 sm:text-[28px]">
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl">
           {t("bookingsTitle")}
         </h1>
-        <p className="text-sm leading-relaxed text-zinc-500">
+        <p className="text-xs leading-relaxed text-zinc-500 sm:text-sm">
           {t("bookingsSubtitle")}
         </p>
       </div>
 
-      <div className="flex h-10 w-full flex-nowrap items-stretch gap-2.5 overflow-x-auto">
+      <div className="flex h-9 w-full flex-nowrap items-stretch gap-1.5 overflow-x-auto">
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("searchBookings")}
-          className="h-10 min-h-10 min-w-[14rem] flex-[1.6] rounded-xl border-zinc-200 bg-white shadow-none"
+          className="h-9 min-h-9 min-w-[10rem] flex-[1.6] rounded-md border-zinc-200 bg-white px-2 text-xs shadow-none"
         />
         <Select
           value={filter}
@@ -111,7 +121,7 @@ export function AdminBookingsPage() {
         >
           <SelectTrigger
             size="default"
-            className="h-10 min-h-10 w-auto min-w-[9.5rem] flex-1 rounded-xl border-zinc-200 bg-white data-[size=default]:h-10"
+            className="h-9 min-h-9 w-auto min-w-[7.5rem] flex-1 rounded-md border-zinc-200 bg-white text-xs data-[size=default]:h-9"
           >
             <SelectValue placeholder={t("filterStatus")}>
               {filter === "all" ? t("filterAll") : t(`ops.${filter}`)}
@@ -134,7 +144,7 @@ export function AdminBookingsPage() {
         >
           <SelectTrigger
             size="default"
-            className="h-10 min-h-10 w-auto min-w-[9.5rem] flex-1 rounded-xl border-zinc-200 bg-white data-[size=default]:h-10"
+            className="h-9 min-h-9 w-auto min-w-[7.5rem] flex-1 rounded-md border-zinc-200 bg-white text-xs data-[size=default]:h-9"
           >
             <SelectValue placeholder={t("filterService")}>
               {serviceFilter === "all"
@@ -158,7 +168,7 @@ export function AdminBookingsPage() {
         >
           <SelectTrigger
             size="default"
-            className="h-10 min-h-10 w-auto min-w-[9.5rem] flex-1 rounded-xl border-zinc-200 bg-white data-[size=default]:h-10"
+            className="h-9 min-h-9 w-auto min-w-[7.5rem] flex-1 rounded-md border-zinc-200 bg-white text-xs data-[size=default]:h-9"
           >
             <SelectValue placeholder={t("filterPayment")}>
               {paymentFilter === "all"
@@ -181,89 +191,134 @@ export function AdminBookingsPage() {
         </Select>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white">
-        <table className="w-full table-fixed text-sm">
-          <thead className="border-b border-zinc-100 bg-zinc-50/80 text-left text-[11px] tracking-wide text-zinc-500 uppercase">
-            <tr>
-              <th className="w-[14%] px-3 py-3 font-medium sm:px-4">
-                {t("colBooking")}
-              </th>
-              <th className="w-[8%] px-2 py-3 text-center font-medium">
-                {t("colActions")}
-              </th>
-              <th className="w-[22%] px-3 py-3 font-medium sm:px-4">
-                {t("colRoute")}
-              </th>
-              <th className="w-[12%] px-3 py-3 font-medium sm:px-4">
-                {t("colService")}
-              </th>
-              <th className="w-[16%] px-3 py-3 font-medium sm:px-4">
-                {t("colWhen")}
-              </th>
-              <th className="w-[16%] px-3 py-3 font-medium sm:px-4">
-                {t("colStatus")}
-              </th>
-              <th className="w-[12%] px-3 py-3 text-right font-medium sm:px-4">
-                {t("colAmount")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((b) => {
-              const leg = b.legs[0];
-              return (
-                <tr
-                  key={b.id}
-                  className="h-11 border-t border-zinc-100 transition-colors hover:bg-zinc-50/80"
-                >
-                  <td className="truncate px-3 py-2 font-medium whitespace-nowrap text-zinc-950 sm:px-4">
-                    #{b.bookingNumber}
-                  </td>
-                  <td className="px-2 py-2 text-center">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 rounded-lg text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950"
-                      onClick={() => openDetail(b.id)}
-                      aria-label={t("manageDetail")}
-                      title={t("manageDetail")}
-                    >
-                      <Settings2 className="size-4" />
-                    </Button>
-                  </td>
-                  <td
-                    className="truncate px-3 py-2 whitespace-nowrap text-zinc-500 sm:px-4"
-                    title={routeLabel(b)}
-                  >
-                    {routeLabel(b)}
-                  </td>
-                  <td className="truncate px-3 py-2 whitespace-nowrap text-zinc-600 sm:px-4">
-                    {b.service === "rental"
-                      ? t("serviceRental")
-                      : t("serviceTransfer")}
-                  </td>
-                  <td className="truncate px-3 py-2 whitespace-nowrap tabular-nums text-zinc-500 sm:px-4">
-                    {leg ? `${leg.date} ${leg.time}` : "—"}
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap sm:px-4">
-                    <OpsBadge
-                      status={b.opsStatus}
-                      label={t(`ops.${b.opsStatus}`)}
-                    />
-                  </td>
-                  <td className="px-3 py-2 text-right font-semibold whitespace-nowrap tabular-nums text-zinc-950 sm:px-4">
-                    {money(bookingDisplayAmount(b))}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {filtered.length === 0 && (
-          <p className="px-5 py-12 text-center text-sm text-zinc-500">
+      <div className="-mx-4 overflow-hidden border-y border-zinc-300 bg-white sm:mx-0 sm:rounded-lg sm:border sm:shadow-sm">
+        {filtered.length === 0 ? (
+          <p className="px-4 py-10 text-center text-sm text-zinc-500">
             {t("emptyBookings")}
           </p>
+        ) : (
+          <div className="w-full">
+            <table className="w-full table-fixed border-collapse text-left text-[8px] leading-[1.15] sm:text-[11px]">
+              <thead>
+                <tr className="bg-zinc-100 text-[7px] font-semibold tracking-wide text-zinc-600 uppercase sm:text-[10px]">
+                  <th className="w-[14%] border-b border-zinc-300 px-0.5 py-1">
+                    {t("colBooking")}
+                  </th>
+                  <th className="w-[13%] border-b border-zinc-300 px-0.5 py-1">
+                    {t("scheduleColFrom")}
+                  </th>
+                  <th className="w-[13%] border-b border-zinc-300 px-0.5 py-1">
+                    {t("scheduleColTo")}
+                  </th>
+                  <th className="w-[12%] border-b border-zinc-300 px-0.5 py-1">
+                    {t("colWhen")}
+                  </th>
+                  <th className="w-[8%] border-b border-zinc-300 px-0.5 py-1">
+                    {t("scheduleColFlight")}
+                  </th>
+                  <th className="w-[7%] border-b border-zinc-300 px-0.5 py-1">
+                    {t("scheduleColTrip")}
+                  </th>
+                  <th className="w-[14%] border-b border-zinc-300 px-0.5 py-1">
+                    {t("colStatus")}
+                  </th>
+                  <th className="w-[11%] border-b border-zinc-300 px-0.5 py-1 text-right">
+                    {t("colAmount")}
+                  </th>
+                  <th className="w-[8%] border-b border-zinc-300 px-0.5 py-1 text-center">
+                    ·
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((b, index) => {
+                  const leg = b.legs?.[0];
+                  const fromId = leg?.fromId || "";
+                  const toId = leg?.toId || "";
+                  const toIsAirport =
+                    Boolean(toId) && getLocation(toId)?.type === "airport";
+                  const trip =
+                    b.type === "round-trip"
+                      ? "RT"
+                      : b.type === "one-way"
+                        ? "OW"
+                        : (b.type || "—").toString().slice(0, 2).toUpperCase() ||
+                          "—";
+                  const when = leg
+                    ? `${leg.date.slice(8, 10)}/${leg.date.slice(5, 7)} ${leg.time}`
+                    : "—";
+                  return (
+                    <tr
+                      key={b.id}
+                      className={cn(
+                        "border-b border-zinc-200",
+                        index % 2 === 0 ? "bg-white" : "bg-zinc-50/80"
+                      )}
+                    >
+                      <td
+                        className={cn(
+                          "truncate px-0.5 py-0.5 font-semibold",
+                          b.type === "round-trip"
+                            ? "text-rose-600"
+                            : "text-zinc-900"
+                        )}
+                      >
+                        {b.bookingNumber}
+                      </td>
+                      <td className="truncate px-0.5 py-0.5 text-zinc-800">
+                        {fromId
+                          ? locationShortName(getLocation(fromId), locale) ||
+                            fromId
+                          : "—"}
+                      </td>
+                      <td
+                        className={cn(
+                          "truncate px-0.5 py-0.5 font-medium",
+                          toIsAirport ? "text-rose-600" : "text-zinc-800"
+                        )}
+                      >
+                        {toId
+                          ? locationShortName(getLocation(toId), locale) || toId
+                          : "—"}
+                      </td>
+                      <td className="truncate px-0.5 py-0.5 text-zinc-800 tabular-nums">
+                        {when}
+                      </td>
+                      <td className="truncate px-0.5 py-0.5 text-zinc-700">
+                        {b.flightNumber || "—"}
+                      </td>
+                      <td className="px-0.5 py-0.5 font-semibold text-zinc-800">
+                        {trip}
+                      </td>
+                      <td className="truncate px-0.5 py-0.5">
+                        <OpsBadge
+                          status={b.opsStatus}
+                          label={t(`ops.${b.opsStatus}`)}
+                          compact
+                        />
+                      </td>
+                      <td className="truncate px-0.5 py-0.5 text-right font-semibold tabular-nums text-zinc-950">
+                        {money(bookingDisplayAmount(b))}
+                      </td>
+                      <td className="px-0.5 py-0.5">
+                        <div className="flex items-center justify-center">
+                          <button
+                            type="button"
+                            className="inline-flex size-5 items-center justify-center rounded bg-emerald-600 text-white sm:size-6"
+                            title={t("manageDetail")}
+                            aria-label={t("manageDetail")}
+                            onClick={() => openDetail(b.id)}
+                          >
+                            <Settings2 className="size-3" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

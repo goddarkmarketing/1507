@@ -91,6 +91,11 @@ export function Footer() {
                 {t("booking")}
               </Link>
             </li>
+            <li>
+              <Link href="/booking/status" className="hover:text-foreground">
+                {t("bookingStatus")}
+              </Link>
+            </li>
             <li className="flex items-center gap-2 pt-2">
               <Phone className="size-4 shrink-0" />
               <a href={telHref(site.phone)} className="hover:text-foreground">

@@ -1,4 +1,5 @@
 import type { Location, LocationType } from "@/lib/types";
+import { getOfficialPartnerIds } from "@/lib/data/transfer-routes";
 
 export type LocationSelectRole = "pickup" | "dropoff";
 
@@ -19,11 +20,10 @@ const PICKUP_TYPE_ORDER: LocationType[] = [
 ];
 
 const DROPOFF_TYPE_ORDER: LocationType[] = [
-  "hotel",
-  "beach",
   "city",
-  "airport",
+  "beach",
   "pier",
+  "airport",
   "attraction",
   "temple",
   "park",
@@ -32,6 +32,7 @@ const DROPOFF_TYPE_ORDER: LocationType[] = [
   "bus_station",
   "border",
   "province",
+  "hotel",
 ];
 
 export type LocationGroup = {
@@ -55,22 +56,52 @@ function matchesQuery(
   );
 }
 
+function isPricedListLocation(
+  loc: Location,
+  partnerIds: Set<string>,
+  query: string
+) {
+  // Empty search: only official tariff destinations (not hotels).
+  if (!query.trim()) {
+    return partnerIds.has(loc.id);
+  }
+
+  // Search: tariff destinations + hotels that inherit those areas.
+  if (partnerIds.has(loc.id)) return true;
+  if (loc.type === "hotel" && loc.pricingAreaId && partnerIds.has(loc.pricingAreaId)) {
+    return true;
+  }
+  return false;
+}
+
 export function groupLocations(
   all: Location[],
   role: LocationSelectRole,
   options: {
     excludeId?: string;
+    /** Other end of the route — locks the empty list to official tariff places. */
+    pairedId?: string;
     query?: string;
     getName: (loc: Location) => string;
   }
 ): LocationGroup[] {
-  const { excludeId, query = "", getName } = options;
+  const { excludeId, pairedId, query = "", getName } = options;
   const typeOrder =
     role === "pickup" ? PICKUP_TYPE_ORDER : DROPOFF_TYPE_ORDER;
 
-  const filtered = all.filter(
-    (loc) => loc.id !== excludeId && matchesQuery(loc, query, getName)
-  );
+  const partnerIds =
+    pairedId && role === "dropoff"
+      ? new Set(getOfficialPartnerIds(pairedId))
+      : null;
+
+  const filtered = all.filter((loc) => {
+    if (loc.id === excludeId) return false;
+    if (!matchesQuery(loc, query, getName)) return false;
+    if (partnerIds && partnerIds.size > 0) {
+      return isPricedListLocation(loc, partnerIds, query);
+    }
+    return true;
+  });
 
   const byType = new Map<LocationType, Location[]>();
   for (const loc of filtered) {

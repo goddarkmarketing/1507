@@ -105,7 +105,7 @@ interface BookingStore {
 const INITIAL_LEG: Omit<BookingLeg, "price"> = {
   id: "leg-initial",
   fromId: "kbv-airport",
-  toId: "ao-nang-beach",
+  toId: "krabi-town",
   date: "",
   time: "10:00",
   vehicleCode: "ECO",
@@ -145,7 +145,7 @@ function createLeg(
   return {
     id: crypto.randomUUID(),
     fromId: "kbv-airport",
-    toId: "ao-nang-beach",
+    toId: "krabi-town",
     date: defaultPickupDate(),
     time: "10:00",
     vehicleCode: "ECO",

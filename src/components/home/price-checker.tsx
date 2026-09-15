@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { locations } from "@/lib/data/locations";
 import { getActiveTariffVehicles } from "@/lib/data/vehicles";
 import { calculatePrice } from "@/lib/data/pricing";
+import { suggestPairedLocation } from "@/lib/booking/suggest-paired-location";
 import { useVehicleCopy } from "@/lib/i18n-labels";
 import type { VehicleCode } from "@/lib/types";
 import { useCatalogStore } from "@/lib/admin/catalog-store";
@@ -45,7 +46,7 @@ export type PriceCheckerProps = {
 
 export function PriceChecker({
   defaultFrom = "kbv-airport",
-  defaultTo = "ao-nang-beach",
+  defaultTo = "krabi-town",
   vehicleCodes,
   className,
   compact = false,
@@ -164,12 +165,15 @@ export function PriceChecker({
             value={fromId}
             onValueChange={(v) => {
               setFromId(v);
-              if (v === toId) {
+              const paired = suggestPairedLocation(v, toId);
+              if (paired) setToId(paired);
+              else if (v === toId) {
                 const next = locations.find((l) => l.id !== v);
                 if (next) setToId(next.id);
               }
             }}
             excludeId={toId}
+            pairedId={toId}
             placeholder={t("from")}
           />
         </div>
@@ -192,8 +196,13 @@ export function PriceChecker({
           <LocationSelect
             role="dropoff"
             value={toId}
-            onValueChange={setToId}
+            onValueChange={(v) => {
+              setToId(v);
+              const paired = suggestPairedLocation(v, fromId);
+              if (paired) setFromId(paired);
+            }}
             excludeId={fromId}
+            pairedId={fromId}
             placeholder={t("to")}
           />
         </div>

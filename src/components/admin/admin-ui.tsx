@@ -43,14 +43,19 @@ export function opsBadgeClass(status: OpsStatus) {
 export function OpsBadge({
   status,
   label,
+  compact,
 }: {
   status: OpsStatus;
   label: string;
+  compact?: boolean;
 }) {
   return (
     <span
       className={cn(
-        "inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1",
+        "inline-flex max-w-full truncate rounded-full font-semibold ring-1",
+        compact
+          ? "px-1 py-0 text-[7px] leading-3 sm:px-1.5 sm:text-[9px] sm:leading-4"
+          : "px-2 py-0.5 text-[11px]",
         opsBadgeClass(status)
       )}
     >
