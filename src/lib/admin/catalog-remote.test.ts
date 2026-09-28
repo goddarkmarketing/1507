@@ -30,6 +30,15 @@ describe("normalizeSiteCatalog", () => {
     expect(snapshot?.transferRoutes?.[0].prices.ECO).toBe(450);
     expect(snapshot?.vehicles?.ECO?.image).toBe("data:image/jpeg;base64,abc");
     expect(snapshot?.rentalPackages).toBeNull();
+    expect(snapshot?.rentalBookingEnabled).toBe(false);
+  });
+
+  it("reads the rental switch from the shared catalog", () => {
+    const snapshot = normalizeSiteCatalog({
+      rentalPackages: { enabled: true, packages: null },
+    });
+    expect(snapshot?.rentalBookingEnabled).toBe(true);
+    expect(snapshot?.rentalPackages).toBeNull();
   });
 
   it("drops a vehicle photo that is too large", () => {

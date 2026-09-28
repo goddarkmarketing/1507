@@ -19,9 +19,41 @@ export type CatalogSection = "transferRoutes" | "rentalPackages" | "vehicles";
 export type SiteCatalogSnapshot = {
   transferRoutes: OfficialTransferRoute[] | null;
   rentalPackages: RentalPackage[] | null;
+  /** Customer car-rental pages stay hidden until an admin turns this on. */
+  rentalBookingEnabled: boolean;
   vehicles: Partial<Record<VehicleCode, Vehicle>> | null;
   updatedAt: string | null;
 };
+
+export function rentalCatalogDocument(
+  enabled: boolean,
+  packages: RentalPackage[] | null
+) {
+  return { enabled, packages };
+}
+
+function readRentals(raw: unknown): {
+  enabled: boolean;
+  packages: RentalPackage[] | null;
+} {
+  if (Array.isArray(raw)) {
+    const packages = raw
+      .map(asRental)
+      .filter((row): row is RentalPackage => Boolean(row));
+    return { enabled: false, packages: packages.length ? packages : null };
+  }
+  if (isRecord(raw)) {
+    const list = Array.isArray(raw.packages) ? raw.packages : [];
+    const packages = list
+      .map(asRental)
+      .filter((row): row is RentalPackage => Boolean(row));
+    return {
+      enabled: raw.enabled === true,
+      packages: packages.length ? packages : null,
+    };
+  }
+  return { enabled: false, packages: null };
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -113,9 +145,7 @@ export function normalizeSiteCatalog(raw: unknown): SiteCatalogSnapshot | null {
   const routes = Array.isArray(raw.transferRoutes)
     ? raw.transferRoutes.map(asRoute).filter((row): row is OfficialTransferRoute => Boolean(row))
     : null;
-  const rentals = Array.isArray(raw.rentalPackages)
-    ? raw.rentalPackages.map(asRental).filter((row): row is RentalPackage => Boolean(row))
-    : null;
+  const rentals = readRentals(raw.rentalPackages);
   const vehicles: Partial<Record<VehicleCode, Vehicle>> = {};
   if (isRecord(raw.vehicles)) {
     for (const [code, value] of Object.entries(raw.vehicles)) {
@@ -126,7 +156,8 @@ export function normalizeSiteCatalog(raw: unknown): SiteCatalogSnapshot | null {
   const hasVehicles = Object.keys(vehicles).length > 0;
   return {
     transferRoutes: routes && routes.length ? routes : null,
-    rentalPackages: rentals && rentals.length ? rentals : null,
+    rentalPackages: rentals.packages,
+    rentalBookingEnabled: rentals.enabled,
     vehicles: hasVehicles ? vehicles : null,
     updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : null,
   };

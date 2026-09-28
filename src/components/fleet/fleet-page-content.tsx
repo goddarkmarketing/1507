@@ -74,6 +74,7 @@ function FilterChip({
 export function FleetPageContent() {
   const t = useTranslations("FleetUi");
   const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
+  const rentalOpen = useCatalogStore((s) => s.rentalBookingEnabled);
   const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
   const packages = useMemo(
     () => getActiveRentalPackages(),
@@ -129,7 +130,8 @@ export function FleetPageContent() {
     });
   }, [q, capacity, vehiclesRev]);
 
-  const showRental = section === "all" || section === "rental";
+  const showRental =
+    rentalOpen && (section === "all" || section === "rental");
   const showTransfer = section === "all" || section === "transfer";
 
   const rentalByCategory = rentalCategories
@@ -153,7 +155,9 @@ export function FleetPageContent() {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {sectionFilterIds.map((id) => (
+          {sectionFilterIds
+            .filter((id) => rentalOpen || id !== "rental")
+            .map((id) => (
             <FilterChip
               key={id}
               active={section === id}

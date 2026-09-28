@@ -97,6 +97,7 @@ export function PriceListContent() {
   const locName = useLocationName();
   const { name: vehicleName } = useVehicleCopy();
   const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
+  const rentalOpen = useCatalogStore((s) => s.rentalBookingEnabled);
   const transferRev = useCatalogStore((s) => s.transferImportedAt);
   const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
   const routes = useMemo(() => getSampleRoutes(), [transferRev]);
@@ -167,7 +168,8 @@ export function PriceListContent() {
     });
   }, [q, routes, transferCategory, locName, t, locale]);
 
-  const showRental = section === "all" || section === "rental";
+  const showRental =
+    rentalOpen && (section === "all" || section === "rental");
   const showTransfer = section === "all" || section === "transfer";
 
   const shortName = (id: string) => locName(getLocation(id)).split("(")[0].trim();
@@ -186,7 +188,9 @@ export function PriceListContent() {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {sectionFilterIds.map((id) => (
+          {sectionFilterIds
+            .filter((id) => rentalOpen || id !== "rental")
+            .map((id) => (
             <FilterChip
               key={id}
               active={section === id}

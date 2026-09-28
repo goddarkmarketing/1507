@@ -17,9 +17,13 @@ import {
   rentalPackages as builtInRentals,
 } from "@/lib/data/rental-packages";
 import { officialTransferRoutes } from "@/lib/data/transfer-routes";
-import { publishCatalogSection } from "@/lib/admin/catalog-remote";
+import {
+  publishCatalogSection,
+  rentalCatalogDocument,
+} from "@/lib/admin/catalog-remote";
 import { compressVehiclePhoto } from "@/lib/admin/catalog-image";
 import { PublicImage } from "@/components/shared/public-image";
+import { RentalBookingSwitch } from "@/components/admin/rental-booking-switch";
 
 function formatWhen(iso: string | null) {
   if (!iso) return null;
@@ -49,7 +53,13 @@ export function AdminCatalogPage() {
       );
       setRentalPackages(rows);
       toast.success(t("catalogPhotoOk"));
-      void publish("rentalPackages", rows);
+      void publish(
+        "rentalPackages",
+        rentalCatalogDocument(
+          useCatalogStore.getState().rentalBookingEnabled,
+          rows
+        )
+      );
     } catch {
       toast.error(t("catalogPhotoTooLarge"));
     }
@@ -101,7 +111,13 @@ export function AdminCatalogPage() {
       }
       setRentalPackages(parsed.rows);
       toast.success(t("catalogRentalOk", { n: parsed.rows.length }));
-      void publish("rentalPackages", parsed.rows);
+      void publish(
+        "rentalPackages",
+        rentalCatalogDocument(
+          useCatalogStore.getState().rentalBookingEnabled,
+          parsed.rows
+        )
+      );
       if (parsed.issues.length) {
         toast.message(
           t("catalogSkipped", {
@@ -164,6 +180,8 @@ export function AdminCatalogPage() {
         </p>
       </div>
 
+      <RentalBookingSwitch />
+
       <div className="grid gap-5 lg:grid-cols-2">
         <article className="flex flex-col rounded-2xl border border-zinc-200/80 bg-white p-6">
           <h2 className="font-semibold text-zinc-950">{t("catalogRentalTitle")}</h2>
@@ -218,7 +236,13 @@ export function AdminCatalogPage() {
                 onClick={() => {
                   clearRentalPackages();
                   toast.success(t("catalogResetOk"));
-                  void publish("rentalPackages", null);
+                  void publish(
+                    "rentalPackages",
+                    rentalCatalogDocument(
+                      useCatalogStore.getState().rentalBookingEnabled,
+                      null
+                    )
+                  );
                 }}
               >
                 {t("catalogReset")}

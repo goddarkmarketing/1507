@@ -122,9 +122,10 @@ export function BookingForm() {
   const rentalDeposits = getActiveRentalDeposits();
   const formatDeposit = (amount: number) =>
     `฿${amount.toLocaleString("en-US")}`;
-  const isRentalBooking = isCarRentalService(
-    getBookingService(searchParams.get("service"))
-  );
+  const rentalOpen = useCatalogStore((s) => s.rentalBookingEnabled);
+  const isRentalBooking =
+    rentalOpen &&
+    isCarRentalService(getBookingService(searchParams.get("service")));
   const bookingService = draft.service;
 
   useEffect(() => {

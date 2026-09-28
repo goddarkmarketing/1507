@@ -20,6 +20,7 @@ import {
   type StaffRole,
 } from "@/lib/admin/settings";
 import { useSettingsStore } from "@/lib/admin/settings-store";
+import { RentalBookingSwitch } from "@/components/admin/rental-booking-switch";
 import type { PaymentMethod } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -133,6 +134,8 @@ export function AdminSettingsPage() {
           {t("settingsSubtitle")}
         </p>
       </div>
+
+      <RentalBookingSwitch />
 
       <div className="grid gap-5">
         <Section

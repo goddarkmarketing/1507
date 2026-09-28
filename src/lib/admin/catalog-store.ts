@@ -6,6 +6,7 @@ import type { OfficialTransferRoute } from "@/lib/data/transfer-routes";
 
 interface CatalogState {
   rentalPackages: RentalPackage[] | null;
+  rentalBookingEnabled: boolean;
   transferRoutes: OfficialTransferRoute[] | null;
   rentalImportedAt: string | null;
   transferImportedAt: string | null;
@@ -26,6 +27,7 @@ export const useCatalogStore = create<CatalogState>()(
   persist(
     (set) => ({
       rentalPackages: null,
+      rentalBookingEnabled: false,
       transferRoutes: null,
       rentalImportedAt: null,
       transferImportedAt: null,
@@ -56,6 +58,7 @@ export const useCatalogStore = create<CatalogState>()(
         set({
           transferRoutes: snapshot.transferRoutes,
           rentalPackages: snapshot.rentalPackages,
+          rentalBookingEnabled: snapshot.rentalBookingEnabled,
           vehicleOverrides: snapshot.vehicles,
           transferImportedAt: snapshot.transferRoutes
             ? snapshot.updatedAt
