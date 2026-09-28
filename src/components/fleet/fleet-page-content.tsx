@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { tariffVehicles } from "@/lib/data/vehicles";
+import { getActiveTariffVehicles } from "@/lib/data/vehicles";
 import {
   formatRate,
   getActiveRentalPackages,
@@ -74,6 +74,7 @@ function FilterChip({
 export function FleetPageContent() {
   const t = useTranslations("FleetUi");
   const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
+  const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
   const packages = useMemo(
     () => getActiveRentalPackages(),
     [rentalRev]
@@ -118,7 +119,7 @@ export function FleetPageContent() {
   }, [q, rentalCategory, t, packages]);
 
   const filteredTransfers = useMemo(() => {
-    return tariffVehicles.filter((v) => {
+    return getActiveTariffVehicles().filter((v) => {
       const textMatch =
         !q ||
         v.code.toLowerCase().includes(q) ||
@@ -126,7 +127,7 @@ export function FleetPageContent() {
         v.amenityKeys.some((a) => a.toLowerCase().includes(q));
       return textMatch && matchesCapacity(v.passengers, capacity);
     });
-  }, [q, capacity]);
+  }, [q, capacity, vehiclesRev]);
 
   const showRental = section === "all" || section === "rental";
   const showTransfer = section === "all" || section === "transfer";

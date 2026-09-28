@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Search } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { getLocation } from "@/lib/data/locations";
 import { calculatePrice, getSampleRoutes } from "@/lib/data/pricing";
 import { getActiveTariffVehicles } from "@/lib/data/vehicles";
 import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
+import { set1RouteLabel } from "@/lib/data/set1-place-names";
 import {
   formatRate,
   getActiveRentalPackages,
@@ -92,6 +93,7 @@ function FilterChip({
 export function PriceListContent() {
   const t = useTranslations("PriceList");
   const tFleet = useTranslations("FleetUi");
+  const locale = useLocale();
   const locName = useLocationName();
   const { name: vehicleName } = useVehicleCopy();
   const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
@@ -145,18 +147,25 @@ export function PriceListContent() {
           : route.category === transferCategory);
       const fromLabel = locName(from).toLowerCase();
       const toLabel = locName(to).toLowerCase();
+      const sheet =
+        (route.fromId === "kbv-airport"
+          ? set1RouteLabel(route.toId, locale)
+          : route.toId === "kbv-airport"
+            ? set1RouteLabel(route.fromId, locale)
+            : null) ?? "";
       const catLabel = t(transferCatKey[route.category]).toLowerCase();
       const textMatch =
         !q ||
         fromLabel.includes(q) ||
         toLabel.includes(q) ||
+        sheet.toLowerCase().includes(q) ||
         from?.name.toLowerCase().includes(q) ||
         to?.name.toLowerCase().includes(q) ||
         route.category.toLowerCase().includes(q) ||
         catLabel.includes(q);
       return categoryMatch && textMatch;
     });
-  }, [q, routes, transferCategory, locName, t]);
+  }, [q, routes, transferCategory, locName, t, locale]);
 
   const showRental = section === "all" || section === "rental";
   const showTransfer = section === "all" || section === "transfer";
@@ -393,7 +402,12 @@ export function PriceListContent() {
                         className="border-t"
                       >
                         <td className="px-4 py-3 font-medium">
-                          {shortName(route.fromId)} → {shortName(route.toId)}
+                          {(route.fromId === "kbv-airport"
+                            ? set1RouteLabel(route.toId, locale)
+                            : route.toId === "kbv-airport"
+                              ? set1RouteLabel(route.fromId, locale)
+                              : null) ??
+                            `${shortName(route.fromId)} → ${shortName(route.toId)}`}
                         </td>
                         <td className="px-4 py-3">
                           <Badge variant="secondary">

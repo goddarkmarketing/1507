@@ -6,7 +6,8 @@ import { useTranslations } from "next-intl";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Input } from "@/components/ui/input";
 import { VehicleCard } from "@/components/shared/vehicle-card";
-import { tariffVehicles } from "@/lib/data/vehicles";
+import { getActiveTariffVehicles } from "@/lib/data/vehicles";
+import { useCatalogStore } from "@/lib/admin/catalog-store";
 import { cn } from "@/lib/utils";
 
 const capacityFilterIds = ["all", "1-3", "1-4", "1-6", "1-8", "9-20"] as const;
@@ -21,6 +22,7 @@ export function HomeFleet() {
   const t = useTranslations("Home");
   const tc = useTranslations("Common");
   const tp = useTranslations("Pages");
+  const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
   const [query, setQuery] = useState("");
   const [capacity, setCapacity] =
     useState<(typeof capacityFilterIds)[number]>("all");
@@ -36,7 +38,7 @@ export function HomeFleet() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return tariffVehicles.filter((v) => {
+    return getActiveTariffVehicles().filter((v) => {
       const textMatch =
         !q ||
         v.code.toLowerCase().includes(q) ||
@@ -45,7 +47,7 @@ export function HomeFleet() {
       const seatMatch = matchesCapacity(v.passengers, capacity);
       return textMatch && seatMatch;
     });
-  }, [query, capacity]);
+  }, [query, capacity, vehiclesRev]);
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -53,7 +55,7 @@ export function HomeFleet() {
         <div>
           <h2 className="text-3xl font-bold">{tp("fleet")}</h2>
           <p className="mt-2 text-muted-foreground">
-            {t("fleetSubtitle", { count: tariffVehicles.length })}
+            {t("fleetSubtitle", { count: getActiveTariffVehicles().length })}
           </p>
         </div>
         <ButtonLink variant="outline" href="/fleet">

@@ -15,7 +15,9 @@ import {
   Star,
   UserRoundCheck,
 } from "lucide-react";
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useCatalogStore } from "@/lib/admin/catalog-store";
 import { PriceChecker } from "@/components/home/price-checker";
 import { PublicImage } from "@/components/shared/public-image";
 import { ReviewerAvatar } from "@/components/shared/reviewer-avatar";
@@ -66,26 +68,36 @@ export function TransferPageTemplate({ pageKey }: TransferPageTemplateProps) {
   const tr = useTranslations("Reviews");
   const tc = useTranslations("Common");
   const locName = useLocationName();
+  const transferRev = useCatalogStore((s) => s.transferImportedAt);
+  const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
   const config = transferPages[pageKey];
   const title = tp(`${pageKey}.title`);
   const categoryLabel = t(
     `categories.${config.category}` as "categories.airport"
   );
 
-  const featuredRoutes = config.featuredRoutes
-    .map(([fromId, toId]) => {
-      const route = calculatePrice(fromId, toId, "ECO");
-      if (!route?.isOfficial) return null;
-      const from = getLocation(fromId);
-      const to = getLocation(toId);
-      if (!from || !to) return null;
-      return { from, to, ...route };
-    })
-    .filter((route): route is NonNullable<typeof route> => route !== null);
+  const featuredRoutes = useMemo(
+    () =>
+      config.featuredRoutes
+        .map(([fromId, toId]) => {
+          const route = calculatePrice(fromId, toId, "ECO");
+          if (!route?.isOfficial) return null;
+          const from = getLocation(fromId);
+          const to = getLocation(toId);
+          if (!from || !to) return null;
+          return { from, to, ...route };
+        })
+        .filter((route): route is NonNullable<typeof route> => route !== null),
+    [config.featuredRoutes, transferRev]
+  );
 
-  const pageVehicles = config.vehicleCodes
-    .map((code) => getVehicle(code as VehicleCode))
-    .filter((v): v is NonNullable<typeof v> => Boolean(v));
+  const pageVehicles = useMemo(
+    () =>
+      config.vehicleCodes
+        .map((code) => getVehicle(code as VehicleCode))
+        .filter((v): v is NonNullable<typeof v> => Boolean(v)),
+    [config.vehicleCodes, vehiclesRev]
+  );
 
   const short = (loc: (typeof featuredRoutes)[number]["from"]) =>
     locName(loc).split("(")[0].trim();

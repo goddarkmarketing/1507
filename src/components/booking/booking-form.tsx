@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
@@ -27,7 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { LocationSelect } from "@/components/booking/location-select";
+import { Set1RouteSelect } from "@/components/booking/set1-route-select";
 import { PaymentSection } from "@/components/booking/payment-section";
 import { RoutePreviewDialog } from "@/components/booking/route-preview-dialog";
 import { RentalConditions } from "@/components/shared/rental-conditions";
@@ -36,9 +36,9 @@ import {
   getActiveRentalPackages,
   getRentalPackage,
 } from "@/lib/data/rental-packages";
-import { tariffVehicles, vehicles } from "@/lib/data/vehicles";
+import { getActiveTariffVehicles, getActiveVehicles } from "@/lib/data/vehicles";
 import { useBookingStore } from "@/lib/booking/store";
-import { suggestPairedLocation } from "@/lib/booking/suggest-paired-location";
+import { useCatalogStore } from "@/lib/admin/catalog-store";
 import {
   getAmountDueNow,
   getBookingService,
@@ -84,10 +84,16 @@ const WIZARD_STEPS = 3;
 
 export function BookingForm() {
   const t = useTranslations("Booking");
+  const routeT = useTranslations("PriceChecker");
   const tPay = useTranslations("Payment");
   const locale = useLocale();
   const locName = useLocationName();
   const { name: vehicleName, selectLabel, luggage } = useVehicleCopy();
+  const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
+  const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
+  const activeVehicles = useMemo(() => getActiveVehicles(), [vehiclesRev]);
+  const tariffList = useMemo(() => getActiveTariffVehicles(), [vehiclesRev]);
+  const rentalOptions = useMemo(() => getActiveRentalPackages(), [rentalRev]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -462,7 +468,7 @@ export function BookingForm() {
                     <SelectValue placeholder={t("rentalModel")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {getActiveRentalPackages().map((pkg) => (
+                    {rentalOptions.map((pkg) => (
                       <SelectItem key={pkg.id} value={pkg.id}>
                         {pkg.model} ({pkg.category})
                       </SelectItem>
@@ -587,39 +593,36 @@ export function BookingForm() {
                 {!isCharter && (
                   <>
                     <div className="col-span-2 space-y-1.5 sm:space-y-2">
-                      <Label>{t("pickup")}</Label>
-                      <LocationSelect
-                        role="pickup"
-                        value={leg.fromId}
-                        onValueChange={(v) => {
-                          const paired = suggestPairedLocation(v, leg.toId);
+                      <Label>{routeT("route")}</Label>
+                      <Set1RouteSelect
+                        value={
+                          leg.toId === "kbv-airport" ? leg.fromId : leg.toId
+                        }
+                        onValueChange={(destinationId) => {
+                          const returnLeg =
+                            leg.toId === "kbv-airport" &&
+                            leg.fromId !== "kbv-airport";
+                          if (returnLeg) {
+                            updateLeg(leg.id, {
+                              fromId: destinationId,
+                              toId: "kbv-airport",
+                            });
+                            return;
+                          }
                           updateLeg(leg.id, {
-                            fromId: v,
-                            ...(paired ? { toId: paired } : {}),
+                            fromId: "kbv-airport",
+                            toId: destinationId,
                           });
+                          if (draft.type === "round-trip" && index === 0) {
+                            const back = draft.legs[1];
+                            if (back) {
+                              updateLeg(back.id, {
+                                fromId: destinationId,
+                                toId: "kbv-airport",
+                              });
+                            }
+                          }
                         }}
-                        excludeId={leg.toId}
-                        pairedId={leg.toId}
-                        placeholder={t("pickup")}
-                        className={selectTriggerClass}
-                      />
-                    </div>
-                    <div className="col-span-2 space-y-1.5 sm:space-y-2">
-                      <Label>{t("dropoff")}</Label>
-                      <LocationSelect
-                        role="dropoff"
-                        value={leg.toId}
-                        onValueChange={(v) => {
-                          const paired = suggestPairedLocation(v, leg.fromId);
-                          updateLeg(leg.id, {
-                            toId: v,
-                            ...(paired ? { fromId: paired } : {}),
-                          });
-                        }}
-                        excludeId={leg.fromId}
-                        pairedId={leg.fromId}
-                        placeholder={t("dropoff")}
-                        className={selectTriggerClass}
                       />
                     </div>
                   </>
@@ -661,7 +664,7 @@ export function BookingForm() {
                     <SelectTrigger className={selectTriggerClass}>
                       <SelectValue placeholder={t("selectVehicle")}>
                         {(() => {
-                          const v = vehicles.find(
+                          const v = activeVehicles.find(
                             (item) => item.code === leg.vehicleCode
                           );
                           return v ? selectLabel(v) : t("selectVehicle");
@@ -669,7 +672,7 @@ export function BookingForm() {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {tariffVehicles.map((v) => (
+                      {tariffList.map((v) => (
                         <SelectItem key={v.code} value={v.code}>
                           {selectLabel(v)} · {luggage(v.code)}
                         </SelectItem>
@@ -944,7 +947,7 @@ export function BookingForm() {
             {draft.legs.map((leg, i) => {
               const from = getLocation(leg.fromId);
               const to = getLocation(leg.toId);
-              const vehicle = vehicles.find((v) => v.code === leg.vehicleCode);
+              const vehicle = activeVehicles.find((v) => v.code === leg.vehicleCode);
               return (
                 <div key={leg.id} className="space-y-1 text-sm">
                   <p className="font-medium">

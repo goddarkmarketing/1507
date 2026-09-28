@@ -1064,6 +1064,21 @@ export function getActiveOfficialRoutes(): OfficialTransferRoute[] {
   return imported?.length ? imported : officialTransferRoutes;
 }
 
+/** Set 1 sheet only: Krabi Airport ↔ 55 destinations, in sheet order. */
+export function getSet1OfficialRoutes(): OfficialTransferRoute[] {
+  return set1OfficialRoutes;
+}
+
+/** Set 1 sheet only: Krabi Airport ↔ 55 destinations. */
+export function getSet1LocationIds(): string[] {
+  const ids = new Set<string>();
+  for (const route of set1OfficialRoutes) {
+    ids.add(route.fromId);
+    ids.add(route.toId);
+  }
+  return [...ids];
+}
+
 /** Opposite ends of official tariff rows for a location (uses pricingAreaId when set). */
 export function getOfficialPartnerIds(locationId: string): string[] {
   if (!locationId) return [];

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, ChevronDown, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/lib/booking/location-groups";
 import { bookingSelectTriggerClass } from "@/lib/booking/form-field-styles";
 import { useLocationName } from "@/lib/i18n-labels";
+import { set1RouteLabel } from "@/lib/data/set1-place-names";
 import type { Location, LocationType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,8 @@ type LocationSelectProps = {
   excludeId?: string;
   /** Other route end — empty drop-off list shows official tariff places only. */
   pairedId?: string;
+  /** Lock both lists to Set 1 tariff places (no hotels). */
+  tariffScope?: "set1";
   placeholder?: string;
   className?: string;
 };
@@ -40,14 +43,21 @@ export function LocationSelect({
   role,
   excludeId,
   pairedId,
+  tariffScope,
   placeholder,
   className,
 }: LocationSelectProps) {
   const t = useTranslations("Booking");
+  const locale = useLocale();
   const locName = useLocationName();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const labelOf = (loc: Location) => {
+    if (tariffScope !== "set1") return locName(loc);
+    return set1RouteLabel(loc.id, locale) ?? locName(loc);
+  };
 
   const selected = locations.find((loc) => loc.id === value);
 
@@ -56,10 +66,13 @@ export function LocationSelect({
       groupLocations(locations, role, {
         excludeId,
         pairedId,
+        tariffScope,
         query,
-        getName: locName,
+        getName: labelOf,
       }),
-    [role, excludeId, pairedId, query, locName]
+    // labelOf changes with locale / tariff scope
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [role, excludeId, pairedId, tariffScope, query, locale]
   );
 
   const typeLabel = (type: LocationType) => {
@@ -117,7 +130,7 @@ export function LocationSelect({
             !selected && "text-muted-foreground"
           )}
         >
-          {selected ? locName(selected) : placeholder}
+          {selected ? labelOf(selected) : placeholder}
         </span>
         <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
       </PopoverTrigger>
@@ -153,9 +166,11 @@ export function LocationSelect({
           ) : (
             groups.map((group) => (
               <div key={group.type} className="py-0.5">
-                <p className="sticky top-0 z-10 bg-popover px-2 py-1.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-                  {typeLabel(group.type)}
-                </p>
+                {tariffScope === "set1" ? null : (
+                  <p className="sticky top-0 z-10 bg-popover px-2 py-1.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    {typeLabel(group.type)}
+                  </p>
+                )}
                 <ul>
                   {group.locations.map((loc) => {
                     const isSelected = loc.id === value;
@@ -170,7 +185,7 @@ export function LocationSelect({
                           )}
                         >
                           <span className="min-w-0 flex-1 leading-snug">
-                            {locName(loc)}
+                            {labelOf(loc)}
                           </span>
                           {isSelected && (
                             <Check className="size-4 shrink-0 text-primary" />

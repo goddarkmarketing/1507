@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { RentalPackage, Vehicle, VehicleCode } from "@/lib/types";
+import type { SiteCatalogSnapshot } from "@/lib/admin/catalog-remote";
 import type { OfficialTransferRoute } from "@/lib/data/transfer-routes";
 
 interface CatalogState {
@@ -18,6 +19,7 @@ interface CatalogState {
   clearRentalPackages: () => void;
   clearTransferRoutes: () => void;
   clearVehicleOverrides: () => void;
+  applyRemoteCatalog: (snapshot: SiteCatalogSnapshot) => void;
 }
 
 export const useCatalogStore = create<CatalogState>()(
@@ -50,6 +52,19 @@ export const useCatalogStore = create<CatalogState>()(
         set({ transferRoutes: null, transferImportedAt: null }),
       clearVehicleOverrides: () =>
         set({ vehicleOverrides: null, vehiclesImportedAt: null }),
+      applyRemoteCatalog: (snapshot) =>
+        set({
+          transferRoutes: snapshot.transferRoutes,
+          rentalPackages: snapshot.rentalPackages,
+          vehicleOverrides: snapshot.vehicles,
+          transferImportedAt: snapshot.transferRoutes
+            ? snapshot.updatedAt
+            : null,
+          rentalImportedAt: snapshot.rentalPackages
+            ? snapshot.updatedAt
+            : null,
+          vehiclesImportedAt: snapshot.vehicles ? snapshot.updatedAt : null,
+        }),
     }),
     { name: "klt-catalog" }
   )

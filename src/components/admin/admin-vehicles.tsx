@@ -4,9 +4,15 @@ import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { vehicles as builtInVehicles } from "@/lib/data/vehicles";
+import {
+  getActiveTariffVehicles,
+  vehicles as builtInVehicles,
+} from "@/lib/data/vehicles";
 import type { Vehicle, VehicleCode } from "@/lib/types";
 import { useCatalogStore } from "@/lib/admin/catalog-store";
+import { publishCatalogSection } from "@/lib/admin/catalog-remote";
+import { compressVehiclePhoto } from "@/lib/admin/catalog-image";
+import { PublicImage } from "@/components/shared/public-image";
 import {
   downloadCsv,
   parseVehiclesCsv,
@@ -28,6 +34,21 @@ export function AdminVehiclesPage() {
   );
 
   const vehiclesInput = useRef<HTMLInputElement>(null);
+  const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
+  const activeVehicles = vehiclesRev
+    ? getActiveTariffVehicles()
+    : builtInVehicles.filter((v) =>
+        ["ECO", "PREM", "SUV", "VAN", "EXE", "VIP", "BUS"].includes(v.code)
+      );
+
+  const publish = async (payload: unknown | null) => {
+    const result = await publishCatalogSection("vehicles", payload);
+    if (result === "saved") toast.success(t("catalogSavedRemote"));
+    else if (result === "failed") toast.error(t("catalogRemoteFailed"));
+  };
+
+  const snapshot = () =>
+    Object.fromEntries(getActiveTariffVehicles().map((v) => [v.code, v]));
 
   const readFile = (file: File) =>
     new Promise<string>((resolve, reject) => {
@@ -60,6 +81,7 @@ export function AdminVehiclesPage() {
 
       setVehicleOverrides(overrides);
       toast.success(t("catalogVehiclesOk", { n: parsed.rows.length }));
+      void publish(overrides);
 
       if (parsed.issues.length) {
         toast.message(
@@ -152,6 +174,7 @@ export function AdminVehiclesPage() {
                 onClick={() => {
                   clearVehicleOverrides();
                   toast.success(t("catalogResetOk"));
+                  void publish(null);
                 }}
               >
                 {t("catalogReset")}
@@ -164,26 +187,48 @@ export function AdminVehiclesPage() {
           <h2 className="font-semibold text-zinc-950">
             {t("catalogVehiclesPreview")}
           </h2>
-          <p className="mt-2 text-sm text-zinc-500">
-            {t("catalogVehiclesPreviewHint")}
-          </p>
+          <p className="mt-2 text-sm text-zinc-500">{t("catalogPhotoHelp")}</p>
           <div className="mt-4 space-y-2">
-            {builtInVehicles.map((v) => (
+            {activeVehicles.map((v) => (
               <div
                 key={v.code}
-                className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50 px-3 py-2"
+                className="flex items-center gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50 px-3 py-2"
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-semibold text-zinc-700">
-                    {v.code}
-                  </span>
-                  <span className="text-sm text-zinc-600">
-                    {v.passengers}
-                  </span>
+                <PublicImage
+                  src={v.image}
+                  alt=""
+                  width={72}
+                  height={40}
+                  className="h-10 w-16 rounded-md object-contain"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-zinc-700">{v.code}</p>
+                  <p className="text-sm text-zinc-600">{v.passengers}</p>
                 </div>
-                <span className="text-sm font-semibold text-zinc-900">
-                  ฿x{v.priceMultiplier}
-                </span>
+                <label className="shrink-0 cursor-pointer text-xs font-medium text-zinc-950 underline">
+                  {t("catalogChangePhoto")}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!file) return;
+                      void compressVehiclePhoto(file)
+                        .then((image) => {
+                          const next = {
+                            ...snapshot(),
+                            [v.code]: { ...v, image },
+                          };
+                          setVehicleOverrides(next);
+                          toast.success(t("catalogPhotoOk"));
+                          return publish(next);
+                        })
+                        .catch(() => toast.error(t("catalogPhotoTooLarge")));
+                    }}
+                  />
+                </label>
               </div>
             ))}
           </div>

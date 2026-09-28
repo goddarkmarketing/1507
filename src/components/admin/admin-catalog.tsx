@@ -12,8 +12,14 @@ import {
   rentalPackagesToCsv,
   transferRoutesToCsv,
 } from "@/lib/admin/catalog-csv";
-import { rentalPackages as builtInRentals } from "@/lib/data/rental-packages";
+import {
+  getActiveRentalPackages,
+  rentalPackages as builtInRentals,
+} from "@/lib/data/rental-packages";
 import { officialTransferRoutes } from "@/lib/data/transfer-routes";
+import { publishCatalogSection } from "@/lib/admin/catalog-remote";
+import { compressVehiclePhoto } from "@/lib/admin/catalog-image";
+import { PublicImage } from "@/components/shared/public-image";
 
 function formatWhen(iso: string | null) {
   if (!iso) return null;
@@ -32,6 +38,31 @@ export function AdminCatalogPage() {
   const clearTransferRoutes = useCatalogStore((s) => s.clearTransferRoutes);
   const rentalInput = useRef<HTMLInputElement>(null);
   const transferInput = useRef<HTMLInputElement>(null);
+  const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
+  const activeRentals = rentalRev ? getActiveRentalPackages() : builtInRentals;
+
+  const changeRentalPhoto = async (id: string, file: File) => {
+    try {
+      const image = await compressVehiclePhoto(file);
+      const rows = (rentalPackages ?? builtInRentals).map((row) =>
+        row.id === id ? { ...row, image } : row
+      );
+      setRentalPackages(rows);
+      toast.success(t("catalogPhotoOk"));
+      void publish("rentalPackages", rows);
+    } catch {
+      toast.error(t("catalogPhotoTooLarge"));
+    }
+  };
+
+  const publish = async (
+    section: "rentalPackages" | "transferRoutes",
+    payload: unknown | null
+  ) => {
+    const result = await publishCatalogSection(section, payload);
+    if (result === "saved") toast.success(t("catalogSavedRemote"));
+    else if (result === "failed") toast.error(t("catalogRemoteFailed"));
+  };
 
   const issueText = (message: string) => {
     const known = [
@@ -70,6 +101,7 @@ export function AdminCatalogPage() {
       }
       setRentalPackages(parsed.rows);
       toast.success(t("catalogRentalOk", { n: parsed.rows.length }));
+      void publish("rentalPackages", parsed.rows);
       if (parsed.issues.length) {
         toast.message(
           t("catalogSkipped", {
@@ -100,6 +132,7 @@ export function AdminCatalogPage() {
       }
       setTransferRoutes(parsed.rows);
       toast.success(t("catalogTransferOk", { n: parsed.rows.length }));
+      void publish("transferRoutes", parsed.rows);
       if (parsed.issues.length) {
         toast.message(
           t("catalogSkipped", {
@@ -185,6 +218,7 @@ export function AdminCatalogPage() {
                 onClick={() => {
                   clearRentalPackages();
                   toast.success(t("catalogResetOk"));
+                  void publish("rentalPackages", null);
                 }}
               >
                 {t("catalogReset")}
@@ -246,6 +280,7 @@ export function AdminCatalogPage() {
                 onClick={() => {
                   clearTransferRoutes();
                   toast.success(t("catalogResetOk"));
+                  void publish("transferRoutes", null);
                 }}
               >
                 {t("catalogReset")}
@@ -254,6 +289,43 @@ export function AdminCatalogPage() {
           </div>
         </article>
       </div>
+
+      <section className="rounded-2xl border border-zinc-200/80 bg-white p-6">
+        <h2 className="font-semibold text-zinc-950">{t("catalogRentalPhotos")}</h2>
+        <p className="mt-1 text-sm text-zinc-500">{t("catalogPhotoHelp")}</p>
+        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          {activeRentals.map((pkg) => (
+            <li
+              key={pkg.id}
+              className="flex items-center gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50 px-3 py-2"
+            >
+              <PublicImage
+                src={pkg.image}
+                alt=""
+                width={72}
+                height={40}
+                className="h-10 w-16 rounded-md object-contain"
+              />
+              <span className="min-w-0 flex-1 truncate text-sm text-zinc-800">
+                {pkg.model}
+              </span>
+              <label className="shrink-0 cursor-pointer text-xs font-medium text-zinc-950 underline">
+                {t("catalogChangePhoto")}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void changeRentalPhoto(pkg.id, file);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

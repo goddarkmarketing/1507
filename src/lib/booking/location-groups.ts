@@ -1,5 +1,9 @@
 import type { Location, LocationType } from "@/lib/types";
-import { getOfficialPartnerIds } from "@/lib/data/transfer-routes";
+import { SET1_PLACE_NAMES, set1RouteLabel } from "@/lib/data/set1-place-names";
+import {
+  getOfficialPartnerIds,
+  getSet1LocationIds,
+} from "@/lib/data/transfer-routes";
 
 export type LocationSelectRole = "pickup" | "dropoff";
 
@@ -40,6 +44,11 @@ export type LocationGroup = {
   locations: Location[];
 };
 
+/** Short names from the price sheet, so "Krabi Airport" matches the longer airport title. */
+const SEARCH_ALIASES: Record<string, string[]> = {
+  "kbv-airport": ["krabi airport", "สนามบินกระบี่", "kbv"],
+};
+
 function matchesQuery(
   loc: Location,
   query: string,
@@ -48,12 +57,24 @@ function matchesQuery(
   const q = query.trim().toLowerCase();
   if (!q) return true;
 
-  return (
-    getName(loc).toLowerCase().includes(q) ||
-    loc.name.toLowerCase().includes(q) ||
-    loc.nameTh.includes(query.trim()) ||
-    loc.province.toLowerCase().includes(q)
-  );
+  const sheet = SET1_PLACE_NAMES[loc.id];
+  const hay = [
+    getName(loc),
+    loc.name,
+    loc.nameTh,
+    loc.province,
+    sheet?.en ?? "",
+    sheet?.th ?? "",
+    set1RouteLabel(loc.id, "en") ?? "",
+    set1RouteLabel(loc.id, "th") ?? "",
+    ...(SEARCH_ALIASES[loc.id] ?? []),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  if (hay.includes(q)) return true;
+  const words = q.split(/\s+/).filter(Boolean);
+  return words.length > 0 && words.every((word) => hay.includes(word));
 }
 
 function isPricedListLocation(
@@ -81,27 +102,42 @@ export function groupLocations(
     excludeId?: string;
     /** Other end of the route — locks the empty list to official tariff places. */
     pairedId?: string;
+    /** Price Checker: both ends stay on Set 1 (airport ↔ 55), no hotels. */
+    tariffScope?: "set1";
     query?: string;
     getName: (loc: Location) => string;
   }
 ): LocationGroup[] {
-  const { excludeId, pairedId, query = "", getName } = options;
+  const { excludeId, pairedId, tariffScope, query = "", getName } = options;
   const typeOrder =
     role === "pickup" ? PICKUP_TYPE_ORDER : DROPOFF_TYPE_ORDER;
 
+  const set1Allowed =
+    tariffScope === "set1" ? new Set(getSet1LocationIds()) : null;
+
   const partnerIds =
-    pairedId && role === "dropoff"
+    !set1Allowed && pairedId && role === "dropoff"
       ? new Set(getOfficialPartnerIds(pairedId))
       : null;
 
   const filtered = all.filter((loc) => {
     if (loc.id === excludeId) return false;
     if (!matchesQuery(loc, query, getName)) return false;
+    if (set1Allowed) return set1Allowed.has(loc.id);
     if (partnerIds && partnerIds.size > 0) {
       return isPricedListLocation(loc, partnerIds, query);
     }
     return true;
   });
+
+  if (tariffScope === "set1") {
+    const order = getSet1LocationIds();
+    const rank = new Map(order.map((id, index) => [id, index]));
+    const locations = [...filtered].sort(
+      (a, b) => (rank.get(a.id) ?? 999) - (rank.get(b.id) ?? 999)
+    );
+    return locations.length ? [{ type: "city", locations }] : [];
+  }
 
   const byType = new Map<LocationType, Location[]>();
   for (const loc of filtered) {

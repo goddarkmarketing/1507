@@ -2,15 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import {
-  ArrowLeftRight,
-  ArrowRight,
-  Clock,
-  MapPin,
-  Route,
-  ShieldCheck,
-} from "lucide-react";
-import { LocationSelect } from "@/components/booking/location-select";
+import { ArrowRight, Clock, MapPin, Route, ShieldCheck } from "lucide-react";
+import { Set1RouteSelect, resolveSet1ToId } from "@/components/booking/set1-route-select";
 import { bookingSelectTriggerClass } from "@/lib/booking/form-field-styles";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -24,10 +17,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { locations } from "@/lib/data/locations";
 import { getActiveTariffVehicles } from "@/lib/data/vehicles";
 import { calculatePrice } from "@/lib/data/pricing";
-import { suggestPairedLocation } from "@/lib/booking/suggest-paired-location";
 import { useVehicleCopy } from "@/lib/i18n-labels";
 import type { VehicleCode } from "@/lib/types";
 import { useCatalogStore } from "@/lib/admin/catalog-store";
@@ -35,6 +26,7 @@ import { useCatalogStore } from "@/lib/admin/catalog-store";
 type TripMode = "one-way" | "round-trip";
 
 const ROUND_TRIP_DISCOUNT = 0.05;
+const SET1_HUB = "kbv-airport";
 
 export type PriceCheckerProps = {
   defaultFrom?: string;
@@ -56,6 +48,7 @@ export function PriceChecker({
   const router = useRouter();
 
   const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
+  const transferRev = useCatalogStore((s) => s.transferImportedAt);
   const fleet = vehiclesRev
     ? vehicleCodes?.length
       ? getActiveTariffVehicles().filter((v) =>
@@ -71,18 +64,16 @@ export function PriceChecker({
     (fleet[0]?.code as VehicleCode | undefined) ?? "ECO";
 
   const [tripMode, setTripMode] = useState<TripMode>("one-way");
-  const [fromId, setFromId] = useState(defaultFrom);
-  const [toId, setToId] = useState(
-    defaultTo === defaultFrom
-      ? (locations.find((l) => l.id !== defaultFrom)?.id ?? defaultTo)
-      : defaultTo
+  const [toId, setToId] = useState(() =>
+    resolveSet1ToId(defaultFrom, defaultTo)
   );
+  const fromId = SET1_HUB;
   const [vehicleCode, setVehicleCode] = useState<VehicleCode>(initialVehicle);
 
   const quote = useMemo(() => {
     if (!fromId || !toId || fromId === toId) return null;
     return calculatePrice(fromId, toId, vehicleCode);
-  }, [fromId, toId, vehicleCode]);
+  }, [fromId, toId, vehicleCode, transferRev]);
 
   const hasOfficialPrice = Boolean(quote?.isOfficial);
   const oneWayPrice = hasOfficialPrice ? (quote?.totalPrice ?? 0) : 0;
@@ -94,11 +85,6 @@ export function PriceChecker({
     tripMode === "round-trip" && hasOfficialPrice
       ? Math.round(oneWayPrice * 2 * ROUND_TRIP_DISCOUNT)
       : 0;
-
-  const swapLocations = () => {
-    setFromId(toId);
-    setToId(fromId);
-  };
 
   const handleBook = () => {
     if (!quote) return;
@@ -159,52 +145,8 @@ export function PriceChecker({
 
       <div className="mt-5 space-y-3">
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">{t("from")}</Label>
-          <LocationSelect
-            role="pickup"
-            value={fromId}
-            onValueChange={(v) => {
-              setFromId(v);
-              const paired = suggestPairedLocation(v, toId);
-              if (paired) setToId(paired);
-              else if (v === toId) {
-                const next = locations.find((l) => l.id !== v);
-                if (next) setToId(next.id);
-              }
-            }}
-            excludeId={toId}
-            pairedId={toId}
-            placeholder={t("from")}
-          />
-        </div>
-
-        <div className="flex justify-center">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon-sm"
-            onClick={swapLocations}
-            aria-label="Swap locations"
-            className="rounded-full"
-          >
-            <ArrowLeftRight className="size-3.5" />
-          </Button>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">{t("to")}</Label>
-          <LocationSelect
-            role="dropoff"
-            value={toId}
-            onValueChange={(v) => {
-              setToId(v);
-              const paired = suggestPairedLocation(v, fromId);
-              if (paired) setFromId(paired);
-            }}
-            excludeId={fromId}
-            pairedId={fromId}
-            placeholder={t("to")}
-          />
+          <Label className="text-xs text-muted-foreground">{t("route")}</Label>
+          <Set1RouteSelect value={toId} onValueChange={setToId} />
         </div>
 
         <div className="space-y-1.5">
