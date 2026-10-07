@@ -74,7 +74,9 @@ function FilterChip({
 export function FleetPageContent() {
   const t = useTranslations("FleetUi");
   const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
-  const rentalOpen = useCatalogStore((s) => s.rentalBookingEnabled);
+  const catalogReady = useCatalogStore((s) => s.catalogReady);
+  const rentalEnabled = useCatalogStore((s) => s.rentalBookingEnabled);
+  const rentalOpen = catalogReady && rentalEnabled;
   const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
   const packages = useMemo(
     () => getActiveRentalPackages(),

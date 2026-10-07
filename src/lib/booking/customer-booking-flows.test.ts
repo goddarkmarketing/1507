@@ -169,14 +169,15 @@ describe("customer booking flows (store)", () => {
     expect(booking!.totalPrice).toBeGreaterThanOrEqual(1500);
   });
 
-  it("rejects pickup sooner than 24 hours", () => {
+  it("books a same-day pickup", () => {
     const s = useBookingStore.getState();
     s.setBookingType("one-way");
     const leg = s.draft.legs[0];
     const today = toBangkokDateInput(new Date());
     s.updateLeg(leg.id, { date: today, time: "23:59" });
     const booking = useBookingStore.getState().confirmBooking();
-    expect(booking).toBeNull();
+    expect(booking).not.toBeNull();
+    expect(booking!.status).toBe("confirmed");
   });
 
   it("books pay-driver plan without transfer slip", () => {

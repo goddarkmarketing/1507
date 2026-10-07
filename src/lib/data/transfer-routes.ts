@@ -11,6 +11,8 @@ export type OfficialTransferRoute = {
   durationMin: number;
   category: TransferCategory;
   prices: OfficialVehiclePrices;
+  /** Optional sheet label edited in admin. Empty keeps the built-in name. */
+  name?: string;
 };
 
 function tariffPrices(
@@ -1067,6 +1069,32 @@ export function getActiveOfficialRoutes(): OfficialTransferRoute[] {
 /** Set 1 sheet only: Krabi Airport ↔ 55 destinations, in sheet order. */
 export function getSet1OfficialRoutes(): OfficialTransferRoute[] {
   return set1OfficialRoutes;
+}
+
+const AIRPORT_HUB = "kbv-airport";
+
+/** Airport routes in file order. Imported rows win, otherwise the Set 1 sheet. */
+export function getAirportSheetRoutes(): OfficialTransferRoute[] {
+  const imported = getImportedTransferRoutes();
+  const source = imported?.length ? imported : set1OfficialRoutes;
+  const seen = new Set<string>();
+  const rows: OfficialTransferRoute[] = [];
+  for (const route of source) {
+    const toId =
+      route.fromId === AIRPORT_HUB
+        ? route.toId
+        : route.toId === AIRPORT_HUB
+          ? route.fromId
+          : null;
+    if (!toId || seen.has(toId)) continue;
+    seen.add(toId);
+    rows.push(
+      route.fromId === AIRPORT_HUB
+        ? route
+        : { ...route, fromId: AIRPORT_HUB, toId }
+    );
+  }
+  return rows;
 }
 
 /** Set 1 sheet only: Krabi Airport ↔ 55 destinations. */

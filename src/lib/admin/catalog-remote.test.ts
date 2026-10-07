@@ -11,6 +11,7 @@ describe("normalizeSiteCatalog", () => {
           distanceKm: 15,
           durationMin: 33,
           category: "city",
+          name: "สนามบินกระบี่ ↔ ตัวเมืองกระบี่",
           prices: { ECO: 450, PREM: 500, SUV: 500, VAN: 600, EXE: 700, VIP: 4000, SIG: 4000, BUS: 4000 },
         },
       ],
@@ -28,6 +29,7 @@ describe("normalizeSiteCatalog", () => {
     });
 
     expect(snapshot?.transferRoutes?.[0].prices.ECO).toBe(450);
+    expect(snapshot?.transferRoutes?.[0].name).toBe("สนามบินกระบี่ ↔ ตัวเมืองกระบี่");
     expect(snapshot?.vehicles?.ECO?.image).toBe("data:image/jpeg;base64,abc");
     expect(snapshot?.rentalPackages).toBeNull();
     expect(snapshot?.rentalBookingEnabled).toBe(false);
@@ -39,6 +41,13 @@ describe("normalizeSiteCatalog", () => {
     });
     expect(snapshot?.rentalBookingEnabled).toBe(true);
     expect(snapshot?.rentalPackages).toBeNull();
+  });
+
+  it("keeps an empty rental list after every car is removed", () => {
+    const snapshot = normalizeSiteCatalog({
+      rentalPackages: { enabled: false, packages: [] },
+    });
+    expect(snapshot?.rentalPackages).toEqual([]);
   });
 
   it("drops a vehicle photo that is too large", () => {

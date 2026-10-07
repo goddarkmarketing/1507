@@ -78,8 +78,7 @@ export function getBookingAmountDue(booking: {
 }
 
 /**
- * Voucher gate: pay-driver / night hours (00:00–08:00) / short-notice
- * need staff confirmation. Staff sets status to "confirmed".
+ * Every booking can print its order. Staff follow up with the customer afterwards.
  */
 export function canIssueVoucher(
   booking: Pick<Booking, "status" | "paymentPlan" | "payment" | "legs">,

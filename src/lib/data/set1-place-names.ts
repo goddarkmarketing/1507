@@ -67,3 +67,18 @@ export function set1RouteLabel(id: string, locale: string): string | null {
   if (id === "kbv-airport") return hub[lang];
   return `${hub[lang]} ↔ ${place[lang]}`;
 }
+
+/** Name shown in the price sheet. A saved admin name wins over the built-in label. */
+export function routeSheetName(
+  route: { fromId: string; toId: string; name?: string },
+  locale: string
+): string {
+  if (route.name?.trim()) return route.name.trim();
+  if (route.fromId === "kbv-airport") {
+    return set1RouteLabel(route.toId, locale) ?? route.toId;
+  }
+  if (route.toId === "kbv-airport") {
+    return set1RouteLabel(route.fromId, locale) ?? route.fromId;
+  }
+  return `${route.fromId} → ${route.toId}`;
+}

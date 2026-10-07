@@ -60,31 +60,20 @@ describe("booking-rules", () => {
     expect(d?.toISOString()).toBe("2026-09-09T19:30:00.000Z");
   });
 
-  it("holds voucher overnight until staff confirms", () => {
+  it("issues an order immediately, including overnight and short notice", () => {
     const night = new Date("2026-09-07T03:00:00+07:00");
-    const legs = [{ date: "2026-09-10", time: "10:00" }];
+    const legs = [{ date: "2026-09-07", time: "18:00" }];
+    expect(
+      getVoucherHoldReason(
+        { status: "pending", paymentPlan: "pay-driver", legs },
+        night
+      )
+    ).toBe(null);
     expect(
       getVoucherHoldReason(
         { status: "pending", paymentPlan: "full", legs },
         night
       )
-    ).toBe("night-hours");
-    expect(
-      getVoucherHoldReason(
-        { status: "confirmed", paymentPlan: "full", legs },
-        night
-      )
     ).toBe(null);
-  });
-
-  it("holds short-notice voucher until staff confirms", () => {
-    const now = new Date("2026-09-07T10:00:00+07:00");
-    const legs = [{ date: "2026-09-07", time: "18:00" }];
-    expect(
-      getVoucherHoldReason(
-        { status: "pending", paymentPlan: "deposit", legs },
-        now
-      )
-    ).toBe("short-notice");
   });
 });

@@ -47,9 +47,7 @@ import {
 } from "@/lib/booking/booking-mode";
 import {
   getNightDriverSurcharge,
-  hasAdvanceBooking,
   isNightPickupTime,
-  minPickupInstant,
   NIGHT_DRIVER_SURCHARGE_THB,
   toBangkokDateInput,
 } from "@/lib/booking/booking-rules";
@@ -122,7 +120,9 @@ export function BookingForm() {
   const rentalDeposits = getActiveRentalDeposits();
   const formatDeposit = (amount: number) =>
     `฿${amount.toLocaleString("en-US")}`;
-  const rentalOpen = useCatalogStore((s) => s.rentalBookingEnabled);
+  const catalogReady = useCatalogStore((s) => s.catalogReady);
+  const rentalEnabled = useCatalogStore((s) => s.rentalBookingEnabled);
+  const rentalOpen = catalogReady && rentalEnabled;
   const isRentalBooking =
     rentalOpen &&
     isCarRentalService(getBookingService(searchParams.get("service")));
@@ -179,9 +179,9 @@ export function BookingForm() {
     }
   }, [draft.legs, isCharter, isRentalBooking]);
 
-  // Default pickup date = now + 24h (Bangkok), client-only to avoid SSR mismatch
+  // Default pickup date = today (Bangkok), client-only to avoid SSR mismatch
   useEffect(() => {
-    const minDate = toBangkokDateInput(minPickupInstant());
+    const minDate = toBangkokDateInput(new Date());
     draft.legs.forEach((leg) => {
       if (!leg.date) updateLeg(leg.id, { date: minDate });
     });
@@ -252,15 +252,6 @@ export function BookingForm() {
       }
     }
 
-    if (
-      bookingService !== "rental" &&
-      !hasAdvanceBooking(draft.legs)
-    ) {
-      toast.error(t("toastAdvance24h"));
-      setStep(1);
-      return;
-    }
-
     setPaying(true);
     await new Promise((r) => setTimeout(r, 600));
 
@@ -321,11 +312,6 @@ export function BookingForm() {
       }
     }
 
-    if (!hasAdvanceBooking(draft.legs)) {
-      toast.error(t("toastAdvance24h"));
-      return false;
-    }
-
     return true;
   };
 
@@ -367,7 +353,7 @@ export function BookingForm() {
   const nightSurcharge =
     bookingService === "rental" ? 0 : getNightDriverSurcharge(draft.legs);
   const hasNightPickup = draft.legs.some((leg) => isNightPickupTime(leg.time));
-  const minLegDate = toBangkokDateInput(minPickupInstant());
+  const minLegDate = toBangkokDateInput(new Date());
   const amountDue = getAmountDueNow(total, bookingService, draft.paymentPlan);
   const balanceDue = getRemainingBalance(
     total,

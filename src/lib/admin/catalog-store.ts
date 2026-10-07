@@ -12,6 +12,8 @@ interface CatalogState {
   transferImportedAt: string | null;
   vehicleOverrides: Partial<Record<VehicleCode, Vehicle>> | null;
   vehiclesImportedAt: string | null;
+  /** False during the first paint so saved prices don't clash with the server HTML. */
+  catalogReady: boolean;
   setRentalPackages: (rows: RentalPackage[]) => void;
   setTransferRoutes: (rows: OfficialTransferRoute[]) => void;
   setVehicleOverrides: (
@@ -33,6 +35,7 @@ export const useCatalogStore = create<CatalogState>()(
       transferImportedAt: null,
       vehicleOverrides: null,
       vehiclesImportedAt: null,
+      catalogReady: false,
       setRentalPackages: (rows) =>
         set({
           rentalPackages: rows,
@@ -63,25 +66,37 @@ export const useCatalogStore = create<CatalogState>()(
           transferImportedAt: snapshot.transferRoutes
             ? snapshot.updatedAt
             : null,
-          rentalImportedAt: snapshot.rentalPackages
-            ? snapshot.updatedAt
-            : null,
+          rentalImportedAt:
+            snapshot.rentalPackages != null
+              ? snapshot.updatedAt ?? new Date().toISOString()
+              : null,
           vehiclesImportedAt: snapshot.vehicles ? snapshot.updatedAt : null,
         }),
     }),
-    { name: "klt-catalog" }
+    {
+      name: "klt-catalog",
+      partialize: ({ catalogReady: _ready, ...state }) => state,
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as Partial<CatalogState>),
+        catalogReady: false,
+      }),
+    }
   )
 );
 
 export function getImportedRentalPackages(): RentalPackage[] | null {
   if (typeof window === "undefined") return null;
-  const rows = useCatalogStore.getState().rentalPackages;
-  return rows?.length ? rows : null;
+  const state = useCatalogStore.getState();
+  if (!state.catalogReady || !state.rentalImportedAt) return null;
+  return state.rentalPackages ?? [];
 }
 
 export function getImportedTransferRoutes(): OfficialTransferRoute[] | null {
   if (typeof window === "undefined") return null;
-  const rows = useCatalogStore.getState().transferRoutes;
+  const state = useCatalogStore.getState();
+  if (!state.catalogReady) return null;
+  const rows = state.transferRoutes;
   return rows?.length ? rows : null;
 }
 
@@ -89,6 +104,8 @@ export function getImportedVehicleOverrides():
   | Partial<Record<VehicleCode, Vehicle>>
   | null {
   if (typeof window === "undefined") return null;
-  const overrides = useCatalogStore.getState().vehicleOverrides;
+  const state = useCatalogStore.getState();
+  if (!state.catalogReady) return null;
+  const overrides = state.vehicleOverrides;
   return overrides && Object.keys(overrides).length ? overrides : null;
 }

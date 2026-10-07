@@ -10,7 +10,8 @@ import { getLocation } from "@/lib/data/locations";
 import { calculatePrice, getSampleRoutes } from "@/lib/data/pricing";
 import { getActiveTariffVehicles } from "@/lib/data/vehicles";
 import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
-import { set1RouteLabel } from "@/lib/data/set1-place-names";
+import { routeSheetName } from "@/lib/data/set1-place-names";
+import { getActiveOfficialRoutes } from "@/lib/data/transfer-routes";
 import {
   formatRate,
   getActiveRentalPackages,
@@ -97,10 +98,20 @@ export function PriceListContent() {
   const locName = useLocationName();
   const { name: vehicleName } = useVehicleCopy();
   const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
-  const rentalOpen = useCatalogStore((s) => s.rentalBookingEnabled);
+  const catalogReady = useCatalogStore((s) => s.catalogReady);
+  const rentalEnabled = useCatalogStore((s) => s.rentalBookingEnabled);
+  const rentalOpen = catalogReady && rentalEnabled;
   const transferRev = useCatalogStore((s) => s.transferImportedAt);
   const vehiclesRev = useCatalogStore((s) => s.vehiclesImportedAt);
   const routes = useMemo(() => getSampleRoutes(), [transferRev]);
+  const namedRoutes = useMemo(() => {
+    void transferRev;
+    const map = new Map<string, ReturnType<typeof getActiveOfficialRoutes>[number]>();
+    for (const route of getActiveOfficialRoutes()) {
+      map.set(`${route.fromId}>${route.toId}`, route);
+    }
+    return map;
+  }, [transferRev]);
   const packages = useMemo(() => getActiveRentalPackages(), [rentalRev]);
   const vehicles = useMemo(() => getActiveTariffVehicles(), [vehiclesRev]);
   const [query, setQuery] = useState("");
@@ -148,12 +159,8 @@ export function PriceListContent() {
           : route.category === transferCategory);
       const fromLabel = locName(from).toLowerCase();
       const toLabel = locName(to).toLowerCase();
-      const sheet =
-        (route.fromId === "kbv-airport"
-          ? set1RouteLabel(route.toId, locale)
-          : route.toId === "kbv-airport"
-            ? set1RouteLabel(route.fromId, locale)
-            : null) ?? "";
+      const named = namedRoutes.get(`${route.fromId}>${route.toId}`);
+      const sheet = routeSheetName(named ?? route, locale);
       const catLabel = t(transferCatKey[route.category]).toLowerCase();
       const textMatch =
         !q ||
@@ -166,13 +173,11 @@ export function PriceListContent() {
         catLabel.includes(q);
       return categoryMatch && textMatch;
     });
-  }, [q, routes, transferCategory, locName, t, locale]);
+  }, [q, routes, namedRoutes, transferCategory, locName, t, locale]);
 
   const showRental =
     rentalOpen && (section === "all" || section === "rental");
   const showTransfer = section === "all" || section === "transfer";
-
-  const shortName = (id: string) => locName(getLocation(id)).split("(")[0].trim();
 
   return (
     <div className="mx-auto max-w-7xl space-y-14 px-4 py-12 lg:px-8">
@@ -406,12 +411,11 @@ export function PriceListContent() {
                         className="border-t"
                       >
                         <td className="px-4 py-3 font-medium">
-                          {(route.fromId === "kbv-airport"
-                            ? set1RouteLabel(route.toId, locale)
-                            : route.toId === "kbv-airport"
-                              ? set1RouteLabel(route.fromId, locale)
-                              : null) ??
-                            `${shortName(route.fromId)} → ${shortName(route.toId)}`}
+                          {routeSheetName(
+                            namedRoutes.get(`${route.fromId}>${route.toId}`) ??
+                              route,
+                            locale
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <Badge variant="secondary">

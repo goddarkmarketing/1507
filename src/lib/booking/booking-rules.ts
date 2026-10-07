@@ -91,28 +91,17 @@ export type VoucherHoldReason =
   | null;
 
 /**
- * Why voucher is held. Staff confirmation (status === "confirmed") unlocks
- * pay-driver, night-hours, and short-notice cases.
+ * Every submitted booking gets an order immediately.
+ * Pay-to-driver, night pickups, and short notice are followed up by staff.
  */
 export function getVoucherHoldReason(
-  booking: {
+  _booking: {
     status: string;
     paymentPlan?: string | null;
     payment?: { method?: string } | null;
     legs: PickupLegLike[];
   },
-  now: Date = new Date()
+  _now: Date = new Date()
 ): VoucherHoldReason {
-  if (booking.status === "confirmed") return null;
-
-  const isPayDriver =
-    booking.paymentPlan === "pay-driver" ||
-    (!booking.paymentPlan && booking.payment?.method === "cash");
-  if (isPayDriver) return "pay-driver";
-
-  if (isNightClockWindow(now)) return "night-hours";
-
-  if (!hasAdvanceBooking(booking.legs, now)) return "short-notice";
-
   return null;
 }

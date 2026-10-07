@@ -250,6 +250,7 @@ export function parseTransferCsv(text: string): ParseResult<OfficialTransferRout
       BUS: bus,
     };
 
+    const name = pick(map, cells, ["name", "route", "label"]).trim();
     rows.push({
       fromId,
       toId,
@@ -257,6 +258,7 @@ export function parseTransferCsv(text: string): ParseResult<OfficialTransferRout
       durationMin,
       category,
       prices,
+      ...(name ? { name } : {}),
     });
   });
 
@@ -302,6 +304,7 @@ export function rentalPackagesToCsv(rows: RentalPackage[]) {
 
 export function transferRoutesToCsv(rows: OfficialTransferRoute[]) {
   const header = [
+    "name",
     "fromId",
     "toId",
     "distanceKm",
@@ -320,6 +323,7 @@ export function transferRoutesToCsv(rows: OfficialTransferRoute[]) {
     header.join(","),
     ...rows.map((row) =>
       [
+        csvCell(row.name ?? ""),
         row.fromId,
         row.toId,
         row.distanceKm,

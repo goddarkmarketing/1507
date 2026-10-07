@@ -13,8 +13,6 @@ import {
 } from "@/lib/booking/booking-mode";
 import {
   getNightDriverSurcharge,
-  hasAdvanceBooking,
-  minPickupInstant,
   toBangkokDateInput,
 } from "@/lib/booking/booking-rules";
 import { createRemoteBooking } from "@/lib/booking/remote/bookings-remote";
@@ -123,8 +121,8 @@ const INITIAL_DRAFT: BookingDraft = {
   customerPhone: "",
   flightNumber: "",
   notes: "",
-  paymentPlan: null,
-  paymentMethod: null,
+  paymentPlan: "pay-driver",
+  paymentMethod: "cash",
   card: {
     cardNumber: "",
     cardName: "",
@@ -136,7 +134,7 @@ const INITIAL_DRAFT: BookingDraft = {
 };
 
 function defaultPickupDate(): string {
-  return toBangkokDateInput(minPickupInstant());
+  return toBangkokDateInput(new Date());
 }
 
 function createLeg(
@@ -389,10 +387,6 @@ export const useBookingStore = create<BookingStore>()(
 
         const service = options?.service ?? draft.service;
 
-        if (service !== "rental" && !hasAdvanceBooking(legs)) {
-          return null;
-        }
-
         const serviceCharge =
           service === "rental" ? 0 : getNightDriverSurcharge(legs);
         const totalPrice = getTotalPrice();
@@ -474,7 +468,7 @@ export const useBookingStore = create<BookingStore>()(
               }
             : {}),
           createdAt,
-          status: "pending",
+          status: "confirmed",
           payment,
         };
 

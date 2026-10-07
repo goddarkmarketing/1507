@@ -43,14 +43,14 @@ function readRentals(raw: unknown): {
     return { enabled: false, packages: packages.length ? packages : null };
   }
   if (isRecord(raw)) {
-    const list = Array.isArray(raw.packages) ? raw.packages : [];
-    const packages = list
+    const enabled = raw.enabled === true;
+    if (!Array.isArray(raw.packages)) {
+      return { enabled, packages: null };
+    }
+    const packages = raw.packages
       .map(asRental)
       .filter((row): row is RentalPackage => Boolean(row));
-    return {
-      enabled: raw.enabled === true,
-      packages: packages.length ? packages : null,
-    };
+    return { enabled, packages };
   }
   return { enabled: false, packages: null };
 }
@@ -93,6 +93,9 @@ function asRoute(value: unknown): OfficialTransferRoute | null {
       SIG: price("SIG"),
       BUS: price("BUS"),
     },
+    ...(typeof value.name === "string" && value.name.trim()
+      ? { name: value.name.trim() }
+      : {}),
   };
 }
 

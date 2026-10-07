@@ -10,14 +10,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { bookingSelectTriggerClass } from "@/lib/booking/form-field-styles";
-import { set1RouteLabel } from "@/lib/data/set1-place-names";
-import { getSet1OfficialRoutes } from "@/lib/data/transfer-routes";
+import { useCatalogStore } from "@/lib/admin/catalog-store";
+import { routeSheetName, set1RouteLabel } from "@/lib/data/set1-place-names";
+import { getAirportSheetRoutes } from "@/lib/data/transfer-routes";
 import { cn } from "@/lib/utils";
 
 const SET1_HUB = "kbv-airport";
 
 export function resolveSet1ToId(from: string, to: string): string {
-  const routes = getSet1OfficialRoutes();
+  const routes = getAirportSheetRoutes();
   const match = routes.find(
     (route) =>
       (route.fromId === from && route.toId === to) ||
@@ -46,14 +47,27 @@ export function Set1RouteSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const routes = useMemo(() => getSet1OfficialRoutes(), []);
+  const transferRev = useCatalogStore((s) => s.transferImportedAt);
+  const routes = useMemo(() => {
+    void transferRev;
+    return getAirportSheetRoutes();
+  }, [transferRev]);
 
-  const labelOf = (toId: string) => set1RouteLabel(toId, locale) ?? toId;
+  const labelOf = (toId: string) => {
+    const route = routes.find((item) => item.toId === toId);
+    if (route) return routeSheetName(route, locale);
+    return set1RouteLabel(toId, locale) ?? toId;
+  };
 
   const visible = routes.filter((route) => {
+    const custom = routeSheetName(route, locale);
     const en = set1RouteLabel(route.toId, "en") ?? "";
     const th = set1RouteLabel(route.toId, "th") ?? "";
-    return routeMatchesQuery(en, query) || routeMatchesQuery(th, query);
+    return (
+      routeMatchesQuery(custom, query) ||
+      routeMatchesQuery(en, query) ||
+      routeMatchesQuery(th, query)
+    );
   });
 
   useEffect(() => {
@@ -132,7 +146,7 @@ export function Set1RouteSelect({
                       )}
                     >
                       <span className="min-w-0 flex-1 leading-snug">
-                        {labelOf(route.toId)}
+                        {routeSheetName(route, locale)}
                       </span>
                       {selected && (
                         <Check className="size-4 shrink-0 text-primary" />
