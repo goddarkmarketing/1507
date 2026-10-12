@@ -366,14 +366,27 @@
     margin: 5mm;
   }
 
-  @page voucher-board-page {
+  @page voucher-form-page {
     size: A4 portrait;
+    margin: 5mm;
+  }
+
+  @page voucher-board-page {
+    size: A4 landscape;
     margin: 5mm;
   }
 
   body {
     background: white !important;
     color: black !important;
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  html {
+    min-height: 0 !important;
+    height: auto !important;
   }
 
   .voucher-sheet {
@@ -391,19 +404,27 @@
    * Middle blocks flex-grow so layout fills the sheet;
    * footer stays at the bottom and cannot spill to page 2.
    */
+  html,
+  body,
+  main,
+  .voucher-sheet {
+    page: voucher-board-page;
+  }
+
   .voucher-form {
+    page: voucher-form-page;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
     width: 200mm !important;
-    height: 287mm !important;
-    max-height: 287mm !important;
-    min-height: 287mm !important;
+    height: 280mm !important;
+    max-height: 280mm !important;
+    min-height: 280mm !important;
     aspect-ratio: auto !important;
     margin: 0 auto !important;
     overflow: hidden !important;
-    break-after: page;
-    page-break-after: always;
+    break-after: auto;
+    page-break-after: auto;
     break-inside: avoid;
     page-break-inside: avoid;
     -webkit-print-color-adjust: exact;
@@ -412,7 +433,7 @@
 
   .voucher-form .voucher-form-header {
     flex: 0 0 auto !important;
-    padding: 1.5mm 2mm !important;
+    padding: 0 !important;
   }
 
   .voucher-form .voucher-section-bar {
@@ -478,31 +499,37 @@
   }
 
   .voucher-form .voucher-qr-box {
-    width: 30mm !important;
+    width: 72mm !important;
+  }
+
+  .voucher-form .voucher-qr-caption {
+    white-space: nowrap !important;
+    font-size: 8pt !important;
+    line-height: 1.2 !important;
   }
 
   .voucher-form .voucher-qr-box svg {
-    width: 18mm !important;
-    height: 18mm !important;
+    width: 36mm !important;
+    height: 36mm !important;
   }
 
   .voucher-board {
     page: voucher-board-page;
-    display: flex !important;
+    display: block !important;
     box-sizing: border-box !important;
-    width: 200mm !important;
-    max-width: 200mm !important;
-    height: calc(200mm * 210 / 297) !important;
-    min-height: calc(200mm * 210 / 297) !important;
-    max-height: calc(200mm * 210 / 297) !important;
+    width: 280mm !important;
+    max-width: 280mm !important;
+    height: 198mm !important;
+    min-height: 198mm !important;
+    max-height: 198mm !important;
     aspect-ratio: auto !important;
     margin: 0 auto !important;
     overflow: hidden !important;
     border: none !important;
-    break-before: page;
-    page-break-before: always;
-    break-after: auto;
-    page-break-after: auto;
+    break-before: auto;
+    page-break-before: auto;
+    break-after: avoid;
+    page-break-after: avoid;
     break-inside: avoid;
     page-break-inside: avoid;
     -webkit-print-color-adjust: exact !important;
@@ -510,6 +537,10 @@
     background-size: 100% 100% !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
+  }
+
+  .voucher-print-actions {
+    display: none !important;
   }
 }
 

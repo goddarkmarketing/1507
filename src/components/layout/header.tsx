@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Car, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -8,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { SiteLogo } from "@/components/shared/site-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { MobileMenu } from "@/components/layout/mobile-menu";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { navIcons } from "@/lib/nav-icons";
 import { siteConfig, navItems, type NavItem } from "@/lib/site-config";
 import { useSiteContact } from "@/lib/admin/settings-store";
@@ -52,6 +53,19 @@ function NavDropdown({
 export function Header() {
   const t = useTranslations("Nav");
   const site = useSiteContact();
+  const pathname = usePathname();
+  const overHero = pathname === "/";
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    if (!overHero) return;
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [overHero]);
+
+  const clearOnMobile = overHero && !scrolled;
   const transferLinks = navItems
     .filter((item) => item.group === "transfers")
     .map((item) => ({ href: item.href, label: t(item.labelKey) }));
@@ -67,7 +81,14 @@ export function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header
+      className={cn(
+        "sticky top-0 z-50 border-b",
+        clearOnMobile
+          ? "border-transparent bg-transparent lg:border-border/60 lg:bg-background/95 lg:backdrop-blur lg:supports-[backdrop-filter]:bg-background/80"
+          : "border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      )}
+    >
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-3 px-4 sm:h-20 sm:px-6 lg:px-8">
         <Link href="/" className="flex shrink-0 items-center" aria-label={siteConfig.name}>
           <SiteLogo height={60} priority className="hidden sm:block" />

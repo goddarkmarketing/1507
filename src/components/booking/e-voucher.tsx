@@ -4,27 +4,19 @@ import { useTranslations, useLocale } from "next-intl";
 import type { ReactNode } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
-  ArrowRight,
-  Baby,
-  CalendarDays,
-  Car,
-  Clock3,
   Download,
-  FileText,
-  MapPin,
-  Plane,
-  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
-import { SiteLogo } from "@/components/shared/site-logo";
 import { getLocation } from "@/lib/data/locations";
+import { SET1_PLACE_NAMES } from "@/lib/data/set1-place-names";
 import { vehicles } from "@/lib/data/vehicles";
 import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
 import { useSiteContact } from "@/lib/admin/settings-store";
 import { getBookingAmountDue } from "@/lib/booking/booking-mode";
+import { voucherUrl } from "@/lib/booking/remote/config";
 import { getDateLocale } from "@/i18n/locales";
-import type { Booking, BookingLeg, Location } from "@/lib/types";
+import type { Booking, BookingLeg } from "@/lib/types";
 import { assetPath, cn } from "@/lib/utils";
 
 interface EVoucherProps {
@@ -63,12 +55,12 @@ function Cell({
   return (
     <div
       className={cn(
-        "voucher-cell flex flex-1 items-center gap-1.5 border border-[#7aa2c9] px-1.5 py-1 text-[10px] leading-snug sm:text-[11px]",
+        "voucher-cell flex flex-1 items-center gap-1.5 border border-[#e7d7a8] px-1.5 py-1 text-[10px] leading-snug sm:text-[11px]",
         wide && "col-span-2",
         className
       )}
     >
-      <span className="shrink-0 font-medium text-[#2b5f8a]">{label} :</span>
+      <span className="shrink-0 font-medium text-[#6b5424]">{label} :</span>
       <span className="min-w-0 flex-1 break-words font-semibold text-neutral-900 [overflow-wrap:anywhere]">
         {value === undefined || value === null || value === "" ? "—" : value}
       </span>
@@ -78,250 +70,78 @@ function Cell({
 
 function SectionBar({ children }: { children: ReactNode }) {
   return (
-    <div className="voucher-section-bar shrink-0 bg-[#d9dde3] px-2 py-1 text-[10px] font-bold tracking-wide text-[#1e4f7a] uppercase sm:text-[11px]">
+    <div className="voucher-section-bar shrink-0 bg-gradient-to-r from-[#f6e2a8] via-[#e6c36a] to-[#d4ae45] px-2 py-1 text-[10px] font-bold tracking-wide text-[#3d3214] sm:text-[11px]">
       {children}
     </div>
   );
 }
 
+const BOARD_INK = "#1c2740";
 const BOARD_GOLD = "#c4a35a";
-const BOARD_INK = "#1a1a1a";
-const BOARD_BEIGE = "rgba(245, 240, 230, 0.72)";
 
-function BoardDetail({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-2 text-left">
-      <span
-        className="mt-0.5 shrink-0"
-        style={{ color: BOARD_GOLD }}
-        aria-hidden
-      >
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <p
-          className="text-[9px] font-semibold tracking-[0.16em] uppercase sm:text-[10px]"
-          style={{ color: BOARD_GOLD }}
-        >
-          {label}
-        </p>
-        <p
-          className="mt-0.5 text-xs font-bold break-words sm:text-sm"
-          style={{ color: BOARD_INK }}
-        >
-          {value}
-        </p>
-      </div>
-    </div>
-  );
+function welcomePlaceLabel(id: string | undefined, fallback: string) {
+  if (!id) return fallback;
+  return SET1_PLACE_NAMES[id]?.en ?? fallback;
 }
 
 function WelcomeBoard({
   booking,
   leg,
-  locName,
-  vehicleLabel,
-  siteDomain,
 }: {
   booking: Booking;
   leg: BookingLeg;
-  index: number;
-  totalLegs: number;
-  locName: (loc: Location | undefined) => string;
-  vehicleLabel: string;
-  siteDomain: string;
 }) {
-  const t = useTranslations("Voucher");
-  const locale = useLocale();
   const from = getLocation(leg.fromId);
   const to = getLocation(leg.toId);
-  const isAirport =
-    from?.type === "airport" || to?.type === "airport";
-  const title = isAirport ? t("boardAirportTitle") : t("boardTransferTitle");
-  const fromName = locName(from);
-  const toName = locName(to);
-  const vehicle = vehicles.find((v) => v.code === leg.vehicleCode);
-  const babySeatCount = 0;
-  const paxLabel = vehicle?.passengers
-    ? t("boardPax", { n: vehicle.passengers })
-    : "—";
-  const FromIcon = from?.type === "airport" ? Plane : MapPin;
-  const ToIcon = to?.type === "airport" ? Plane : MapPin;
+  const fromLabel = welcomePlaceLabel(leg.fromId, from?.name ?? "");
+  const toLabel = welcomePlaceLabel(leg.toId, to?.name ?? "");
+  const route = [fromLabel, toLabel].filter(Boolean).join(" to ");
+  const placeLine =
+    to?.type === "hotel" && to.name && to.name !== toLabel ? to.name : null;
 
   return (
-    <section
-      className="voucher-page voucher-board relative mx-auto box-border flex w-full max-w-[210mm] min-h-0 flex-col justify-between overflow-visible border border-neutral-300 bg-[#fbfaf7] px-4 py-4 text-center sm:aspect-[297/210] sm:overflow-hidden sm:px-7 sm:py-5 print:aspect-auto print:overflow-hidden print:border-0 print:px-7 print:py-4"
-      style={{
-        color: BOARD_INK,
-        backgroundImage: `url(${assetPath("/voucher/welcome-board-bg.png")})`,
-        backgroundSize: "100% 100%",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <header className="relative z-[1] grid grid-cols-1 items-start gap-2 sm:grid-cols-[1fr_auto_1fr]">
-        <p
-          className="hidden max-w-[11rem] justify-self-start text-left text-[9px] leading-snug font-semibold tracking-[0.14em] uppercase sm:block sm:text-[10px]"
-          style={{ color: BOARD_GOLD }}
-        >
-          {t("boardTrustedTransfer")}
-        </p>
-        <div className="flex flex-col items-center gap-1.5">
-          <SiteLogo height={48} />
+    <section className="voucher-page voucher-board relative mx-auto box-border aspect-[1024/724] w-full max-w-[210mm] overflow-hidden bg-white print:border-0">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={assetPath("/voucher/welcome-sign.jpg")}
+        alt=""
+        className="absolute inset-0 h-full w-full object-fill"
+      />
+      <div className="absolute inset-x-[9%] top-[51%] flex flex-col items-center px-2 text-center">
+        {route ? (
+          <p className="max-w-full text-[13px] leading-tight font-semibold text-balance sm:text-lg">
+            <span style={{ color: BOARD_INK }}>{route}</span>
+          </p>
+        ) : null}
+        {placeLine ? (
           <p
-            className="voucher-board-brand text-sm font-bold tracking-[0.04em] sm:text-base"
+            className="mt-1 max-w-full text-xs font-medium sm:text-base"
             style={{ color: BOARD_INK }}
           >
-            {t("boardBrandCompact")}
+            {placeLine}
           </p>
-          <p
-            className="flex items-center gap-2 text-[9px] font-semibold tracking-[0.22em] uppercase sm:text-[10px]"
-            style={{ color: BOARD_GOLD }}
-          >
-            <span
-              className="hidden h-px w-6 sm:block"
-              style={{ backgroundColor: BOARD_GOLD }}
-            />
-            {t("boardPremiumService")}
-            <span
-              className="hidden h-px w-6 sm:block"
-              style={{ backgroundColor: BOARD_GOLD }}
-            />
-          </p>
-        </div>
+        ) : null}
         <p
-          className="hidden max-w-[11rem] justify-self-end text-right text-[9px] leading-snug font-semibold tracking-[0.14em] uppercase sm:block sm:text-[10px]"
-          style={{ color: BOARD_GOLD }}
-        >
-          {t("boardSafeJourney")}
-        </p>
-      </header>
-
-      <div className="relative z-[1] mt-2 space-y-1 sm:mt-2.5">
-        <div className="flex items-center justify-center gap-2 sm:gap-3">
-          <span
-            className="hidden h-px w-8 sm:block sm:w-12"
-            style={{ backgroundColor: BOARD_GOLD }}
-          />
-          <h2 className="voucher-board-title text-base font-bold tracking-[0.06em] uppercase sm:text-xl md:text-2xl">
-            {title}
-          </h2>
-          <span
-            className="hidden h-px w-8 sm:block sm:w-12"
-            style={{ backgroundColor: BOARD_GOLD }}
-          />
-        </div>
-        <p
-          className="text-[9px] font-semibold tracking-[0.28em] uppercase sm:text-[10px]"
-          style={{ color: BOARD_GOLD }}
-        >
-          {t("boardConfirmed")}
-        </p>
-      </div>
-
-      <div
-        className="relative z-[1] mt-2 flex flex-wrap items-center justify-center gap-1.5 rounded-lg px-3 py-2 sm:mt-2.5 sm:gap-2.5 sm:px-4"
-        style={{
-          border: `1px solid ${BOARD_GOLD}`,
-          backgroundColor: BOARD_BEIGE,
-        }}
-      >
-        <FromIcon className="size-3.5 shrink-0 sm:size-4" style={{ color: BOARD_GOLD }} />
-        <span className="text-xs font-bold sm:text-sm">{fromName}</span>
-        <ArrowRight className="size-3.5 shrink-0" style={{ color: BOARD_GOLD }} />
-        <ToIcon className="size-3.5 shrink-0 sm:size-4" style={{ color: BOARD_GOLD }} />
-        <span className="text-xs font-bold sm:text-sm">{toName}</span>
-      </div>
-
-      <div className="relative z-[1] mt-2 space-y-1 sm:mt-2.5">
-        <p
-          className="text-[9px] font-semibold tracking-[0.22em] uppercase sm:text-[10px]"
-          style={{ color: BOARD_GOLD }}
-        >
-          {t("passengerName")}
-        </p>
-        <p
-          className="mx-auto inline-block max-w-full rounded-lg px-5 py-1.5 text-lg font-bold break-words sm:text-xl md:text-2xl"
-          style={{
-            backgroundColor: BOARD_BEIGE,
-            border: `1px solid ${BOARD_GOLD}55`,
-            color: BOARD_INK,
-          }}
+          className="voucher-board-title mt-1.5 max-w-full text-[1.65rem] leading-none font-bold break-words sm:mt-2 sm:text-4xl md:text-5xl"
+          style={{ color: BOARD_INK }}
         >
           {booking.customerName}
         </p>
-      </div>
-
-      <div
-        className="relative z-[1] mt-2 grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg px-3 py-2.5 sm:mt-2.5 sm:gap-x-8 sm:gap-y-3 sm:px-5 sm:py-3"
-        style={{
-          border: `1px solid ${BOARD_GOLD}`,
-          backgroundColor: "rgba(255,255,255,0.55)",
-        }}
-      >
-        <div className="space-y-2.5 sm:space-y-3">
-          <BoardDetail
-            icon={<CalendarDays className="size-3.5" />}
-            label={t("boardPickupDate")}
-            value={formatVoucherDate(leg.date, locale)}
-          />
-          <BoardDetail
-            icon={<Clock3 className="size-3.5" />}
-            label={t("boardPickupTime")}
-            value={leg.time || "—"}
-          />
-          <BoardDetail
-            icon={<Car className="size-3.5" />}
-            label={t("boardVehicleLabel")}
-            value={vehicleLabel}
-          />
-        </div>
-        <div className="space-y-2.5 sm:space-y-3">
-          <BoardDetail
-            icon={<Baby className="size-3.5" />}
-            label={t("boardBabySeatLabel")}
-            value={String(babySeatCount)}
-          />
-          <BoardDetail
-            icon={<Users className="size-3.5" />}
-            label={t("boardPassengersLabel")}
-            value={paxLabel}
-          />
-          <BoardDetail
-            icon={<FileText className="size-3.5" />}
-            label={t("boardBookingId")}
-            value={booking.bookingNumber}
-          />
-        </div>
-      </div>
-
-      <footer className="relative z-[1] mt-2 space-y-0.5 sm:mt-2.5">
-        <div className="flex items-center justify-center gap-2 sm:gap-3">
+        <div className="mt-2 flex items-center gap-2 sm:mt-2.5 sm:gap-3">
+          <span className="h-px w-10 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
           <span
-            className="h-px w-10 sm:w-16"
+            className="size-1.5 shrink-0 rotate-45"
             style={{ backgroundColor: BOARD_GOLD }}
           />
-          <p className="text-xs font-semibold sm:text-sm">{siteDomain}</p>
-          <span
-            className="h-px w-10 sm:w-16"
-            style={{ backgroundColor: BOARD_GOLD }}
-          />
+          <span className="h-px w-10 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
         </div>
         <p
-          className="text-[8px] font-semibold tracking-[0.2em] uppercase sm:text-[9px]"
-          style={{ color: BOARD_GOLD }}
+          className="mt-1.5 text-[11px] font-bold tracking-[0.14em] sm:text-sm"
+          style={{ color: BOARD_INK }}
         >
-          {t("boardTagline")}
+          By KRABILINKSTAXI
         </p>
-      </footer>
+      </div>
     </section>
   );
 }
@@ -361,16 +181,11 @@ export function EVoucher({ booking }: EVoucherProps) {
       : booking.payment?.status === "paid"
         ? t("statusPaid")
         : t("statusAwaiting");
-  const qrData = JSON.stringify({
-    bookingNumber: booking.bookingNumber,
-    status: booking.status,
-    total: booking.totalPrice,
-  });
-  const domain = site.domain?.replace(/^https?:\/\//, "") || "www.krabilinkstaxi.com";
+  const qrData = voucherUrl(booking.bookingNumber, locale);
 
   return (
     <div className="voucher-sheet mx-auto w-full max-w-[210mm] space-y-8 overflow-x-auto px-3 py-6 sm:px-0 sm:py-8 print:max-w-none print:space-y-0 print:overflow-visible print:px-0 print:py-0">
-      <div className="flex flex-col gap-2 sm:flex-row sm:justify-center print:hidden">
+      <div className="voucher-print-actions flex flex-col gap-2 sm:flex-row sm:justify-center print:hidden">
         <Button variant="outline" onClick={() => window.print()}>
           <Download className="size-4" />
           {t("print")}
@@ -379,23 +194,18 @@ export function EVoucher({ booking }: EVoucherProps) {
       </div>
 
       {/* Page 1 — Transfer Voucher sized to A4 and stretched to fill */}
-      <section className="voucher-page voucher-form mx-auto box-border flex w-full max-w-[210mm] flex-col border-2 border-[#3d6f99] bg-white text-neutral-900 aspect-auto print:max-w-none print:aspect-auto print:border-[#3d6f99] md:aspect-[210/297]">
-        <header className="voucher-form-header flex shrink-0 items-center justify-between gap-3 border-b border-[#3d6f99] px-2 py-1.5 sm:px-3">
-          <div className="flex items-center gap-2">
-            <SiteLogo height={44} />
-            <p className="hidden text-[10px] font-medium text-neutral-500 sm:block">
-              {domain}
-            </p>
-          </div>
-          <div className="text-right">
-            <h1 className="text-base font-black tracking-tight text-[#1e4f7a] sm:text-lg">
-              {t("transferTitle")}
-            </h1>
-            <p className="text-[11px] font-semibold text-[#2b5f8a]">
-              {t("orderNo")} :{" "}
-              <span className="font-mono">{booking.bookingNumber}</span>
-            </p>
-          </div>
+      <section className="voucher-page voucher-form mx-auto box-border flex w-full max-w-[210mm] flex-col border-2 border-[#d4b56a] bg-white text-neutral-900 aspect-auto print:max-w-none print:aspect-auto print:border-[#d4b56a] md:aspect-[210/297]">
+        <header className="voucher-form-header shrink-0 bg-white">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={assetPath("/voucher/voucher-letterhead.jpg")}
+            alt="Krabi Links Taxi"
+            className="block h-auto w-full"
+          />
+          <p className="border-b border-[#e7d7a8] px-2 py-1 text-right text-[11px] font-semibold text-[#6b5424]">
+            {t("orderNo")} :{" "}
+            <span className="font-mono text-neutral-950">{booking.bookingNumber}</span>
+          </p>
         </header>
 
         <SectionBar>{t("clientDetails")}</SectionBar>
@@ -405,29 +215,31 @@ export function EVoucher({ booking }: EVoucherProps) {
             <Cell label={t("passengerName")} value={booking.customerName} />
             <Cell label={t("clientPhone")} value={booking.customerPhone} />
             <Cell label={t("email")} value={booking.customerEmail} />
-            <p className="shrink-0 border border-[#7aa2c9] bg-[#fff8e1] px-1.5 py-1 text-[10px] font-semibold text-amber-900">
+          </div>
+          <div className="voucher-qr-box flex w-[17.5rem] shrink-0 flex-col border border-[#e7d7a8] bg-[#fffdf8] text-center">
+            <p className="voucher-qr-caption border-b border-[#e7d7a8] bg-[#fbf6e8] px-2 py-1 text-[10px] leading-none font-semibold whitespace-nowrap text-[#5c4a28]">
               {t("lookForDriver")}
             </p>
-          </div>
-          <div className="voucher-qr-box flex w-[5.5rem] flex-col items-center justify-center gap-0.5 border border-[#7aa2c9] bg-[#ffe44d] px-1 py-1 text-center sm:w-32">
-            <span className="sm:hidden">
-              <QRCodeSVG value={qrData} size={56} />
-            </span>
-            <span className="hidden sm:inline-block">
-              <QRCodeSVG value={qrData} size={64} />
-            </span>
-            <p className="text-[8px] font-bold leading-tight text-neutral-900">
-              {t("welcomeBanner", {
-                place:
-                  outFrom?.type === "airport"
-                    ? locName(outFrom)
-                    : locName(outFrom) || "Krabi",
-              })}
-            </p>
-            <p className="text-[10px] font-black break-all leading-tight">
-              {booking.customerName}
-            </p>
-            <p className="text-[7px] font-medium text-neutral-700">{domain}</p>
+            <div className="mx-1.5 mt-1.5 rounded-md bg-[#1a2744] px-1.5 py-2 text-white">
+              <p className="text-[7px] font-bold tracking-[0.14em] text-[#e6c36a]">
+                KRABI LINKS TAXI
+              </p>
+              <p className="voucher-board-title mt-0.5 text-[11px] leading-none text-[#f6e7b2] sm:text-sm">
+                Welcome to Krabi
+              </p>
+              <p className="mt-1 text-[9px] leading-tight font-bold break-words">
+                {booking.customerName}
+              </p>
+            </div>
+            <div className="flex flex-1 items-center justify-center px-1 py-1">
+              <QRCodeSVG
+                value={qrData}
+                size={112}
+                level="M"
+                marginSize={0}
+                className="h-auto w-28"
+              />
+            </div>
           </div>
         </div>
 
@@ -500,7 +312,7 @@ export function EVoucher({ booking }: EVoucherProps) {
               label={t("amountDue")}
               value={`${amountDue.toLocaleString()} THB`}
             />
-            <p className="voucher-note shrink-0 border border-[#7aa2c9] px-1.5 py-1 text-[9px] leading-snug text-neutral-700">
+            <p className="voucher-note shrink-0 border border-[#e7d7a8] bg-[#fbf6e8] px-1.5 py-1 text-[9px] leading-snug text-neutral-700">
               {paid ? t("receiptPaidNote") : t("receiptUnpaidNote")}
             </p>
           </div>
@@ -520,7 +332,7 @@ export function EVoucher({ booking }: EVoucherProps) {
                 value={`${booking.balanceDue.toLocaleString()} THB`}
               />
             ) : null}
-            <div className="voucher-sign flex flex-1 flex-col justify-end border border-[#7aa2c9] px-1.5 py-1">
+            <div className="voucher-sign flex flex-1 flex-col justify-end border border-[#e7d7a8] px-1.5 py-1">
               <p className="flex max-w-full items-end gap-1 overflow-hidden border-b border-neutral-800 pb-0.5 font-mono text-[10px]">
                 <span>X</span>
                 <span className="mb-0.5 h-px min-w-0 flex-1 border-b border-dotted border-neutral-800" />
@@ -529,7 +341,7 @@ export function EVoucher({ booking }: EVoucherProps) {
                 {t("clientSignature")}
               </p>
             </div>
-            <div className="voucher-sign flex flex-1 flex-col justify-end border border-[#7aa2c9] px-1.5 py-1">
+            <div className="voucher-sign flex flex-1 flex-col justify-end border border-[#e7d7a8] px-1.5 py-1">
               <p className="flex max-w-full items-end gap-1 overflow-hidden border-b border-neutral-800 pb-0.5 font-mono text-[10px]">
                 <span>X</span>
                 <span className="mb-0.5 h-px min-w-0 flex-1 border-b border-dotted border-neutral-800" />
@@ -553,13 +365,13 @@ export function EVoucher({ booking }: EVoucherProps) {
 
         <div className="voucher-footer shrink-0">
           <SectionBar>{t("comments")}</SectionBar>
-          <div className="voucher-comments border border-[#7aa2c9] px-1.5 py-1.5 text-[10px]">
+          <div className="voucher-comments border border-[#e7d7a8] px-1.5 py-1.5 text-[10px]">
             {booking.notes || "—"}
           </div>
-          <p className="border border-[#7aa2c9] px-1.5 py-1 text-[8px] leading-snug text-neutral-600">
+          <p className="border border-[#e7d7a8] px-1.5 py-1 text-[8px] leading-snug text-neutral-600">
             {t("voucherLegal")}
           </p>
-          <p className="border border-[#7aa2c9] bg-[#fff8e1] px-1.5 py-1.5 text-center text-[10px] font-bold tracking-wide uppercase">
+          <p className="bg-gradient-to-r from-[#f6e2a8] via-[#e6c36a] to-[#d4ae45] px-1.5 py-1.5 text-center text-[10px] font-bold tracking-wide text-[#3d3214] uppercase">
             {t("pleasePrint")}
           </p>
         </div>
@@ -567,22 +379,10 @@ export function EVoucher({ booking }: EVoucherProps) {
 
       {/* Page 2 — single Welcome board (max 2 printable pages) */}
       {outbound ? (
-        <WelcomeBoard
-          booking={booking}
-          leg={outbound}
-          index={0}
-          totalLegs={1}
-          locName={locName}
-          vehicleLabel={
-            outVehicle
-              ? `${outVehicle.code} ${vehicleName(outVehicle.code)}`
-              : vehicleLabel
-          }
-          siteDomain={domain}
-        />
+        <WelcomeBoard booking={booking} leg={outbound} />
       ) : null}
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:justify-center print:hidden">
+      <div className="voucher-print-actions flex flex-col gap-2 sm:flex-row sm:justify-center print:hidden">
         <Button variant="outline" onClick={() => window.print()}>
           <Download className="size-4" />
           {t("print")}

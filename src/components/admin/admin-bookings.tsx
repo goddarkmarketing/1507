@@ -1,22 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { CalendarDays, User, MapPin, Wallet, Landmark, Settings2 } from "lucide-react";
+import { Car, Check, ChevronDown, ChevronRight, Download, Phone, Search, Settings2, SlidersHorizontal } from "lucide-react";
 import { useAdminStore } from "@/lib/admin/store";
 import {
   money,
-  OpsBadge,
   OPS_STATUSES,
   useRouteLabel,
 } from "@/components/admin/admin-ui";
-import { bookingDisplayAmount } from "@/lib/admin/booking-money";
 import { TransferProofPreview } from "@/components/admin/transfer-proof-preview";
+import type { AdminBooking } from "@/lib/admin/types";
 import type { OpsStatus } from "@/lib/admin/types";
 import type { BookingService } from "@/lib/booking/booking-mode";
 import type { PaymentMethod } from "@/lib/types";
+import { downloadCsv } from "@/lib/admin/catalog-csv";
 import { getLocation } from "@/lib/data/locations";
+import { getVehicle } from "@/lib/data/vehicles";
 import { locationShortName } from "@/lib/i18n-labels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,14 +36,192 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+const DETAIL_STATUSES = [
+  "confirmed",
+  "in_progress",
+  "completed",
+  "cancelled",
+] as const;
+
+type DetailStatus = (typeof DETAIL_STATUSES)[number];
+
+type MobileChip = "all" | "payment" | "confirmed" | "traveling" | "cancelled";
+
+function cardStatus(booking: AdminBooking): "payment" | DetailStatus {
+  if (booking.status === "cancelled" || booking.opsStatus === "cancelled") {
+    return "cancelled";
+  }
+  if (booking.opsStatus === "payment_review") return "payment";
+  return detailStatusOf(booking);
+}
+
+function matchesMobileChip(booking: AdminBooking, chip: MobileChip) {
+  const status = cardStatus(booking);
+  if (chip === "all") return true;
+  if (chip === "payment") return status === "payment";
+  if (chip === "traveling") return status === "in_progress" || status === "completed";
+  if (chip === "cancelled") return status === "cancelled";
+  return status === "confirmed";
+}
+
+function detailStatusOf(booking: AdminBooking): DetailStatus {
+  if (booking.status === "cancelled" || booking.opsStatus === "cancelled") {
+    return "cancelled";
+  }
+  if (booking.opsStatus === "in_progress") return "in_progress";
+  if (booking.opsStatus === "completed") return "completed";
+  return "confirmed";
+}
+
+function pickupLabel(date: string | undefined, time: string | undefined, locale: string) {
+  if (!date) return "—";
+  const parsed = new Date(`${date}T${time || "00:00"}:00`);
+  if (Number.isNaN(parsed.getTime())) return time ? `${date} ${time}` : date;
+  const day = parsed.toLocaleDateString(locale === "th" ? "th-TH" : locale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  return time ? `${day} ${time}` : day;
+}
+
+function phoneCallHref(phone: string) {
+  const compact = phone.replace(/[^\d+]/g, "");
+  return compact ? `tel:${compact}` : "";
+}
+
+function splitCustomerName(full: string) {
+  const parts = full.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return { first: "", last: "" };
+  if (parts.length === 1) return { first: parts[0], last: "" };
+  return {
+    first: parts.slice(0, -1).join(" "),
+    last: parts[parts.length - 1],
+  };
+}
+
+const STATUS_STYLE: Record<
+  DetailStatus,
+  { trigger: string; dot: string; active: string }
+> = {
+  confirmed: {
+    trigger: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    dot: "bg-emerald-500",
+    active: "bg-emerald-50 text-emerald-900",
+  },
+  in_progress: {
+    trigger: "border-sky-200 bg-sky-50 text-sky-800",
+    dot: "bg-sky-500",
+    active: "bg-sky-50 text-sky-900",
+  },
+  completed: {
+    trigger: "border-zinc-200 bg-zinc-100 text-zinc-700",
+    dot: "bg-zinc-400",
+    active: "bg-zinc-100 text-zinc-900",
+  },
+  cancelled: {
+    trigger: "border-rose-200 bg-rose-50 text-rose-700",
+    dot: "bg-rose-500",
+    active: "bg-rose-50 text-rose-800",
+  },
+};
+
+function StatusMenu({
+  value,
+  onChange,
+  label,
+}: {
+  value: DetailStatus;
+  onChange: (status: DetailStatus) => void;
+  label: (status: DetailStatus) => string;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const tone = STATUS_STYLE[value];
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative inline-block">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        className={cn(
+          "inline-flex h-9 min-w-40 items-center justify-between gap-3 rounded-full border px-3 text-sm font-medium shadow-sm transition hover:brightness-[0.98]",
+          tone.trigger
+        )}
+      >
+        <span className="inline-flex items-center gap-2">
+          <span className={cn("size-2 rounded-full", tone.dot)} />
+          {label(value)}
+        </span>
+        <ChevronDown
+          className={cn("size-4 opacity-70 transition", open && "rotate-180")}
+        />
+      </button>
+      {open ? (
+        <div
+          role="listbox"
+          className="absolute bottom-full left-0 z-30 mb-2 w-48 rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl ring-1 ring-black/5"
+        >
+          {DETAIL_STATUSES.map((status) => {
+            const item = STATUS_STYLE[status];
+            const selected = status === value;
+            return (
+              <button
+                key={status}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                onClick={() => {
+                  onChange(status);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm text-zinc-700 transition hover:bg-zinc-50",
+                  selected && cn("font-medium", item.active)
+                )}
+              >
+                <span className={cn("size-2 shrink-0 rounded-full", item.dot)} />
+                <span className="flex-1">{label(status)}</span>
+                {selected ? <Check className="size-4 opacity-70" /> : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function csvCell(value: string) {
+  const text = value.replace(/\r?\n/g, " ").trim();
+  if (/[",]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+  return text;
+}
+
 export function AdminBookingsPage() {
   const t = useTranslations("Admin");
+  const tVehicle = useTranslations("Vehicles");
   const locale = useLocale();
   const bookings = useAdminStore((s) => s.bookings);
-  const drivers = useAdminStore((s) => s.drivers);
-  const assignDriver = useAdminStore((s) => s.assignDriver);
   const setOpsStatus = useAdminStore((s) => s.setOpsStatus);
-  const updateBooking = useAdminStore((s) => s.updateBooking);
   const routeLabel = useRouteLabel();
 
   const [query, setQuery] = useState("");
@@ -56,6 +234,8 @@ export function AdminBookingsPage() {
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [mobileChip, setMobileChip] = useState<MobileChip>("all");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -97,34 +277,214 @@ export function AdminBookingsPage() {
     setDetailOpen(true);
   };
 
+  const statusLabel = (status: DetailStatus) => {
+    if (status === "in_progress") return t("ops.in_progress");
+    if (status === "completed") return t("ops.completed");
+    if (status === "cancelled") return t("detailCancelled");
+    return t("detailConfirmed");
+  };
+
+  const vehicleLabel = (code: string) => {
+    if (!code) return "—";
+    const vehicle = getVehicle(code);
+    const seats = vehicle?.passengers?.split(/[–-]/).pop()?.trim();
+    const known = ["ECO", "PREM", "SUV", "VAN", "VIP", "SIG", "EXE", "BUS"];
+    const name = known.includes(code) ? tVehicle(`${code}.name`) : code;
+    return seats ? `${name} (${code}) ${tVehicle("pax", { n: seats })}` : `${name} (${code})`;
+  };
+
+  const cardStatusLabel = (booking: AdminBooking) => {
+    const status = cardStatus(booking);
+    if (status === "payment") {
+      return { label: t("chipPayment"), className: "text-amber-500" };
+    }
+    if (status === "in_progress" || status === "completed") {
+      return { label: t("chipTraveling"), className: "text-sky-600" };
+    }
+    if (status === "cancelled") {
+      return { label: t("detailCancelled"), className: "text-rose-600" };
+    }
+    return { label: t("chipConfirmed"), className: "text-emerald-600" };
+  };
+
+  const applyStatus = (bookingId: string, status: DetailStatus) => {
+    if (status === "cancelled") setOpsStatus(bookingId, "cancelled");
+    else if (status === "in_progress") setOpsStatus(bookingId, "in_progress");
+    else if (status === "completed") setOpsStatus(bookingId, "completed");
+    else setOpsStatus(bookingId, "new");
+  };
+
+  const detailRows = (booking: AdminBooking): { label: string; value: ReactNode }[] => {
+    const name = splitCustomerName(booking.customerName || "");
+    const first = name.first || "—";
+    const last = name.last || "—";
+    const legs = booking.legs ?? [];
+    const when = legs.map((leg) => `${leg.date} ${leg.time}`).join("\n") || "—";
+    const vehicle =
+      [...new Set(legs.map((leg) => leg.vehicleCode).filter(Boolean))].join(", ") ||
+      "—";
+    const pay =
+      booking.paymentPlan === "pay-driver" || booking.payment?.method === "cash"
+        ? t("detailPayDriver")
+        : booking.payment?.summary || "—";
+    const phone = booking.customerPhone?.trim() || "";
+    const callHref = phoneCallHref(phone);
+    const currentStatus = detailStatusOf(booking);
+    const rows: { label: string; value: ReactNode }[] = [
+      { label: t("detailFirstName"), value: first },
+      { label: t("detailLastName"), value: last },
+      { label: t("detailEmail"), value: booking.customerEmail || "—" },
+      {
+        label: t("detailPhone"),
+        value: callHref ? (
+          <a
+            href={callHref}
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800 hover:bg-emerald-100"
+          >
+            <Phone className="size-3.5" />
+            {phone}
+          </a>
+        ) : (
+          "—"
+        ),
+      },
+      { label: t("detailPlace"), value: routeLabel(booking) },
+      { label: t("detailTime"), value: when },
+      { label: t("detailVehicle"), value: vehicle },
+      { label: t("detailPrice"), value: money(booking.totalPrice) },
+      { label: t("payment"), value: pay },
+      {
+        label: t("detailBookedAt"),
+        value: booking.createdAt
+          ? new Date(booking.createdAt).toLocaleString(locale)
+          : "—",
+      },
+      {
+        label: t("detailStatus"),
+        value: (
+          <StatusMenu
+            value={currentStatus}
+            label={statusLabel}
+            onChange={(status) => applyStatus(booking.id, status)}
+          />
+        ),
+      },
+    ];
+    if (booking.flightNumber) {
+      rows.splice(6, 0, { label: t("flight"), value: booking.flightNumber });
+    }
+    if (booking.notes) {
+      rows.push({ label: t("detailCustomerNotes"), value: booking.notes });
+    }
+    return rows;
+  };
+
+  const exportBookings = () => {
+    const header = [
+      t("colBooking"),
+      t("detailFirstName"),
+      t("detailLastName"),
+      t("detailEmail"),
+      t("detailPhone"),
+      t("scheduleColFrom"),
+      t("scheduleColTo"),
+      t("scheduleColPickup"),
+      t("flight"),
+      t("scheduleColTrip"),
+      t("detailVehicle"),
+      t("detailStatus"),
+      t("colAmount"),
+      t("payment"),
+      t("detailBookedAt"),
+      t("detailCustomerNotes"),
+    ];
+    const lines = filtered.map((booking) => {
+      const name = splitCustomerName(booking.customerName || "");
+      const leg = booking.legs?.[0];
+      const fromId = leg?.fromId || "";
+      const toId = leg?.toId || "";
+      const vehicle = [
+        ...new Set((booking.legs ?? []).map((item) => item.vehicleCode).filter(Boolean)),
+      ].join(", ");
+      const pay =
+        booking.paymentPlan === "pay-driver" || booking.payment?.method === "cash"
+          ? t("detailPayDriver")
+          : booking.payment?.summary || "";
+      const trip =
+        booking.type === "round-trip"
+          ? "RT"
+          : booking.type === "one-way"
+            ? "OW"
+            : booking.type || "";
+      return [
+        booking.bookingNumber,
+        name.first,
+        name.last,
+        booking.customerEmail || "",
+        booking.customerPhone || "",
+        fromId ? locationShortName(getLocation(fromId), locale) || fromId : "",
+        toId ? locationShortName(getLocation(toId), locale) || toId : "",
+        leg ? `${leg.date} ${leg.time}` : "",
+        booking.flightNumber || "",
+        trip,
+        vehicle,
+        statusLabel(detailStatusOf(booking)),
+        String(booking.totalPrice ?? ""),
+        pay,
+        booking.createdAt
+          ? new Date(booking.createdAt).toLocaleString(locale)
+          : "",
+        booking.notes || "",
+      ]
+        .map((cell) => csvCell(String(cell)))
+        .join(",");
+    });
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCsv(`bookings-${stamp}.csv`, [header.map(csvCell).join(","), ...lines].join("\n"));
+  };
+
   return (
     <div className="space-y-4">
-      <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl">
-          {t("bookingsTitle")}
-        </h1>
-        <p className="text-xs leading-relaxed text-zinc-500 sm:text-sm">
-          {t("bookingsSubtitle")}
-        </p>
+      <div className="hidden items-start justify-between gap-3 lg:flex">
+        <div className="space-y-1">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl">
+            {t("bookingsTitle")}
+          </h1>
+          <p className="text-xs leading-relaxed text-zinc-500 sm:text-sm">
+            {t("bookingsSubtitle")}
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-9 shrink-0 rounded-full border-zinc-200 bg-white px-3 text-zinc-800 shadow-sm"
+          disabled={filtered.length === 0}
+          onClick={exportBookings}
+        >
+          <Download className="size-3.5" />
+          {t("exportBookings")}
+        </Button>
       </div>
 
-      <div className="flex h-9 w-full flex-nowrap items-stretch gap-1.5 overflow-x-auto">
+      <div className="hidden gap-2 lg:flex lg:h-9 lg:flex-row lg:flex-nowrap lg:items-stretch lg:gap-1.5 lg:overflow-x-auto">
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("searchBookings")}
-          className="h-9 min-h-9 min-w-[10rem] flex-[1.6] rounded-md border-zinc-200 bg-white px-2 text-xs shadow-none"
+          className="h-10 min-h-10 w-full rounded-md border-zinc-200 bg-white px-3 text-sm shadow-none lg:h-9 lg:min-h-9 lg:min-w-[10rem] lg:flex-[1.6] lg:px-2 lg:text-xs"
         />
+        <div className="grid grid-cols-3 gap-2 lg:contents">
         <Select
           value={filter}
           onValueChange={(v) => v && setFilter(v as OpsStatus | "all")}
         >
           <SelectTrigger
             size="default"
-            className="h-9 min-h-9 w-auto min-w-[7.5rem] flex-1 rounded-md border-zinc-200 bg-white text-xs data-[size=default]:h-9"
+            className="h-10 min-h-10 w-full min-w-0 rounded-md border-zinc-200 bg-white px-2 text-xs data-[size=default]:h-10 lg:h-9 lg:min-h-9 lg:w-auto lg:min-w-[7.5rem] lg:flex-1 lg:data-[size=default]:h-9"
           >
             <SelectValue placeholder={t("filterStatus")}>
-              {filter === "all" ? t("filterAll") : t(`ops.${filter}`)}
+              {filter === "all" ? t("filterStatus") : t(`ops.${filter}`)}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -144,11 +504,11 @@ export function AdminBookingsPage() {
         >
           <SelectTrigger
             size="default"
-            className="h-9 min-h-9 w-auto min-w-[7.5rem] flex-1 rounded-md border-zinc-200 bg-white text-xs data-[size=default]:h-9"
+            className="h-10 min-h-10 w-full min-w-0 rounded-md border-zinc-200 bg-white px-2 text-xs data-[size=default]:h-10 lg:h-9 lg:min-h-9 lg:w-auto lg:min-w-[7.5rem] lg:flex-1 lg:data-[size=default]:h-9"
           >
             <SelectValue placeholder={t("filterService")}>
               {serviceFilter === "all"
-                ? t("filterAll")
+                ? t("filterService")
                 : serviceFilter === "rental"
                   ? t("serviceRental")
                   : t("serviceTransfer")}
@@ -168,11 +528,11 @@ export function AdminBookingsPage() {
         >
           <SelectTrigger
             size="default"
-            className="h-9 min-h-9 w-auto min-w-[7.5rem] flex-1 rounded-md border-zinc-200 bg-white text-xs data-[size=default]:h-9"
+            className="h-10 min-h-10 w-full min-w-0 rounded-md border-zinc-200 bg-white px-2 text-xs data-[size=default]:h-10 lg:h-9 lg:min-h-9 lg:w-auto lg:min-w-[7.5rem] lg:flex-1 lg:data-[size=default]:h-9"
           >
             <SelectValue placeholder={t("filterPayment")}>
               {paymentFilter === "all"
-                ? t("filterAll")
+                ? t("filterPayment")
                 : t(`settingsMethod.${paymentFilter}`)}
             </SelectValue>
           </SelectTrigger>
@@ -189,9 +549,177 @@ export function AdminBookingsPage() {
             </SelectItem>
           </SelectContent>
         </Select>
+        </div>
       </div>
 
-      <div className="-mx-4 overflow-hidden border-y border-zinc-300 bg-white sm:mx-0 sm:rounded-lg sm:border sm:shadow-sm">
+      <div className="space-y-3 lg:hidden">
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("mobileSearch")}
+              className="h-11 rounded-full border-zinc-200 bg-white pr-3 pl-10 text-sm shadow-none"
+            />
+          </div>
+          <button
+            type="button"
+            aria-label={t("exportBookings")}
+            disabled={filtered.length === 0}
+            onClick={exportBookings}
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-700 disabled:opacity-40"
+          >
+            <Download className="size-4" />
+          </button>
+          <button
+            aria-pressed={mobileFiltersOpen}
+            onClick={() => setMobileFiltersOpen((open) => !open)}
+            className={cn(
+              "inline-flex size-11 shrink-0 items-center justify-center rounded-full border bg-white text-zinc-700",
+              mobileFiltersOpen ? "border-emerald-500 text-emerald-600" : "border-zinc-200"
+            )}
+          >
+            <SlidersHorizontal className="size-4" />
+          </button>
+        </div>
+        {mobileFiltersOpen ? (
+          <div className="grid grid-cols-2 gap-2">
+            <Select
+              value={serviceFilter}
+              onValueChange={(v) => v && setServiceFilter(v as BookingService | "all")}
+            >
+              <SelectTrigger className="h-10 w-full rounded-full border-zinc-200 bg-white text-xs">
+                <SelectValue>
+                  {serviceFilter === "all"
+                    ? t("filterService")
+                    : serviceFilter === "rental"
+                      ? t("serviceRental")
+                      : t("serviceTransfer")}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("filterAll")}</SelectItem>
+                <SelectItem value="transfer">{t("serviceTransfer")}</SelectItem>
+                <SelectItem value="rental">{t("serviceRental")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={paymentFilter}
+              onValueChange={(v) => v && setPaymentFilter(v as PaymentMethod | "all")}
+            >
+              <SelectTrigger className="h-10 w-full rounded-full border-zinc-200 bg-white text-xs">
+                <SelectValue>
+                  {paymentFilter === "all"
+                    ? t("filterPayment")
+                    : t(`settingsMethod.${paymentFilter}`)}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("filterAll")}</SelectItem>
+                <SelectItem value="bank-transfer">{t("settingsMethod.bank-transfer")}</SelectItem>
+                <SelectItem value="promptpay">{t("settingsMethod.promptpay")}</SelectItem>
+                <SelectItem value="cash">{t("settingsMethod.cash")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        ) : null}
+        <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {(
+            [
+              ["all", t("filterAll")],
+              ["payment", t("chipPayment")],
+              ["confirmed", t("chipConfirmed")],
+              ["traveling", t("chipTraveling")],
+              ["cancelled", t("detailCancelled")],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setMobileChip(id)}
+              className={cn(
+                "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium",
+                mobileChip === id
+                  ? "bg-emerald-500 text-white"
+                  : "border border-zinc-200 bg-white text-zinc-700"
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {filtered.filter((booking) => matchesMobileChip(booking, mobileChip)).length === 0 ? (
+          <p className="rounded-2xl border border-zinc-200 bg-white px-4 py-10 text-center text-sm text-zinc-500">
+            {t("emptyBookings")}
+          </p>
+        ) : (
+          <ul className="space-y-2.5">
+            {filtered
+              .filter((booking) => matchesMobileChip(booking, mobileChip))
+              .map((b) => {
+                const leg = b.legs?.[0];
+                const fromId = leg?.fromId || "";
+                const toId = leg?.toId || "";
+                const from = fromId
+                  ? locationShortName(getLocation(fromId), locale) || fromId
+                  : "—";
+                const to = toId
+                  ? locationShortName(getLocation(toId), locale) || toId
+                  : "—";
+                const status = cardStatusLabel(b);
+                const code = leg?.vehicleCode || "";
+                return (
+                  <li key={b.id}>
+                    <button
+                      type="button"
+                      onClick={() => openDetail(b.id)}
+                      className="flex w-full items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 text-left shadow-sm"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={cn(
+                            "text-[15px] font-semibold",
+                            b.type === "round-trip" ? "text-rose-600" : "text-zinc-950"
+                          )}
+                        >
+                          #{b.bookingNumber}
+                        </p>
+                        <p className="mt-0.5 text-xs text-zinc-500">
+                          {pickupLabel(leg?.date, leg?.time, locale)}
+                        </p>
+                        <p className="mt-1 truncate text-sm text-zinc-800">
+                          {from}
+                          <span className="px-1 text-zinc-400">→</span>
+                          {to}
+                        </p>
+                        <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-zinc-500">
+                          <Car className="size-3.5 shrink-0" />
+                          {vehicleLabel(code)}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2.5">
+                        <div className="text-right">
+                          <p className={cn("text-xs font-medium", status.className)}>
+                            {status.label}
+                          </p>
+                          <p className="mt-1 text-sm font-semibold tabular-nums text-zinc-950">
+                            {money(b.totalPrice)}
+                          </p>
+                        </div>
+                        <span className="inline-flex size-8 items-center justify-center rounded-full bg-emerald-500 text-white">
+                          <ChevronRight className="size-4" />
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+          </ul>
+        )}
+      </div>
+
+      <div className="-mx-4 hidden overflow-hidden border-y border-zinc-300 bg-white sm:mx-0 sm:rounded-lg sm:border sm:shadow-sm lg:block">
         {filtered.length === 0 ? (
           <p className="px-4 py-10 text-center text-sm text-zinc-500">
             {t("emptyBookings")}
@@ -255,15 +783,19 @@ export function AdminBookingsPage() {
                         index % 2 === 0 ? "bg-white" : "bg-zinc-50/80"
                       )}
                     >
-                      <td
-                        className={cn(
-                          "truncate px-0.5 py-0.5 font-semibold",
-                          b.type === "round-trip"
-                            ? "text-rose-600"
-                            : "text-zinc-900"
-                        )}
-                      >
-                        {b.bookingNumber}
+                      <td className="truncate px-0.5 py-0.5">
+                        <button
+                          type="button"
+                          className={cn(
+                            "max-w-full truncate text-left font-semibold underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-900",
+                            b.type === "round-trip"
+                              ? "text-rose-600"
+                              : "text-zinc-900"
+                          )}
+                          onClick={() => openDetail(b.id)}
+                        >
+                          {b.bookingNumber}
+                        </button>
                       </td>
                       <td className="truncate px-0.5 py-0.5 text-zinc-800">
                         {fromId
@@ -291,14 +823,17 @@ export function AdminBookingsPage() {
                         {trip}
                       </td>
                       <td className="truncate px-0.5 py-0.5">
-                        <OpsBadge
-                          status={b.opsStatus}
-                          label={t(`ops.${b.opsStatus}`)}
-                          compact
-                        />
+                        <span
+                          className={cn(
+                            "inline-flex max-w-full items-center gap-1 truncate rounded-full px-1.5 py-0.5 font-medium ring-1",
+                            STATUS_STYLE[detailStatusOf(b)].trigger
+                          )}
+                        >
+                          {statusLabel(detailStatusOf(b))}
+                        </span>
                       </td>
                       <td className="truncate px-0.5 py-0.5 text-right font-semibold tabular-nums text-zinc-950">
-                        {money(bookingDisplayAmount(b))}
+                        {money(b.totalPrice)}
                       </td>
                       <td className="px-0.5 py-0.5">
                         <div className="flex items-center justify-center">
@@ -329,255 +864,42 @@ export function AdminBookingsPage() {
           if (!open) setSelectedId(null);
         }}
       >
-        <DialogContent className="max-h-[min(88vh,560px)] w-full gap-0 overflow-hidden rounded-2xl border-0 p-0 shadow-xl shadow-zinc-900/10 ring-1 ring-zinc-200/80 sm:max-w-[720px]">
+        <DialogContent className="max-h-[min(88vh,640px)] w-full gap-0 overflow-hidden rounded-2xl border-0 p-0 shadow-xl ring-1 ring-zinc-200/80 sm:max-w-lg">
           {selected && (
-            <div className="flex max-h-[min(88vh,560px)] flex-col bg-white">
-              <DialogHeader className="shrink-0 border-b border-zinc-100 px-5 py-3.5 pr-12 text-left">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
-                    <CalendarDays className="size-4" />
-                  </span>
-                  <DialogTitle className="font-mono text-lg font-semibold tracking-tight text-zinc-950">
-                    #{selected.bookingNumber}
-                  </DialogTitle>
-                  <OpsBadge
-                    status={selected.opsStatus}
-                    label={t(`ops.${selected.opsStatus}`)}
-                  />
-                  <span
-                    aria-hidden
-                    className="hidden h-4 w-px bg-zinc-200 sm:block"
-                  />
-                  <span className="text-sm text-zinc-500">
-                    {selected.service === "rental"
-                      ? t("serviceRental")
-                      : t("serviceTransfer")}
-                    {selected.legs[0]
-                      ? ` · ${selected.legs[0].date} ${selected.legs[0].time}`
-                      : ""}
-                  </span>
-                </div>
-                <DialogDescription className="sr-only">
-                  {t("detailTitle")} #{selected.bookingNumber}
+            <div className="flex max-h-[min(88vh,640px)] flex-col bg-white">
+              <DialogHeader className="shrink-0 border-b border-zinc-100 px-5 py-4 pr-12 text-left">
+                <DialogTitle className="font-mono text-lg font-semibold text-zinc-950">
+                  #{selected.bookingNumber}
+                </DialogTitle>
+                <DialogDescription className="text-sm text-emerald-700">
+                  {statusLabel(detailStatusOf(selected))}
                 </DialogDescription>
               </DialogHeader>
-
-              <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[1.2fr_0.9fr]">
-                <div className="overflow-y-auto px-5 py-4">
-                  <div className="space-y-0 divide-y divide-zinc-100">
-                    <div className="flex gap-3 pb-4">
-                      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-sky-50 text-sky-600">
-                        <User className="size-3.5" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-zinc-400">
-                          {t("colCustomer")}
-                        </p>
-                        <p className="mt-0.5 text-sm font-semibold text-zinc-950">
-                          {selected.customerName}
-                        </p>
-                        <p className="mt-0.5 truncate text-xs text-zinc-500">
-                          {selected.customerPhone}
-                          <span className="text-zinc-300"> · </span>
-                          {selected.customerEmail}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 py-4">
-                      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                        <MapPin className="size-3.5" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-zinc-400">
-                          {t("colRoute")}
-                        </p>
-                        <p className="mt-0.5 text-sm font-semibold leading-snug text-zinc-950">
-                          {routeLabel(selected)}
-                        </p>
-                        {selected.flightNumber && (
-                          <p className="mt-1 text-xs text-zinc-500">
-                            {t("flight")}: {selected.flightNumber}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2.5 pt-4">
-                      <div className="rounded-xl bg-violet-50/80 p-3">
-                        <div className="flex items-center gap-2">
-                          <span className="flex size-7 items-center justify-center rounded-full bg-violet-100 text-violet-600">
-                            <Wallet className="size-3.5" />
-                          </span>
-                          <p className="text-[11px] font-medium text-zinc-500">
-                            {t("colAmount")}
-                          </p>
-                        </div>
-                        <p className="mt-2 text-xl font-semibold tabular-nums tracking-tight text-zinc-950">
-                          {money(bookingDisplayAmount(selected))}
-                        </p>
-                        {selected.service === "rental" &&
-                          selected.balanceDue != null &&
-                          selected.balanceDue > 0 && (
-                            <p className="mt-1 text-[11px] text-zinc-500">
-                              {t("rentalBalanceDue", {
-                                amount: money(selected.balanceDue),
-                              })}
-                            </p>
-                          )}
-                      </div>
-
-                      <div className="rounded-xl bg-orange-50/80 p-3">
-                        <div className="flex items-center gap-2">
-                          <span className="flex size-7 items-center justify-center rounded-full bg-orange-100 text-orange-700">
-                            <Landmark className="size-3.5" />
-                          </span>
-                          <p className="text-[11px] font-medium text-zinc-500">
-                            {t("payment")}
-                          </p>
-                        </div>
-                        <p className="mt-2 line-clamp-2 text-xs font-medium leading-snug text-zinc-800">
-                          {selected.payment?.summary ?? "—"}
-                        </p>
-                        {selected.payment?.status && (
-                          <span
-                            className={cn(
-                              "mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1",
-                              selected.payment.status === "paid"
-                                ? "bg-emerald-50 text-emerald-800 ring-emerald-200"
-                                : "bg-amber-50 text-amber-900 ring-amber-200"
-                            )}
-                          >
-                            {selected.payment.status === "paid"
-                              ? t("paymentPaid")
-                              : t("paymentAwaiting")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {selected.payment?.transferProof && (
-                      <div className="pt-4">
-                        <p className="mb-1.5 text-[11px] font-medium text-zinc-400">
-                          {t("transferProof")}
-                        </p>
-                        <TransferProofPreview
-                          proof={selected.payment.transferProof}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 border-t border-zinc-100 bg-[#fafafa] px-5 py-4 md:border-t-0 md:border-l">
-                  <div className="flex items-center gap-2">
-                    <Settings2 className="size-3.5 text-zinc-400" />
-                    <p className="text-sm font-semibold text-zinc-800">
-                      {t("managePanel")}
+              <div className="overflow-y-auto px-5 py-3">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {detailRows(selected).map((row) => (
+                      <tr key={row.label} className="border-b border-zinc-100">
+                        <th className="w-28 py-2.5 pr-3 text-left align-top text-xs font-medium text-zinc-500">
+                          {row.label}
+                        </th>
+                        <td className="py-2.5 whitespace-pre-line text-zinc-950">
+                          {row.value}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {selected.payment?.transferProof ? (
+                  <div className="pt-4">
+                    <p className="mb-1.5 text-xs font-medium text-zinc-500">
+                      {t("transferProof")}
                     </p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-zinc-500">
-                      {t("opsStatus")}
-                    </label>
-                    <Select
-                      value={selected.opsStatus}
-                      onValueChange={(v) => {
-                        if (!v) return;
-                        setOpsStatus(selected.id, v as OpsStatus);
-                        toast.success(t("toastUpdated"));
-                      }}
-                    >
-                      <SelectTrigger className="h-10 w-full cursor-pointer rounded-xl border-zinc-200 bg-white px-3 shadow-none hover:bg-white">
-                        <SelectValue>
-                          <OpsBadge
-                            status={selected.opsStatus}
-                            label={t(`ops.${selected.opsStatus}`)}
-                          />
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {OPS_STATUSES.map((s) => (
-                          <SelectItem
-                            key={s}
-                            value={s}
-                            className="cursor-pointer"
-                          >
-                            <OpsBadge status={s} label={t(`ops.${s}`)} />
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-zinc-500">
-                      {t("assignDriver")}
-                    </label>
-                    <Select
-                      value={selected.driverId ?? "none"}
-                      onValueChange={(v) => {
-                        if (!v) return;
-                        assignDriver(selected.id, v === "none" ? null : v);
-                        toast.success(t("toastUpdated"));
-                      }}
-                    >
-                      <SelectTrigger className="h-10 w-full cursor-pointer rounded-xl border-zinc-200 bg-white px-3 shadow-none hover:bg-white">
-                        <SelectValue>
-                          {selected.driverId
-                            ? (drivers.find((d) => d.id === selected.driverId)
-                                ?.name ?? t("unassigned"))
-                            : t("unassigned")}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none" className="cursor-pointer">
-                          {t("unassigned")}
-                        </SelectItem>
-                        {drivers.map((d) => (
-                          <SelectItem
-                            key={d.id}
-                            value={d.id}
-                            disabled={!d.active}
-                            className="cursor-pointer"
-                          >
-                            {d.name}
-                            {!d.active ? ` (${t("offline")})` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex min-h-0 flex-1 flex-col space-y-1">
-                    <label className="text-xs font-medium text-zinc-500">
-                      {t("adminNotes")}
-                    </label>
-                    <textarea
-                      className="min-h-[72px] w-full flex-1 cursor-text resize-none rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-zinc-400 focus:border-zinc-300 focus:ring-2 focus:ring-sky-100"
-                      defaultValue={selected.adminNotes ?? ""}
-                      key={selected.id}
-                      placeholder={t("adminNotesHint")}
-                      onBlur={(e) => {
-                        updateBooking(selected.id, {
-                          adminNotes: e.target.value,
-                        });
-                      }}
+                    <TransferProofPreview
+                      proof={selected.payment.transferProof}
                     />
                   </div>
-
-                  <Button
-                    variant="outline"
-                    className="mt-1 h-10 w-full cursor-pointer rounded-xl border-rose-200 bg-white font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-                    onClick={() => {
-                      setOpsStatus(selected.id, "cancelled");
-                      toast.message(t("toastCancelled"));
-                    }}
-                  >
-                    {t("cancelBooking")}
-                  </Button>
-                </div>
+                ) : null}
               </div>
             </div>
           )}

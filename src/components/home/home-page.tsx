@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Building2,
   Car,
+  Coins,
   Hotel,
   Map,
   MapPin,
@@ -11,7 +12,11 @@ import {
   Phone,
   Plane,
   Shield,
+  ShieldCheck,
   Ship,
+  Tag,
+  Ticket,
+  UserRound,
   Users,
   Waves,
 } from "lucide-react";
@@ -53,6 +58,13 @@ const serviceDefs = [
   { href: "/attraction-transfer", labelKey: "attractionTransfer", icon: Map },
 ] as const;
 
+const heroPoints = [
+  { icon: Tag, key: "bullet1" },
+  { icon: Coins, key: "bullet2" },
+  { icon: UserRound, key: "bullet3" },
+  { icon: Ticket, key: "bullet4" },
+] as const;
+
 const featureKeys = [
   { icon: MapPin, title: "feature1Title", desc: "feature1Desc" },
   { icon: Car, title: "feature2Title", desc: "feature2Desc" },
@@ -62,6 +74,7 @@ const featureKeys = [
 
 export function HomePage() {
   const t = useTranslations("Home");
+  const tPrice = useTranslations("PriceChecker");
   const tn = useTranslations("Nav");
   const tc = useTranslations("Common");
   const tFaq = useTranslations("Faq");
@@ -69,35 +82,71 @@ export function HomePage() {
 
   return (
     <>
-      <section className="relative overflow-hidden border-b bg-background">
-        <div className="mx-auto grid max-w-7xl items-start gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,420px)_1fr] lg:gap-10 lg:px-8 lg:py-14">
+      <section className="relative -mt-18 overflow-hidden bg-zinc-100 sm:-mt-20 lg:mt-0 lg:border-b">
+        <div className="mx-auto grid max-w-7xl items-start gap-8 px-4 pb-0 pt-0 sm:px-6 lg:grid-cols-[minmax(0,420px)_1fr] lg:gap-10 lg:px-8 lg:py-14">
           <div className="lg:sticky lg:top-24">
-            <PriceChecker />
+            <div className="relative -mx-4 sm:-mx-6 lg:hidden">
+              <PublicImage
+                src="/images/hero-airport-sunset.png"
+                alt=""
+                width={1024}
+                height={576}
+                priority
+                className="block h-auto w-full"
+              />
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-[70%] bg-gradient-to-r from-background via-background/75 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-zinc-100 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 px-5 pb-14">
+                <p className="text-[1.85rem] font-extrabold leading-[1.15] text-zinc-950">
+                  {tPrice("title")}
+                </p>
+                <p className="text-gold-gradient text-[1.85rem] font-extrabold leading-[1.15]">
+                  {tPrice("heroLine")}
+                </p>
+                <p className="mt-2 max-w-[15.5rem] text-[13px] leading-snug text-zinc-600">
+                  {tPrice("subtitle")}
+                </p>
+              </div>
+            </div>
+            <div className="relative z-10 -mt-12 lg:mt-0">
+              <PriceChecker hideIntro />
+            </div>
           </div>
 
           <div className="space-y-5 lg:-mt-6">
             <HeroCarSlider />
-            <div className="space-y-4">
-              <p className="text-sm font-medium tracking-wide text-amber-700 uppercase">
+            <div className="-mx-4 rounded-t-[1.75rem] rounded-b-none border border-b-0 border-white bg-white p-5 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.22)] sm:-mx-6 sm:p-6 lg:mx-0 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+              <p className="inline-flex items-center gap-2 rounded-full bg-[#fff4cc] px-3 py-1.5 text-sm font-semibold text-zinc-950">
+                <Car className="size-4 text-amber-500" />
                 {t("privateTransfer")}
               </p>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-                {t("startFrom")} <span className="text-gold-gradient">฿400</span>
+              <h1 className="mt-4 text-[2rem] font-extrabold leading-none tracking-tight text-zinc-950 sm:text-4xl">
+                {t("startFrom")}{" "}
+                <span className="text-gold-gradient">฿400</span>
               </h1>
-              <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+              <p className="mt-3 text-sm leading-relaxed text-zinc-800 sm:text-[15px]">
                 {t("heroBody")}{" "}
-                <span className="font-semibold text-amber-700">
-                  {t("discount")}
-                </span>{" "}
+                <span className="font-bold text-red-500">{t("discount")}</span>{" "}
                 {t("onReturn")}
               </p>
-              <ul className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-                <li>• {t("bullet1")}</li>
-                <li>• {t("bullet2")}</li>
-                <li>• {t("bullet3")}</li>
-                <li>• {t("bullet4")}</li>
+              <ul className="mt-5 space-y-3.5">
+                {heroPoints.map((point) => (
+                  <li key={point.key} className="flex items-center gap-3">
+                    <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-[#fff6d8] text-amber-500">
+                      <point.icon className="size-3.5" />
+                    </span>
+                    <span className="text-sm font-medium text-zinc-950 sm:text-[15px]">
+                      {t(point.key)}
+                    </span>
+                  </li>
+                ))}
               </ul>
-              <p className="text-sm text-muted-foreground">{t("slogan")}</p>
+              <div className="mt-5 border-t border-zinc-200 pt-4">
+                <p className="flex items-center gap-2 text-sm text-zinc-500">
+                  <ShieldCheck className="size-4 shrink-0 text-zinc-400" />
+                  {t("slogan")}
+                </p>
+              </div>
             </div>
           </div>
         </div>

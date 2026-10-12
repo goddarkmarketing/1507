@@ -8,8 +8,8 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM =
   Deno.env.get("NOTIFY_FROM_EMAIL") ?? "Krabi Links Taxi <onboarding@resend.dev>";
 const ADMIN_WEBHOOK = Deno.env.get("ADMIN_NOTIFY_WEBHOOK") ?? "";
-/** Ops inbox — e.g. goddarkmarketing@gmail.com for testing */
-const ADMIN_NOTIFY_EMAIL = Deno.env.get("ADMIN_NOTIFY_EMAIL") ?? "";
+/** Ops inbox. Booking alerts go here only. */
+const ADMIN_NOTIFY_EMAIL = "krabilinkstaxi.social@gmail.com";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",

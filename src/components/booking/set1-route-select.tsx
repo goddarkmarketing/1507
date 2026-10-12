@@ -1,8 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Check, ChevronDown, Search } from "lucide-react";
+import {
+  Building2,
+  Bus,
+  Check,
+  ChevronDown,
+  Hotel,
+  Landmark,
+  MapPin,
+  Mountain,
+  Plane,
+  Search,
+  Ship,
+  TrainFront,
+  Trees,
+  Waves,
+  type LucideIcon,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -11,11 +27,43 @@ import {
 } from "@/components/ui/popover";
 import { bookingSelectTriggerClass } from "@/lib/booking/form-field-styles";
 import { useCatalogStore } from "@/lib/admin/catalog-store";
+import { getLocation } from "@/lib/data/locations";
 import { routeSheetName, set1RouteLabel } from "@/lib/data/set1-place-names";
 import { getAirportSheetRoutes } from "@/lib/data/transfer-routes";
+import type { LocationType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const SET1_HUB = "kbv-airport";
+
+const PLACE_ICONS: Record<LocationType, LucideIcon> = {
+  airport: Plane,
+  pier: Ship,
+  city: Building2,
+  hotel: Hotel,
+  beach: Waves,
+  temple: Landmark,
+  park: Trees,
+  viewpoint: Mountain,
+  attraction: MapPin,
+  border: MapPin,
+  train_station: TrainFront,
+  bus_station: Bus,
+  province: Building2,
+};
+
+function PlaceIcon({ id, className }: { id: string; className?: string }) {
+  const type = getLocation(id)?.type;
+  const Icon = (type && PLACE_ICONS[type]) || MapPin;
+  return <Icon className={className ?? "size-3.5"} />;
+}
+
+function PlaceBadge({ id }: { id: string }) {
+  return (
+    <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+      <PlaceIcon id={id} />
+    </span>
+  );
+}
 
 export function resolveSet1ToId(from: string, to: string): string {
   const routes = getAirportSheetRoutes();
@@ -38,9 +86,13 @@ function routeMatchesQuery(label: string, query: string) {
 export function Set1RouteSelect({
   value,
   onValueChange,
+  icon,
+  className,
 }: {
   value: string;
   onValueChange: (toId: string) => void;
+  icon?: ReactNode;
+  className?: string;
 }) {
   const t = useTranslations("PriceChecker");
   const locale = useLocale();
@@ -92,10 +144,12 @@ export function Set1RouteSelect({
         className={cn(
           "transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50",
           bookingSelectTriggerClass,
-          "h-auto min-h-11 whitespace-normal py-2"
+          "h-auto min-h-11 whitespace-normal py-2",
+          className
         )}
       >
-        <span className="line-clamp-2 text-left leading-snug">
+        {icon ?? <PlaceBadge id={value} />}
+        <span className="line-clamp-2 min-w-0 flex-1 text-left leading-snug">
           {labelOf(value)}
         </span>
         <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
@@ -141,10 +195,11 @@ export function Set1RouteSelect({
                         setQuery("");
                       }}
                       className={cn(
-                        "flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground",
-                        selected && "bg-accent/70"
+                        "flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm outline-none transition-colors hover:bg-amber-50/80",
+                        selected && "bg-amber-50"
                       )}
                     >
+                      <PlaceBadge id={route.toId} />
                       <span className="min-w-0 flex-1 leading-snug">
                         {routeSheetName(route, locale)}
                       </span>

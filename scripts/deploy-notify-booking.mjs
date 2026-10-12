@@ -27,7 +27,8 @@ const local = loadLocalEnv();
 const token = (process.env.SUPABASE_ACCESS_TOKEN || local.SUPABASE_ACCESS_TOKEN || "").trim();
 const ref = (local.SUPABASE_PROJECT_REF || "jihsrntczvqdkxiklcwj").trim();
 const resend = (local.RESEND_API_KEY || "").trim();
-const adminEmail = (local.ADMIN_NOTIFY_EMAIL || "goddarkmarketing@gmail.com").trim();
+const adminEmail = (local.ADMIN_NOTIFY_EMAIL || "krabilinkstaxi.social@gmail.com").trim();
+const fromEmail = (local.NOTIFY_FROM_EMAIL || "Krabi Links Taxi <bookings@krabilinkstaxi.com>").trim();
 
 if (!token) {
   console.error(`
@@ -58,6 +59,7 @@ execFileSync(
     "set",
     `RESEND_API_KEY=${resend}`,
     `ADMIN_NOTIFY_EMAIL=${adminEmail}`,
+    `NOTIFY_FROM_EMAIL=${fromEmail}`,
     "--project-ref",
     ref,
   ],

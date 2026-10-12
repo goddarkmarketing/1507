@@ -73,7 +73,7 @@ export function MobileBottomBar() {
         >
           <span
             className={cn(
-              "-mt-5 flex size-[3.5rem] items-center justify-center rounded-full bg-gold-gradient text-primary-foreground shadow-lg shadow-amber-500/35 ring-[3px] ring-background transition-transform active:scale-95",
+              "-mt-5 relative flex size-[3.5rem] items-center justify-center overflow-hidden rounded-full bg-gold-gradient text-primary-foreground shadow-lg shadow-amber-500/35 ring-[3px] ring-background transition-transform active:scale-95 btn-shine",
               pathname.startsWith("/booking") && "ring-amber-200"
             )}
           >
