@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Booking } from "@/lib/types";
 import {
   canIssueVoucher,
   getAmountDueNow,
@@ -62,7 +63,7 @@ describe("booking-mode", () => {
   });
 
   it("issues a voucher for pay-driver without waiting for staff", () => {
-    const legs = [{ date: "2026-09-20", time: "10:00" }];
+    const legs = [{ date: "2026-09-20", time: "10:00" }] as Booking["legs"];
     expect(
       canIssueVoucher({
         status: "pending",
@@ -74,7 +75,7 @@ describe("booking-mode", () => {
   });
 
   it("issues a voucher during night hours", () => {
-    const legs = [{ date: "2026-09-20", time: "10:00" }];
+    const legs = [{ date: "2026-09-20", time: "10:00" }] as Booking["legs"];
     expect(
       canIssueVoucher(
         {

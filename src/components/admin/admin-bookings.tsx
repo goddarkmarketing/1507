@@ -289,7 +289,9 @@ export function AdminBookingsPage() {
     const vehicle = getVehicle(code);
     const seats = vehicle?.passengers?.split(/[–-]/).pop()?.trim();
     const known = ["ECO", "PREM", "SUV", "VAN", "VIP", "SIG", "EXE", "BUS"];
-    const name = known.includes(code) ? tVehicle(`${code}.name`) : code;
+    const name = known.includes(code)
+      ? tVehicle(`${code}.name` as "ECO.name")
+      : code;
     return seats ? `${name} (${code}) ${tVehicle("pax", { n: seats })}` : `${name} (${code})`;
   };
 
