@@ -2,17 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Car, Clock, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowRight, Car, Check, ChevronDown, Clock, MapPin, ShieldCheck } from "lucide-react";
 import { Set1RouteSelect, resolveSet1ToId } from "@/components/booking/set1-route-select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { getActiveTariffVehicles } from "@/lib/data/vehicles";
@@ -65,6 +63,7 @@ export function PriceChecker({
     (fleet[0]?.code as VehicleCode | undefined) ?? "ECO";
 
   const [tripMode, setTripMode] = useState<TripMode>("one-way");
+  const [vehicleOpen, setVehicleOpen] = useState(false);
   const [toId, setToId] = useState(() =>
     resolveSet1ToId(defaultFrom, defaultTo)
   );
@@ -165,27 +164,60 @@ export function PriceChecker({
           <Label className="px-1 text-sm font-normal text-zinc-500">
             {t("vehicle")}
           </Label>
-          <Select
-            value={vehicleCode}
-            onValueChange={(v) => v && setVehicleCode(v as VehicleCode)}
-          >
-            <SelectTrigger className="h-12 w-full rounded-2xl border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-950 data-[size=default]:h-12">
-              <Car className="size-4 shrink-0 text-amber-500" />
-              <SelectValue placeholder={t("vehicle")}>
+          <Popover open={vehicleOpen} onOpenChange={setVehicleOpen}>
+            <PopoverTrigger
+              type="button"
+              onPointerDown={(e) => e.preventDefault()}
+              className="flex h-12 w-full items-center justify-between gap-2 rounded-2xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-950 outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                <Car className="size-3.5" />
+              </span>
+              <span className="line-clamp-2 min-w-0 flex-1 text-left leading-snug">
                 {(() => {
                   const v = fleet.find((item) => item.code === vehicleCode);
                   return v ? vehicleLabel(v) : t("vehicle");
                 })()}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent align="start" className="max-h-72">
-              {fleet.map((v) => (
-                <SelectItem key={v.code} value={v.code}>
-                  {vehicleLabel(v)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              </span>
+              <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              sideOffset={4}
+              className="w-[var(--anchor-width)] min-w-[min(100vw-2rem,20rem)] rounded-2xl p-1 shadow-lg"
+            >
+              <ul className="max-h-72 overflow-y-auto overscroll-contain">
+                {fleet.map((v) => {
+                  const selected = v.code === vehicleCode;
+                  return (
+                    <li key={v.code}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVehicleCode(v.code);
+                          setVehicleOpen(false);
+                        }}
+                        className={cn(
+                          "flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left text-sm outline-none transition-colors hover:bg-amber-50/80",
+                          selected && "bg-amber-50"
+                        )}
+                      >
+                        <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                          <Car className="size-3.5" />
+                        </span>
+                        <span className="min-w-0 flex-1 leading-snug font-medium text-zinc-950">
+                          {vehicleLabel(v)}
+                        </span>
+                        {selected ? (
+                          <Check className="size-4 shrink-0 text-amber-600" />
+                        ) : null}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
