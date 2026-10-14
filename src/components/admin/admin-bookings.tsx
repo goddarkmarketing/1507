@@ -16,7 +16,11 @@ import type { OpsStatus } from "@/lib/admin/types";
 import type { BookingService } from "@/lib/booking/booking-mode";
 import type { PaymentMethod } from "@/lib/types";
 import { downloadCsv } from "@/lib/admin/catalog-csv";
-import { dropoffDetailLabel, dropoffHotelName } from "@/lib/data/nearby-hotels";
+import {
+  dropoffAreaName,
+  dropoffDetailLabel,
+  dropoffHotelName,
+} from "@/lib/data/nearby-hotels";
 import { getLocation } from "@/lib/data/locations";
 import { getVehicle } from "@/lib/data/vehicles";
 import { locationShortName } from "@/lib/i18n-labels";
@@ -787,34 +791,45 @@ export function AdminBookingsPage() {
           </p>
         ) : (
           <div className="w-full">
-            <table className="w-full table-fixed border-collapse text-left text-[8px] leading-[1.15] sm:text-[11px]">
+            <table className="w-full table-fixed border-collapse text-left text-xs leading-snug sm:text-sm">
+              <colgroup>
+                <col className="w-[13%]" />
+                <col className="w-[15%]" />
+                <col className="w-[24%]" />
+                <col className="w-[11%]" />
+                <col className="w-[9%]" />
+                <col className="w-[7%]" />
+                <col className="w-[9%]" />
+                <col className="w-[7%]" />
+                <col className="w-[5%]" />
+              </colgroup>
               <thead>
-                <tr className="bg-zinc-100 text-[7px] font-semibold tracking-wide text-zinc-600 uppercase sm:text-[10px]">
-                  <th className="w-[14%] border-b border-zinc-300 px-0.5 py-1">
+                <tr className="bg-zinc-100 text-[11px] font-semibold text-zinc-600 sm:text-xs">
+                  <th className="border-b border-zinc-300 px-3 py-2.5">
                     {t("colBooking")}
                   </th>
-                  <th className="w-[13%] border-b border-zinc-300 px-0.5 py-1">
+                  <th className="border-b border-zinc-300 px-3 py-2.5">
                     {t("scheduleColFrom")}
                   </th>
-                  <th className="w-[13%] border-b border-zinc-300 px-0.5 py-1">
+                  <th className="border-b border-zinc-300 px-3 py-2.5">
                     {t("scheduleColTo")}
                   </th>
-                  <th className="w-[12%] border-b border-zinc-300 px-0.5 py-1">
+                  <th className="border-b border-zinc-300 px-3 py-2.5">
                     {t("colWhen")}
                   </th>
-                  <th className="w-[8%] border-b border-zinc-300 px-0.5 py-1">
+                  <th className="border-b border-zinc-300 px-3 py-2.5">
                     {t("scheduleColFlight")}
                   </th>
-                  <th className="w-[7%] border-b border-zinc-300 px-0.5 py-1">
+                  <th className="border-b border-zinc-300 px-3 py-2.5">
                     {t("scheduleColTrip")}
                   </th>
-                  <th className="w-[14%] border-b border-zinc-300 px-0.5 py-1">
+                  <th className="border-b border-zinc-300 px-3 py-2.5">
                     {t("colStatus")}
                   </th>
-                  <th className="w-[11%] border-b border-zinc-300 px-0.5 py-1 text-right">
+                  <th className="border-b border-zinc-300 px-3 py-2.5 text-right">
                     {t("colAmount")}
                   </th>
-                  <th className="w-[8%] border-b border-zinc-300 px-0.5 py-1 text-center">
+                  <th className="border-b border-zinc-300 px-2 py-2.5 text-center">
                     ·
                   </th>
                 </tr>
@@ -824,6 +839,10 @@ export function AdminBookingsPage() {
                   const leg = b.legs?.[0];
                   const fromId = leg?.fromId || "";
                   const toId = leg?.toId || "";
+                  const toArea = toId ? dropoffAreaName(toId, locale) : "";
+                  const toHotel = toId
+                    ? dropoffHotelName(toId, leg?.hotelName, locale)
+                    : "";
                   const toIsAirport =
                     Boolean(toId) && getLocation(toId)?.type === "airport";
                   const trip =
@@ -844,7 +863,7 @@ export function AdminBookingsPage() {
                         index % 2 === 0 ? "bg-white" : "bg-zinc-50/80"
                       )}
                     >
-                      <td className="truncate px-0.5 py-0.5">
+                      <td className="truncate px-3 py-2.5">
                         <button
                           type="button"
                           className={cn(
@@ -858,7 +877,7 @@ export function AdminBookingsPage() {
                           {b.bookingNumber}
                         </button>
                       </td>
-                      <td className="truncate px-0.5 py-0.5 text-zinc-800">
+                      <td className="truncate px-3 py-2.5 text-zinc-800">
                         {fromId
                           ? locationShortName(getLocation(fromId), locale) ||
                             fromId
@@ -866,25 +885,33 @@ export function AdminBookingsPage() {
                       </td>
                       <td
                         className={cn(
-                          "truncate px-0.5 py-0.5 font-medium",
+                          "px-3 py-2.5 font-medium",
                           toIsAirport ? "text-rose-600" : "text-zinc-800"
                         )}
                       >
-                        {toId
-                          ? dropoffDetailLabel(toId, leg?.hotelName, locale) ||
-                            toId
-                          : "—"}
+                        {toId ? (
+                          <div className="min-w-0">
+                            <p className="truncate">{toArea || toId}</p>
+                            {toHotel && toHotel !== toArea ? (
+                              <p className="font-normal break-words text-zinc-500">
+                                {toHotel}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : (
+                          "—"
+                        )}
                       </td>
-                      <td className="truncate px-0.5 py-0.5 text-zinc-800 tabular-nums">
+                      <td className="truncate px-3 py-2.5 text-zinc-800 tabular-nums">
                         {when}
                       </td>
-                      <td className="truncate px-0.5 py-0.5 text-zinc-700">
+                      <td className="truncate px-3 py-2.5 text-zinc-700">
                         {b.flightNumber || "—"}
                       </td>
-                      <td className="px-0.5 py-0.5 font-semibold text-zinc-800">
+                      <td className="px-3 py-2.5 font-semibold text-zinc-800">
                         {trip}
                       </td>
-                      <td className="truncate px-0.5 py-0.5">
+                      <td className="px-3 py-2.5">
                         <span
                           className={cn(
                             "inline-flex max-w-full items-center gap-1 truncate rounded-full px-1.5 py-0.5 font-medium ring-1",
@@ -894,10 +921,10 @@ export function AdminBookingsPage() {
                           {statusLabel(detailStatusOf(b))}
                         </span>
                       </td>
-                      <td className="truncate px-0.5 py-0.5 text-right font-semibold tabular-nums text-zinc-950">
+                      <td className="truncate px-3 py-2.5 text-right font-semibold tabular-nums text-zinc-950">
                         {money(b.totalPrice)}
                       </td>
-                      <td className="px-0.5 py-0.5">
+                      <td className="px-2 py-2.5">
                         <div className="flex items-center justify-center">
                           <button
                             type="button"
