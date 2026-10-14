@@ -16,6 +16,7 @@ import type { OpsStatus } from "@/lib/admin/types";
 import type { BookingService } from "@/lib/booking/booking-mode";
 import type { PaymentMethod } from "@/lib/types";
 import { downloadCsv } from "@/lib/admin/catalog-csv";
+import { dropoffDetailLabel, dropoffHotelName } from "@/lib/data/nearby-hotels";
 import { getLocation } from "@/lib/data/locations";
 import { getVehicle } from "@/lib/data/vehicles";
 import { locationShortName } from "@/lib/i18n-labels";
@@ -391,6 +392,14 @@ export function AdminBookingsPage() {
         ),
       },
       { label: t("detailPlace"), value: routeLabel(booking) },
+      ...(() => {
+        const hotels = legs
+          .map((leg) => dropoffHotelName(leg.toId, leg.hotelName, locale))
+          .filter(Boolean);
+        return hotels.length
+          ? [{ label: t("detailHotel"), value: hotels.join("\n") }]
+          : [];
+      })(),
       { label: t("detailTime"), value: when },
       { label: t("detailVehicle"), value: vehicle },
       {
@@ -473,7 +482,9 @@ export function AdminBookingsPage() {
         booking.customerEmail || "",
         booking.customerPhone || "",
         fromId ? locationShortName(getLocation(fromId), locale) || fromId : "",
-        toId ? locationShortName(getLocation(toId), locale) || toId : "",
+        toId
+          ? dropoffDetailLabel(toId, leg?.hotelName, locale) || toId
+          : "",
         leg ? `${leg.date} ${leg.time}` : "",
         booking.flightNumber || "",
         trip,
@@ -715,7 +726,7 @@ export function AdminBookingsPage() {
                   ? locationShortName(getLocation(fromId), locale) || fromId
                   : "—";
                 const to = toId
-                  ? locationShortName(getLocation(toId), locale) || toId
+                  ? dropoffDetailLabel(toId, leg?.hotelName, locale) || toId
                   : "—";
                 const status = cardStatusLabel(b);
                 const code = leg?.vehicleCode || "";
@@ -860,7 +871,8 @@ export function AdminBookingsPage() {
                         )}
                       >
                         {toId
-                          ? locationShortName(getLocation(toId), locale) || toId
+                          ? dropoffDetailLabel(toId, leg?.hotelName, locale) ||
+                            toId
                           : "—"}
                       </td>
                       <td className="truncate px-0.5 py-0.5 text-zinc-800 tabular-nums">

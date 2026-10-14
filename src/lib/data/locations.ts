@@ -813,7 +813,7 @@ export const locations: Location[] = [
     "connections": [
       "kbv-airport"
     ],
-    "pricingAreaId": "klong-muang"
+    "pricingAreaId": "tubkaak-beach"
   },
   {
     "id": "tubkaak-krabi-resort",

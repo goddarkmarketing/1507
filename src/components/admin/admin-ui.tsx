@@ -1,6 +1,8 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import { useLocationName } from "@/lib/i18n-labels";
+import { dropoffDetailLabel } from "@/lib/data/nearby-hotels";
 import { getLocation } from "@/lib/data/locations";
 import type { AdminBooking, OpsStatus } from "@/lib/admin/types";
 import { cn } from "@/lib/utils";
@@ -65,6 +67,7 @@ export function OpsBadge({
 }
 
 export function useRouteLabel() {
+  const locale = useLocale();
   const locName = useLocationName();
   return (booking: AdminBooking) => {
     const leg = booking.legs?.[0];
@@ -72,11 +75,11 @@ export function useRouteLabel() {
     const fromId = leg.fromId || "";
     const toId = leg.toId || "";
     const from = fromId ? getLocation(fromId) : undefined;
-    const to = toId ? getLocation(toId) : undefined;
     const short = (name: string | undefined | null) =>
       (name || "—").split("(")[0].trim();
     const left = short(locName(from) || fromId || null);
-    const right = short(locName(to) || toId || null);
+    const right =
+      dropoffDetailLabel(toId, leg.hotelName, locale) || toId || "—";
     if (left === "—" && right === "—") return "—";
     return `${left} → ${right}`;
   };

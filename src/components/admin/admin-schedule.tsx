@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Check, Pencil, Trash2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAdminStore } from "@/lib/admin/store";
+import { dropoffDetailLabel } from "@/lib/data/nearby-hotels";
 import { getLocation } from "@/lib/data/locations";
 import { locationShortName } from "@/lib/i18n-labels";
 import { OpsBadge } from "@/components/admin/admin-ui";
@@ -193,7 +194,8 @@ export function AdminSchedulePage() {
                           toIsAirport ? "text-rose-600" : "text-zinc-800"
                         )}
                       >
-                        {short(leg.toId)}
+                        {dropoffDetailLabel(leg.toId, leg.hotelName, locale) ||
+                          short(leg.toId)}
                       </td>
                       <td className="truncate px-0.5 py-0.5 text-zinc-800 tabular-nums">
                         {when}

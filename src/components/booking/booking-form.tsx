@@ -65,7 +65,11 @@ import {
   getActiveRentalDeposits,
   useSettingsRevision,
 } from "@/lib/admin/settings-store";
-import { hotelAreaId } from "@/lib/data/nearby-hotels";
+import {
+  dropoffAreaName,
+  dropoffHotelName,
+  hotelAreaId,
+} from "@/lib/data/nearby-hotels";
 import { getLocation } from "@/lib/data/locations";
 import { routeHasOfficialPrice } from "@/lib/data/pricing";
 import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
@@ -984,16 +988,20 @@ export function BookingForm() {
             {draft.legs.map((leg, i) => {
               const from = getLocation(leg.fromId);
               const to = getLocation(leg.toId);
+              const area = dropoffAreaName(leg.toId, locale);
+              const hotel = dropoffHotelName(leg.toId, leg.hotelName, locale);
               const vehicle = activeVehicles.find((v) => v.code === leg.vehicleCode);
               return (
                 <div key={leg.id} className="space-y-1 text-sm">
                   <p className="font-medium">
                     {isCharter
                       ? t("charterN", { n: i + 1 })
-                      : `${locName(from).split("(")[0].trim()} → ${locName(to).split("(")[0].trim()}`}
+                      : `${locName(from).split("(")[0].trim()} → ${area || locName(to).split("(")[0].trim()}`}
                   </p>
-                  {leg.hotelName ? (
-                    <p className="text-muted-foreground">{leg.hotelName}</p>
+                  {hotel && hotel !== area ? (
+                    <p className="text-muted-foreground">
+                      {t("summaryHotel")}: {hotel}
+                    </p>
                   ) : null}
                   <p className="text-muted-foreground">
                     {leg.date} {t("at")} {leg.time}

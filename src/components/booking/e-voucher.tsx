@@ -106,39 +106,33 @@ function WelcomeBoard({
         alt=""
         className="absolute inset-0 h-full w-full object-fill"
       />
-      <div className="absolute inset-x-[10%] top-[54%] flex flex-col items-center gap-1.5 px-3 text-center sm:gap-2">
+      <div className="absolute inset-x-[6%] top-[56%] flex flex-col items-center gap-0.5 px-1 text-center sm:inset-x-[10%] sm:gap-2 sm:px-3">
         {route ? (
-          <p className="voucher-board-meta max-w-full text-sm leading-snug font-bold text-balance sm:text-xl">
+          <p className="voucher-board-meta max-w-full text-[10px] leading-tight font-bold sm:text-xl sm:leading-snug">
             <span style={{ color: BOARD_INK }}>{route}</span>
           </p>
         ) : null}
         {placeLine ? (
           <p
-            className="voucher-board-meta max-w-full text-xs leading-snug font-semibold sm:text-base"
+            className="voucher-board-meta max-w-full text-[9px] leading-tight font-semibold sm:text-base sm:leading-snug"
             style={{ color: BOARD_INK }}
           >
             {placeLine}
           </p>
         ) : null}
         <p
-          className="voucher-board-meta text-base leading-snug font-bold sm:text-2xl"
+          className="voucher-board-meta max-w-full text-[10px] leading-tight font-bold whitespace-nowrap sm:text-xl sm:leading-snug"
           style={{ color: BOARD_INK }}
         >
-          {leg.date} · {leg.time}
+          {leg.date} · {leg.time} · {vehicleLabel}
         </p>
         <p
-          className="voucher-board-meta text-sm leading-snug font-bold sm:text-xl"
-          style={{ color: BOARD_INK }}
-        >
-          {vehicleLabel}
-        </p>
-        <p
-          className="voucher-board-title max-w-full text-3xl leading-tight font-bold break-words sm:text-5xl"
+          className="voucher-board-title max-w-full text-4xl leading-none font-bold break-words sm:text-6xl sm:leading-tight md:text-8xl"
           style={{ color: BOARD_INK }}
         >
           {booking.customerName}
         </p>
-        <div className="mt-0.5 flex items-center gap-2 sm:gap-3">
+        <div className="mt-1 flex items-center gap-2 sm:gap-3">
           <span className="h-px w-10 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
           <span
             className="size-1.5 shrink-0 rotate-45"
@@ -146,12 +140,6 @@ function WelcomeBoard({
           />
           <span className="h-px w-10 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
         </div>
-        <p
-          className="mt-1.5 text-[11px] font-bold tracking-[0.14em] sm:text-sm"
-          style={{ color: BOARD_INK }}
-        >
-          By KRABILINKSTAXI
-        </p>
       </div>
     </section>
   );
@@ -174,6 +162,12 @@ export function EVoucher({ booking }: EVoucherProps) {
         : undefined;
   const outFrom = outbound ? getLocation(outbound.fromId) : undefined;
   const outTo = outbound ? getLocation(outbound.toId) : undefined;
+  const outArea = outTo?.pricingAreaId
+    ? (getLocation(outTo.pricingAreaId) ?? outTo)
+    : outTo;
+  const outHotel =
+    outbound?.hotelName?.trim() ||
+    (outTo?.type === "hotel" ? locName(outTo) : "");
   const outVehicle = outbound
     ? vehicles.find((v) => v.code === outbound.vehicleCode)
     : undefined;
@@ -237,9 +231,12 @@ export function EVoucher({ booking }: EVoucherProps) {
           <div className="voucher-col flex min-h-0 flex-col">
             <SectionBar>{t("arrivalDetails")}</SectionBar>
             <Cell label={t("start")} value={locName(outFrom)} />
-            <Cell label={t("destination")} value={locName(outTo)} />
+            <Cell label={t("destination")} value={locName(outArea)} />
             <Cell label={t("from")} value={outFrom ? locName(outFrom) : "—"} />
-            <Cell label={t("to")} value={outTo ? locName(outTo) : "—"} />
+            <Cell
+              label={t("to")}
+              value={outHotel || (outTo ? locName(outTo) : "—")}
+            />
             <Cell
               label={t("arrivalDate")}
               value={outbound ? formatVoucherDate(outbound.date, locale) : "—"}
