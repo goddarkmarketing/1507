@@ -20,6 +20,30 @@ describe("groupLocations priced drop-off list", () => {
     expect(groups.some((g) => g.type === "hotel")).toBe(false);
   });
 
+  it("lets Ao Nang drop off at places outside the airport sheet", () => {
+    const ids = groupLocations(locations, "dropoff", {
+      pairedId: "ao-nang-beach",
+      query: "",
+      getName,
+    }).flatMap((g) => g.locations.map((l) => l.id));
+    expect(ids).toContain("krabi-town");
+    expect(ids).toContain("koh-lanta-z1");
+    expect(ids).toContain("phuket-airport");
+    expect(ids.some((id) => id.includes("centara"))).toBe(false);
+  });
+
+  it("lists hotels in the booking dropdown", () => {
+    const groups = groupLocations(locations, "dropoff", {
+      includeHotels: true,
+      query: "",
+      getName,
+    });
+    const hotel = groups.find((group) => group.type === "hotel");
+    expect(hotel?.locations.some((loc) => loc.id.includes("centara"))).toBe(
+      true
+    );
+  });
+
   it("allows hotel search that maps to a tariff area", () => {
     const groups = groupLocations(locations, "dropoff", {
       pairedId: "kbv-airport",

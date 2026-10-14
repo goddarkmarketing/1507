@@ -116,6 +116,8 @@ export interface BookingLeg {
   time: string;
   vehicleCode: VehicleCode;
   price: number;
+  /** Hotel the guest named when it is not one of the listed resorts. */
+  hotelName?: string;
 }
 
 export interface Booking {
@@ -129,6 +131,8 @@ export interface Booking {
   flightNumber?: string;
   notes?: string;
   totalPrice: number;
+  /** pending = customer asked for a route that has no tariff yet */
+  priceStatus?: "official" | "pending";
   /** Night driver surcharge (00:00–08:00 pickup), included in totalPrice */
   serviceCharge?: number;
   /** transfer = pay full total; rental = pay advance deposit online */

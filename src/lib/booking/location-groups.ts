@@ -1,9 +1,6 @@
 import type { Location, LocationType } from "@/lib/types";
 import { SET1_PLACE_NAMES, set1RouteLabel } from "@/lib/data/set1-place-names";
-import {
-  getOfficialPartnerIds,
-  getSet1LocationIds,
-} from "@/lib/data/transfer-routes";
+import { getSet1LocationIds } from "@/lib/data/transfer-routes";
 
 export type LocationSelectRole = "pickup" | "dropoff";
 
@@ -77,24 +74,6 @@ function matchesQuery(
   return words.length > 0 && words.every((word) => hay.includes(word));
 }
 
-function isPricedListLocation(
-  loc: Location,
-  partnerIds: Set<string>,
-  query: string
-) {
-  // Empty search: only official tariff destinations (not hotels).
-  if (!query.trim()) {
-    return partnerIds.has(loc.id);
-  }
-
-  // Search: tariff destinations + hotels that inherit those areas.
-  if (partnerIds.has(loc.id)) return true;
-  if (loc.type === "hotel" && loc.pricingAreaId && partnerIds.has(loc.pricingAreaId)) {
-    return true;
-  }
-  return false;
-}
-
 export function groupLocations(
   all: Location[],
   role: LocationSelectRole,
@@ -104,29 +83,26 @@ export function groupLocations(
     pairedId?: string;
     /** Price Checker: both ends stay on Set 1 (airport ↔ 55), no hotels. */
     tariffScope?: "set1";
+    /** Booking form lists hotels in the dropdown, not only via search. */
+    includeHotels?: boolean;
     query?: string;
     getName: (loc: Location) => string;
   }
 ): LocationGroup[] {
-  const { excludeId, pairedId, tariffScope, query = "", getName } = options;
+  const { excludeId, tariffScope, includeHotels = false, query = "", getName } =
+    options;
   const typeOrder =
     role === "pickup" ? PICKUP_TYPE_ORDER : DROPOFF_TYPE_ORDER;
 
   const set1Allowed =
     tariffScope === "set1" ? new Set(getSet1LocationIds()) : null;
 
-  const partnerIds =
-    !set1Allowed && pairedId && role === "dropoff"
-      ? new Set(getOfficialPartnerIds(pairedId))
-      : null;
-
   const filtered = all.filter((loc) => {
     if (loc.id === excludeId) return false;
     if (!matchesQuery(loc, query, getName)) return false;
     if (set1Allowed) return set1Allowed.has(loc.id);
-    if (partnerIds && partnerIds.size > 0) {
-      return isPricedListLocation(loc, partnerIds, query);
-    }
+    // Price checker hides hotels until search. Booking lists them up front.
+    if (!includeHotels && !query.trim() && loc.type === "hotel") return false;
     return true;
   });
 

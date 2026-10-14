@@ -32,12 +32,23 @@ export interface AdminBooking extends Booking {
 export type AdminBookingPatch = Partial<
   Pick<
     AdminBooking,
-    "opsStatus" | "driverId" | "adminNotes" | "status" | "payment"
+    | "opsStatus"
+    | "driverId"
+    | "adminNotes"
+    | "status"
+    | "payment"
+    | "totalPrice"
+    | "priceStatus"
+    | "legs"
+    | "amountDueNow"
+    | "balanceDue"
+    | "paymentPlan"
   >
 >;
 
 export function deriveOpsStatus(booking: Booking): OpsStatus {
   if (booking.status === "cancelled") return "cancelled";
+  if (booking.priceStatus === "pending") return "new";
   if (booking.status === "pending") return "payment_review";
 
   if (

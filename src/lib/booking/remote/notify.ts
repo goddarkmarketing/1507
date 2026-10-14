@@ -1,4 +1,18 @@
+import { getLocation } from "@/lib/data/locations";
 import type { Booking } from "@/lib/types";
+
+export type BookingEmailKind = "confirmed" | "quote-request" | "quote-ready";
+
+function tripSummary(booking: Booking): string {
+  return booking.legs
+    .map((leg) => {
+      const from = getLocation(leg.fromId)?.name ?? leg.fromId;
+      const to = getLocation(leg.toId)?.name ?? leg.toId;
+      const hotel = leg.hotelName?.trim();
+      return `${from} → ${to}${hotel ? ` (${hotel})` : ""} · ${leg.date} ${leg.time} · ${leg.vehicleCode}`;
+    })
+    .join(" | ");
+}
 import {
   getAdminNotifyWebhook,
   getPublicSiteUrl,
@@ -62,10 +76,13 @@ export async function notifyAdminNewBooking(booking: Booking): Promise<void> {
 /** Calls Supabase Edge Function (optional) to email customer the voucher link. */
 export async function notifyCustomerVoucherEmail(
   booking: Booking,
-  locale = "th"
+  locale = "th",
+  kind?: BookingEmailKind
 ): Promise<void> {
   if (!isBookingRemoteEnabled()) return;
   const url = `${getSupabaseUrl()}/functions/v1/notify-booking`;
+  const emailKind: BookingEmailKind =
+    kind ?? (booking.priceStatus === "pending" ? "quote-request" : "confirmed");
   try {
     await fetch(url, {
       method: "POST",
@@ -80,6 +97,9 @@ export async function notifyCustomerVoucherEmail(
         locale,
         voucherUrl: voucherUrl(booking.bookingNumber, locale),
         siteUrl: getPublicSiteUrl(),
+        kind: emailKind,
+        tripSummary: tripSummary(booking),
+        totalPrice: booking.totalPrice,
       }),
     });
   } catch {

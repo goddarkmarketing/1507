@@ -2,10 +2,7 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import type { ReactNode } from "react";
-import { QRCodeSVG } from "qrcode.react";
-import {
-  Download,
-} from "lucide-react";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { getLocation } from "@/lib/data/locations";
@@ -14,7 +11,6 @@ import { vehicles } from "@/lib/data/vehicles";
 import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
 import { useSiteContact } from "@/lib/admin/settings-store";
 import { getBookingAmountDue } from "@/lib/booking/booking-mode";
-import { voucherUrl } from "@/lib/booking/remote/config";
 import { getDateLocale } from "@/i18n/locales";
 import type { Booking, BookingLeg } from "@/lib/types";
 import { assetPath, cn } from "@/lib/utils";
@@ -87,9 +83,11 @@ function welcomePlaceLabel(id: string | undefined, fallback: string) {
 function WelcomeBoard({
   booking,
   leg,
+  vehicleLabel,
 }: {
   booking: Booking;
   leg: BookingLeg;
+  vehicleLabel: string;
 }) {
   const from = getLocation(leg.fromId);
   const to = getLocation(leg.toId);
@@ -97,37 +95,50 @@ function WelcomeBoard({
   const toLabel = welcomePlaceLabel(leg.toId, to?.name ?? "");
   const route = [fromLabel, toLabel].filter(Boolean).join(" to ");
   const placeLine =
-    to?.type === "hotel" && to.name && to.name !== toLabel ? to.name : null;
+    leg.hotelName?.trim() ||
+    (to?.type === "hotel" && to.name && to.name !== toLabel ? to.name : null);
 
   return (
-    <section className="voucher-page voucher-board relative mx-auto box-border aspect-[1024/724] w-full max-w-[210mm] overflow-hidden bg-white print:border-0">
+    <section className="voucher-page voucher-board relative mx-auto box-border aspect-[1024/724] w-full max-w-[297mm] overflow-hidden bg-white print:border-0">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={assetPath("/voucher/welcome-sign.jpg")}
         alt=""
         className="absolute inset-0 h-full w-full object-fill"
       />
-      <div className="absolute inset-x-[9%] top-[51%] flex flex-col items-center px-2 text-center">
+      <div className="absolute inset-x-[10%] top-[54%] flex flex-col items-center gap-1.5 px-3 text-center sm:gap-2">
         {route ? (
-          <p className="max-w-full text-[13px] leading-tight font-semibold text-balance sm:text-lg">
+          <p className="voucher-board-meta max-w-full text-sm leading-snug font-bold text-balance sm:text-xl">
             <span style={{ color: BOARD_INK }}>{route}</span>
           </p>
         ) : null}
         {placeLine ? (
           <p
-            className="mt-1 max-w-full text-xs font-medium sm:text-base"
+            className="voucher-board-meta max-w-full text-xs leading-snug font-semibold sm:text-base"
             style={{ color: BOARD_INK }}
           >
             {placeLine}
           </p>
         ) : null}
         <p
-          className="voucher-board-title mt-1.5 max-w-full text-[1.65rem] leading-none font-bold break-words sm:mt-2 sm:text-4xl md:text-5xl"
+          className="voucher-board-meta text-base leading-snug font-bold sm:text-2xl"
+          style={{ color: BOARD_INK }}
+        >
+          {leg.date} · {leg.time}
+        </p>
+        <p
+          className="voucher-board-meta text-sm leading-snug font-bold sm:text-xl"
+          style={{ color: BOARD_INK }}
+        >
+          {vehicleLabel}
+        </p>
+        <p
+          className="voucher-board-title max-w-full text-3xl leading-tight font-bold break-words sm:text-5xl"
           style={{ color: BOARD_INK }}
         >
           {booking.customerName}
         </p>
-        <div className="mt-2 flex items-center gap-2 sm:mt-2.5 sm:gap-3">
+        <div className="mt-0.5 flex items-center gap-2 sm:gap-3">
           <span className="h-px w-10 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
           <span
             className="size-1.5 shrink-0 rotate-45"
@@ -181,10 +192,9 @@ export function EVoucher({ booking }: EVoucherProps) {
       : booking.payment?.status === "paid"
         ? t("statusPaid")
         : t("statusAwaiting");
-  const qrData = voucherUrl(booking.bookingNumber, locale);
 
   return (
-    <div className="voucher-sheet mx-auto w-full max-w-[210mm] space-y-8 overflow-x-auto px-3 py-6 sm:px-0 sm:py-8 print:max-w-none print:space-y-0 print:overflow-visible print:px-0 print:py-0">
+    <div className="voucher-sheet mx-auto w-full max-w-[297mm] space-y-8 overflow-x-auto px-3 py-6 sm:px-0 sm:py-8 print:max-w-none print:space-y-0 print:overflow-visible print:px-0 print:py-0">
       <div className="voucher-print-actions flex flex-col gap-2 sm:flex-row sm:justify-center print:hidden">
         <Button variant="outline" onClick={() => window.print()}>
           <Download className="size-4" />
@@ -192,6 +202,13 @@ export function EVoucher({ booking }: EVoucherProps) {
         </Button>
         <ButtonLink href="/booking">{t("newBooking")}</ButtonLink>
       </div>
+
+      {booking.priceStatus === "pending" && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 print:hidden">
+          <p className="font-semibold">{t("quoteBannerTitle")}</p>
+          <p className="mt-1 leading-relaxed">{t("quoteBannerBody")}</p>
+        </div>
+      )}
 
       {/* Page 1 — Transfer Voucher sized to A4 and stretched to fill */}
       <section className="voucher-page voucher-form mx-auto box-border flex w-full max-w-[210mm] flex-col border-2 border-[#d4b56a] bg-white text-neutral-900 aspect-auto print:max-w-none print:aspect-auto print:border-[#d4b56a] md:aspect-[210/297]">
@@ -209,38 +226,11 @@ export function EVoucher({ booking }: EVoucherProps) {
         </header>
 
         <SectionBar>{t("clientDetails")}</SectionBar>
-        <div className="voucher-client grid shrink-0 grid-cols-[1fr_auto]">
-          <div className="flex flex-col">
-            <Cell label={t("clientName")} value={booking.customerName} />
-            <Cell label={t("passengerName")} value={booking.customerName} />
-            <Cell label={t("clientPhone")} value={booking.customerPhone} />
-            <Cell label={t("email")} value={booking.customerEmail} />
-          </div>
-          <div className="voucher-qr-box flex w-[17.5rem] shrink-0 flex-col border border-[#e7d7a8] bg-[#fffdf8] text-center">
-            <p className="voucher-qr-caption border-b border-[#e7d7a8] bg-[#fbf6e8] px-2 py-1 text-[10px] leading-none font-semibold whitespace-nowrap text-[#5c4a28]">
-              {t("lookForDriver")}
-            </p>
-            <div className="mx-1.5 mt-1.5 rounded-md bg-[#1a2744] px-1.5 py-2 text-white">
-              <p className="text-[7px] font-bold tracking-[0.14em] text-[#e6c36a]">
-                KRABI LINKS TAXI
-              </p>
-              <p className="voucher-board-title mt-0.5 text-[11px] leading-none text-[#f6e7b2] sm:text-sm">
-                Welcome to Krabi
-              </p>
-              <p className="mt-1 text-[9px] leading-tight font-bold break-words">
-                {booking.customerName}
-              </p>
-            </div>
-            <div className="flex flex-1 items-center justify-center px-1 py-1">
-              <QRCodeSVG
-                value={qrData}
-                size={112}
-                level="M"
-                marginSize={0}
-                className="h-auto w-28"
-              />
-            </div>
-          </div>
+        <div className="voucher-client flex shrink-0 flex-col">
+          <Cell label={t("clientName")} value={booking.customerName} />
+          <Cell label={t("passengerName")} value={booking.customerName} />
+          <Cell label={t("clientPhone")} value={booking.customerPhone} />
+          <Cell label={t("email")} value={booking.customerEmail} />
         </div>
 
         <div className="voucher-block grid min-h-0 flex-1 grid-cols-2">
@@ -294,7 +284,11 @@ export function EVoucher({ booking }: EVoucherProps) {
             <Cell label={t("bookingType")} value={typeLabel} />
             <Cell
               label={t("transferPrice")}
-              value={`${Math.max(0, booking.totalPrice - (booking.serviceCharge ?? 0)).toLocaleString()} THB`}
+              value={
+                booking.priceStatus === "pending"
+                  ? t("quoteBannerTitle")
+                  : `${Math.max(0, booking.totalPrice - (booking.serviceCharge ?? 0)).toLocaleString()} THB`
+              }
             />
             <Cell
               label={t("otherServicesPrice")}
@@ -306,7 +300,11 @@ export function EVoucher({ booking }: EVoucherProps) {
             />
             <Cell
               label={t("totalCost")}
-              value={`${booking.totalPrice.toLocaleString()} THB`}
+              value={
+                booking.priceStatus === "pending"
+                  ? t("quoteBannerTitle")
+                  : `${booking.totalPrice.toLocaleString()} THB`
+              }
             />
             <Cell
               label={t("amountDue")}
@@ -379,7 +377,11 @@ export function EVoucher({ booking }: EVoucherProps) {
 
       {/* Page 2 — single Welcome board (max 2 printable pages) */}
       {outbound ? (
-        <WelcomeBoard booking={booking} leg={outbound} />
+        <WelcomeBoard
+          booking={booking}
+          leg={outbound}
+          vehicleLabel={vehicleLabel}
+        />
       ) : null}
 
       <div className="voucher-print-actions flex flex-col gap-2 sm:flex-row sm:justify-center print:hidden">

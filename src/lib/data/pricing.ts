@@ -121,6 +121,14 @@ export function getSampleRoutes(): RoutePrice[] {
   }));
 }
 
+export function routeHasOfficialPrice(
+  fromId: string,
+  toId: string,
+  vehicleCode: VehicleCode
+): boolean {
+  return getOfficialVehiclePrice(fromId, toId, vehicleCode) != null;
+}
+
 export function getOfficialVehiclePrice(
   fromId: string,
   toId: string,

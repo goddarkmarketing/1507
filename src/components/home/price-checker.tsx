@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowRight, Car, Check, ChevronDown, Clock, MapPin, ShieldCheck } from "lucide-react";
-import { Set1RouteSelect, resolveSet1ToId } from "@/components/booking/set1-route-select";
+import { LocationSelect } from "@/components/booking/location-select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -22,7 +22,6 @@ import { useCatalogStore } from "@/lib/admin/catalog-store";
 type TripMode = "one-way" | "round-trip";
 
 const ROUND_TRIP_DISCOUNT = 0.05;
-const SET1_HUB = "kbv-airport";
 
 export type PriceCheckerProps = {
   defaultFrom?: string;
@@ -64,10 +63,8 @@ export function PriceChecker({
 
   const [tripMode, setTripMode] = useState<TripMode>("one-way");
   const [vehicleOpen, setVehicleOpen] = useState(false);
-  const [toId, setToId] = useState(() =>
-    resolveSet1ToId(defaultFrom, defaultTo)
-  );
-  const fromId = SET1_HUB;
+  const [fromId, setFromId] = useState(defaultFrom);
+  const [toId, setToId] = useState(defaultTo);
   const [vehicleCode, setVehicleCode] = useState<VehicleCode>(initialVehicle);
 
   const quote = useMemo(() => {
@@ -151,10 +148,26 @@ export function PriceChecker({
       <div className="mt-5 space-y-3">
         <div className="space-y-1.5">
           <Label className="px-1 text-sm font-normal text-zinc-500">
-            {t("route")}
+            {t("from")}
           </Label>
-          <Set1RouteSelect
+          <LocationSelect
+            role="pickup"
+            value={fromId}
+            excludeId={toId}
+            placeholder={t("from")}
+            onValueChange={setFromId}
+            className="h-12 min-h-12 rounded-2xl border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-950"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="px-1 text-sm font-normal text-zinc-500">
+            {t("to")}
+          </Label>
+          <LocationSelect
+            role="dropoff"
             value={toId}
+            excludeId={fromId}
+            placeholder={t("to")}
             onValueChange={setToId}
             className="h-12 min-h-12 rounded-2xl border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-950"
           />
@@ -225,7 +238,7 @@ export function PriceChecker({
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs text-zinc-500">
-              {hasOfficialPrice ? t("officialPrice") : t("estimated")}
+              {hasOfficialPrice ? t("officialPrice") : t("onRequest")}
             </p>
             <p className="text-4xl font-black tracking-tight text-zinc-950">
               {hasOfficialPrice ? (
@@ -288,7 +301,7 @@ export function PriceChecker({
         disabled={!quote}
         onClick={handleBook}
       >
-        {t("bookNow")}
+        {hasOfficialPrice ? t("bookNow") : t("requestQuote")}
         <ArrowRight className="size-4" />
       </Button>
     </div>

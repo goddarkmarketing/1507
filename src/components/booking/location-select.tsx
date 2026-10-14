@@ -29,6 +29,7 @@ type LocationSelectProps = {
   pairedId?: string;
   /** Lock both lists to Set 1 tariff places (no hotels). */
   tariffScope?: "set1";
+  includeHotels?: boolean;
   placeholder?: string;
   className?: string;
 };
@@ -44,6 +45,7 @@ export function LocationSelect({
   excludeId,
   pairedId,
   tariffScope,
+  includeHotels,
   placeholder,
   className,
 }: LocationSelectProps) {
@@ -67,12 +69,13 @@ export function LocationSelect({
         excludeId,
         pairedId,
         tariffScope,
+        includeHotels,
         query,
         getName: labelOf,
       }),
     // labelOf changes with locale / tariff scope
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [role, excludeId, pairedId, tariffScope, query, locale]
+    [role, excludeId, pairedId, tariffScope, includeHotels, query, locale]
   );
 
   const typeLabel = (type: LocationType) => {

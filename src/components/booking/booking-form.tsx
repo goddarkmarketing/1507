@@ -27,7 +27,8 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Set1RouteSelect } from "@/components/booking/set1-route-select";
+import { HotelPicker } from "@/components/booking/hotel-picker";
+import { LocationSelect } from "@/components/booking/location-select";
 import { PaymentSection } from "@/components/booking/payment-section";
 import { RoutePreviewDialog } from "@/components/booking/route-preview-dialog";
 import { RentalConditions } from "@/components/shared/rental-conditions";
@@ -64,7 +65,9 @@ import {
   getActiveRentalDeposits,
   useSettingsRevision,
 } from "@/lib/admin/settings-store";
+import { hotelAreaId } from "@/lib/data/nearby-hotels";
 import { getLocation } from "@/lib/data/locations";
+import { routeHasOfficialPrice } from "@/lib/data/pricing";
 import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
 import type { BookingType } from "@/lib/types";
 
@@ -82,7 +85,6 @@ const WIZARD_STEPS = 3;
 
 export function BookingForm() {
   const t = useTranslations("Booking");
-  const routeT = useTranslations("PriceChecker");
   const tPay = useTranslations("Payment");
   const locale = useLocale();
   const locName = useLocationName();
@@ -272,7 +274,9 @@ export function BookingForm() {
       toast.message(t("toastRemoteSyncOk"));
     }
 
-    if (booking.paymentPlan === "pay-driver") {
+    if (booking.priceStatus === "pending") {
+      toast.success(t("confirmQuote"));
+    } else if (booking.paymentPlan === "pay-driver") {
       toast.success(t("confirmPayDriver"));
     } else if (booking.payment?.status === "awaiting-transfer") {
       if (booking.payment.method === "promptpay") {
@@ -302,7 +306,7 @@ export function BookingForm() {
     }
 
     for (const leg of draft.legs) {
-      if (!isCharter && (!leg.fromId || !leg.toId)) {
+      if (!isCharter && (!leg.fromId || !leg.toId || leg.fromId === leg.toId)) {
         toast.error(t("toastTripIncomplete"));
         return false;
       }
@@ -349,6 +353,12 @@ export function BookingForm() {
     t("wizardStepPayment"),
   ] as const;
 
+  const needsQuote =
+    !isRentalBooking &&
+    !isCharter &&
+    draft.legs.some(
+      (leg) => !routeHasOfficialPrice(leg.fromId, leg.toId, leg.vehicleCode)
+    );
   const total = getTotalPrice();
   const nightSurcharge =
     bookingService === "rental" ? 0 : getNightDriverSurcharge(draft.legs);
@@ -362,7 +372,9 @@ export function BookingForm() {
   );
 
   const confirmLabel =
-    draft.paymentPlan === "pay-driver"
+    needsQuote
+      ? t("confirmQuote")
+      : draft.paymentPlan === "pay-driver"
       ? t("confirmPayDriver")
       : draft.paymentMethod === "bank-transfer"
         ? t("confirmBank")
@@ -580,38 +592,58 @@ export function BookingForm() {
                 {!isCharter && (
                   <>
                     <div className="col-span-2 space-y-1.5 sm:space-y-2">
-                      <Label>{routeT("route")}</Label>
-                      <Set1RouteSelect
-                        value={
-                          leg.toId === "kbv-airport" ? leg.fromId : leg.toId
-                        }
-                        onValueChange={(destinationId) => {
-                          const returnLeg =
-                            leg.toId === "kbv-airport" &&
-                            leg.fromId !== "kbv-airport";
-                          if (returnLeg) {
-                            updateLeg(leg.id, {
-                              fromId: destinationId,
-                              toId: "kbv-airport",
-                            });
-                            return;
-                          }
-                          updateLeg(leg.id, {
-                            fromId: "kbv-airport",
-                            toId: destinationId,
-                          });
+                      <Label>{t("pickup")}</Label>
+                      <LocationSelect
+                        role="pickup"
+                        value={leg.fromId}
+                        excludeId={leg.toId}
+                        includeHotels
+                        placeholder={t("pickup")}
+                        onValueChange={(fromId) => {
+                          updateLeg(leg.id, { fromId });
                           if (draft.type === "round-trip" && index === 0) {
                             const back = draft.legs[1];
-                            if (back) {
-                              updateLeg(back.id, {
-                                fromId: destinationId,
-                                toId: "kbv-airport",
-                              });
-                            }
+                            if (back) updateLeg(back.id, { toId: fromId });
                           }
                         }}
                       />
                     </div>
+                    <div className="col-span-2 space-y-1.5 sm:space-y-2">
+                      <Label>{t("dropoff")}</Label>
+                      <LocationSelect
+                        role="dropoff"
+                        value={leg.toId}
+                        excludeId={leg.fromId}
+                        includeHotels
+                        placeholder={t("dropoff")}
+                        onValueChange={(toId) => {
+                          updateLeg(leg.id, { toId, hotelName: "" });
+                          if (draft.type === "round-trip" && index === 0) {
+                            const back = draft.legs[1];
+                            if (back) updateLeg(back.id, { fromId: toId });
+                          }
+                        }}
+                      />
+                    </div>
+                    <HotelPicker
+                      selectedId={leg.toId}
+                      customName={leg.hotelName ?? ""}
+                      onSelect={(hotelId) => {
+                        updateLeg(leg.id, { toId: hotelId, hotelName: "" });
+                        if (draft.type === "round-trip" && index === 0) {
+                          const back = draft.legs[1];
+                          if (back) updateLeg(back.id, { fromId: hotelId });
+                        }
+                      }}
+                      onCustomName={(name) => {
+                        const areaId = hotelAreaId(leg.toId);
+                        updateLeg(leg.id, { toId: areaId, hotelName: name });
+                        if (draft.type === "round-trip" && index === 0) {
+                          const back = draft.legs[1];
+                          if (back) updateLeg(back.id, { fromId: areaId });
+                        }
+                      }}
+                    />
                   </>
                 )}
 
@@ -772,7 +804,25 @@ export function BookingForm() {
         </Card>
         )}
 
-        {step === 3 && (
+        {step === 3 && needsQuote && (
+          <Card size="sm">
+            <CardHeader className="gap-1">
+              <CardTitle className="text-base sm:text-lg">{t("quoteTitle")}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                {t("quoteBody")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-zinc-700">
+                <li>{t("quoteStep1")}</li>
+                <li>{t("quoteStep2")}</li>
+                <li>{t("quoteStep3")}</li>
+              </ol>
+            </CardContent>
+          </Card>
+        )}
+
+        {step === 3 && !needsQuote && (
         <Card size="sm">
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">{t("paymentTitle")}</CardTitle>
@@ -942,6 +992,9 @@ export function BookingForm() {
                       ? t("charterN", { n: i + 1 })
                       : `${locName(from).split("(")[0].trim()} → ${locName(to).split("(")[0].trim()}`}
                   </p>
+                  {leg.hotelName ? (
+                    <p className="text-muted-foreground">{leg.hotelName}</p>
+                  ) : null}
                   <p className="text-muted-foreground">
                     {leg.date} {t("at")} {leg.time}
                     {!isRentalBooking &&
@@ -949,7 +1002,14 @@ export function BookingForm() {
                   </p>
                   {!isRentalBooking && (
                     <p className="font-medium">
-                      ฿{getLegPrice(leg).toLocaleString("en-US")}
+                      {needsQuote &&
+                      !routeHasOfficialPrice(
+                        leg.fromId,
+                        leg.toId,
+                        leg.vehicleCode
+                      )
+                        ? t("quotePriceLabel")
+                        : `฿${getLegPrice(leg).toLocaleString("en-US")}`}
                     </p>
                   )}
                   {i < draft.legs.length - 1 && <Separator className="my-3" />}
@@ -973,7 +1033,14 @@ export function BookingForm() {
               {t("advanceBookingHint")}
             </p>
 
-            {isRentalBooking ||
+            {needsQuote ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                <p className="font-semibold">{t("quotePriceLabel")}</p>
+                <p className="mt-1 text-xs leading-relaxed text-amber-900/80">
+                  {t("quoteBody")}
+                </p>
+              </div>
+            ) : isRentalBooking ||
             draft.paymentPlan === "deposit" ||
             draft.paymentPlan === "pay-driver" ? (
               <div className="space-y-2 text-sm">
@@ -1089,14 +1156,16 @@ export function BookingForm() {
           )}
           <div className="min-w-0 flex-1">
             <p className="text-[11px] leading-none text-muted-foreground">
-              {draft.paymentPlan === "pay-driver"
+              {needsQuote
+                ? t("quotePriceLabel")
+                : draft.paymentPlan === "pay-driver"
                 ? t("payAtPickup")
                 : draft.paymentPlan === "deposit" || isRentalBooking
                   ? t("payToday")
                   : t("total")}
             </p>
             <p className="truncate text-lg font-bold text-primary">
-              ฿{amountDue.toLocaleString("en-US")}
+              {needsQuote ? "—" : `฿${amountDue.toLocaleString("en-US")}`}
             </p>
           </div>
           {step < WIZARD_STEPS ? (

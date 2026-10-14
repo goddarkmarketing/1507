@@ -11,6 +11,7 @@ import {
   patchRemoteBooking,
 } from "@/lib/booking/remote/bookings-remote";
 import { isBookingRemoteEnabled } from "@/lib/booking/remote/config";
+import { notifyCustomerVoucherEmail } from "@/lib/booking/remote/notify";
 import {
   markPayment,
   type AdminBooking,
@@ -31,6 +32,9 @@ function bookingPatchFromAdmin(booking: AdminBooking): Partial<Booking> {
     payment: booking.payment,
     amountDueNow: booking.amountDueNow,
     balanceDue: booking.balanceDue,
+    totalPrice: booking.totalPrice,
+    priceStatus: booking.priceStatus,
+    legs: booking.legs,
     service: booking.service,
     paymentPlan: booking.paymentPlan,
     rentalPackageId: booking.rentalPackageId,
@@ -64,6 +68,10 @@ interface AdminState {
   assignDriver: (bookingId: string, driverId: string | null) => void;
   setOpsStatus: (bookingId: string, opsStatus: OpsStatus) => void;
   verifyPayment: (bookingId: string, approve: boolean) => void;
+  sendQuotedPrice: (
+    bookingId: string,
+    totalPrice: number
+  ) => Promise<{ ok: boolean; error?: string }>;
   toggleDriverActive: (driverId: string) => void;
   upsertDriver: (driver: Driver) => void;
   removeDriver: (driverId: string) => void;
@@ -160,7 +168,19 @@ export const useAdminStore = create<AdminState>()(
         );
         set({ bookings: next });
         const updated = next.find((b) => b.id === id);
-        if (updated && (patch.payment || patch.status || patch.opsStatus || patch.driverId !== undefined || patch.adminNotes !== undefined)) {
+        if (
+          updated &&
+          (patch.payment ||
+            patch.status ||
+            patch.opsStatus ||
+            patch.driverId !== undefined ||
+            patch.adminNotes !== undefined ||
+            patch.totalPrice !== undefined ||
+            patch.priceStatus !== undefined ||
+            patch.legs !== undefined ||
+            patch.amountDueNow !== undefined ||
+            patch.balanceDue !== undefined)
+        ) {
           syncToCustomerStore(updated);
           if (isBookingRemoteEnabled()) {
             void patchRemoteBooking(updated);
@@ -211,6 +231,36 @@ export const useAdminStore = create<AdminState>()(
           opsStatus,
           status,
         });
+      },
+
+      sendQuotedPrice: async (bookingId, totalPrice) => {
+        const booking = get().bookings.find((item) => item.id === bookingId);
+        const price = Math.round(totalPrice);
+        if (!booking || price <= 0) return { ok: false, error: "invalid" };
+        const legs = booking.legs.map((leg, index) => ({
+          ...leg,
+          price: index === 0 ? price : 0,
+        }));
+        get().updateBooking(bookingId, {
+          totalPrice: price,
+          priceStatus: "official",
+          status: "pending",
+          legs,
+          amountDueNow: 0,
+          balanceDue: price,
+          paymentPlan: "pay-driver",
+          payment: {
+            method: "cash",
+            status: "awaiting-transfer",
+            summary: `Quoted ฿${price.toLocaleString("en-US")} — emailed to customer`,
+            amountDue: 0,
+            balanceDue: price,
+          },
+        });
+        const updated = get().bookings.find((item) => item.id === bookingId);
+        if (!updated) return { ok: false, error: "missing" };
+        await notifyCustomerVoucherEmail(updated, "th", "quote-ready");
+        return { ok: true };
       },
 
       verifyPayment: (bookingId, approve) => {

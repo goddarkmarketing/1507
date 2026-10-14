@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { calculatePrice } from "@/lib/data/pricing";
+import { getOfficialVehiclePrice } from "@/lib/data/pricing";
 import { getPromptPay } from "@/lib/data/payment";
 import {
   getAmountDueNow,
@@ -320,7 +320,7 @@ export const useBookingStore = create<BookingStore>()(
           };
           return Math.round(base * (multipliers[leg.vehicleCode] ?? 1));
         }
-        return calculatePrice(leg.fromId, leg.toId, leg.vehicleCode).totalPrice;
+        return getOfficialVehiclePrice(leg.fromId, leg.toId, leg.vehicleCode) ?? 0;
       },
 
       getTotalPrice: () => {
@@ -328,6 +328,15 @@ export const useBookingStore = create<BookingStore>()(
         if (draft.service === "rental") {
           return calculateRentalTotal(draft.rentalPackageId, draft.rentalDays);
         }
+        const quotePending =
+          draft.type !== "daily-charter" &&
+          draft.type !== "hourly-charter" &&
+          draft.legs.some(
+            (leg) =>
+              getOfficialVehiclePrice(leg.fromId, leg.toId, leg.vehicleCode) ==
+              null
+          );
+        if (quotePending) return 0;
         const legsTotal = draft.legs.reduce(
           (sum, leg) => sum + getLegPrice(leg),
           0
@@ -352,6 +361,53 @@ export const useBookingStore = create<BookingStore>()(
         }
         if (!draft.paymentMethod) {
           return null;
+        }
+
+        const quotePending =
+          (options?.service ?? draft.service) !== "rental" &&
+          draft.type !== "daily-charter" &&
+          draft.type !== "hourly-charter" &&
+          draft.legs.some(
+            (leg) =>
+              getOfficialVehiclePrice(leg.fromId, leg.toId, leg.vehicleCode) ==
+              null
+          );
+
+        if (quotePending) {
+          const legs: BookingLeg[] = draft.legs.map((leg) => ({
+            ...leg,
+            price: 0,
+          }));
+          const bookingNumber = draft.transferRef || generateBookingNumber();
+          const booking: Booking = {
+            id: crypto.randomUUID(),
+            bookingNumber,
+            type: draft.type,
+            service: options?.service ?? draft.service,
+            paymentPlan: "pay-driver",
+            legs,
+            customerName: draft.customerName,
+            customerEmail: draft.customerEmail,
+            customerPhone: draft.customerPhone,
+            flightNumber: draft.flightNumber || undefined,
+            notes: draft.notes || undefined,
+            totalPrice: 0,
+            priceStatus: "pending",
+            amountDueNow: 0,
+            createdAt: new Date().toISOString(),
+            status: "pending",
+            payment: {
+              method: "cash",
+              summary: "Awaiting admin price quote",
+              status: "awaiting-transfer",
+              amountDue: 0,
+            },
+          };
+          set((state) => ({
+            confirmedBookings: [booking, ...state.confirmedBookings],
+            draft: createDefaultDraft(),
+          }));
+          return booking;
         }
 
         const isPayDriver = draft.paymentPlan === "pay-driver";
@@ -458,6 +514,7 @@ export const useBookingStore = create<BookingStore>()(
           flightNumber: draft.flightNumber || undefined,
           notes: draft.notes || undefined,
           totalPrice,
+          priceStatus: "official",
           ...(serviceCharge > 0 ? { serviceCharge } : {}),
           amountDueNow,
           ...(balanceDue > 0 ? { balanceDue } : {}),

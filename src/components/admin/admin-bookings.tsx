@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Car, Check, ChevronDown, ChevronRight, Download, Phone, Search, Settings2, SlidersHorizontal } from "lucide-react";
 import { useAdminStore } from "@/lib/admin/store";
 import {
@@ -125,6 +126,42 @@ const STATUS_STYLE: Record<
     active: "bg-rose-50 text-rose-800",
   },
 };
+
+function QuotePriceForm({ booking }: { booking: AdminBooking }) {
+  const t = useTranslations("Admin");
+  const sendQuotedPrice = useAdminStore((s) => s.sendQuotedPrice);
+  const [amount, setAmount] = useState("");
+  const [sending, setSending] = useState(false);
+
+  return (
+    <form
+      className="flex max-w-md flex-wrap items-center gap-2"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        const price = Number(amount.replace(/,/g, "").trim());
+        if (!Number.isFinite(price) || price <= 0) return;
+        setSending(true);
+        const result = await sendQuotedPrice(booking.id, price);
+        setSending(false);
+        if (result.ok) toast.success(t("quoteSent"));
+        else toast.error(t("quoteSendFail"));
+      }}
+    >
+      <p className="w-full text-xs font-semibold text-amber-800">{t("quotePending")}</p>
+      <Input
+        inputMode="decimal"
+        value={amount}
+        onChange={(event) => setAmount(event.target.value)}
+        placeholder={t("quoteAmount")}
+        className="h-9 w-36"
+        aria-label={t("quoteAmount")}
+      />
+      <Button type="submit" size="sm" disabled={sending || !amount.trim()}>
+        {t("sendQuote")}
+      </Button>
+    </form>
+  );
+}
 
 function StatusMenu({
   value,
@@ -296,6 +333,9 @@ export function AdminBookingsPage() {
   };
 
   const cardStatusLabel = (booking: AdminBooking) => {
+    if (booking.priceStatus === "pending") {
+      return { label: t("quotePending"), className: "text-amber-600" };
+    }
     const status = cardStatus(booking);
     if (status === "payment") {
       return { label: t("chipPayment"), className: "text-amber-500" };
@@ -353,7 +393,15 @@ export function AdminBookingsPage() {
       { label: t("detailPlace"), value: routeLabel(booking) },
       { label: t("detailTime"), value: when },
       { label: t("detailVehicle"), value: vehicle },
-      { label: t("detailPrice"), value: money(booking.totalPrice) },
+      {
+        label: t("detailPrice"),
+        value:
+          booking.priceStatus === "pending" ? (
+            <QuotePriceForm booking={booking} />
+          ) : (
+            money(booking.totalPrice)
+          ),
+      },
       { label: t("payment"), value: pay },
       {
         label: t("detailBookedAt"),

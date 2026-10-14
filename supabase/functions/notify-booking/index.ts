@@ -64,37 +64,95 @@ function secondaryButton(href: string, label: string) {
           </a>`;
 }
 
+function stepList(steps: string[]) {
+  return steps
+    .map(
+      (step, index) =>
+        `<tr>
+          <td style="padding:8px 0;vertical-align:top;width:28px;font-size:14px;font-weight:700;color:#b45309;">${index + 1}</td>
+          <td style="padding:8px 0;font-size:14px;line-height:1.55;color:#3f3f46;">${step}</td>
+        </tr>`
+    )
+    .join("");
+}
+
 function customerEmailHtml(opts: {
   name: string;
   bookingNumber: string;
   voucherUrl: string;
+  kind: "confirmed" | "quote-request" | "quote-ready";
+  tripSummary: string;
+  totalPrice: number;
 }) {
   const name = escapeHtml(opts.name);
   const bookingNumber = escapeHtml(opts.bookingNumber);
+  const trip = escapeHtml(opts.tripSummary || "—");
+  const price =
+    opts.totalPrice > 0
+      ? `฿${opts.totalPrice.toLocaleString("en-US")}`
+      : "รอตรวจสอบราคา";
+  const quote = opts.kind === "quote-request";
+  const ready = opts.kind === "quote-ready";
+  const title = quote
+    ? "ได้รับคำขอแล้ว — รอตรวจสอบราคา"
+    : ready
+      ? "ได้ราคาแล้ว — รายละเอียดการเดินทาง"
+      : "ได้รับคำขอจองแล้ว";
+  const intro = quote
+    ? "เส้นทางนี้ยังไม่มีราคาในระบบ กรุณารอทีมงานตรวจสอบ ยังไม่ต้องชำระเงิน"
+    : ready
+      ? "ทีมงานตรวจราคาให้แล้ว รายละเอียดอยู่ด้านล่าง กรุณาเก็บอีเมลนี้ไว้"
+      : "เราบันทึกคำขอของคุณแล้ว กรุณารอทีมงานตอบกลับทางอีเมลนี้ก่อนเดินทาง";
+  const steps = quote
+    ? [
+        "ระบบบันทึกคำขอและเลขที่จองให้แล้ว",
+        "ทีมงานจะตรวจสอบราคาเส้นทางนี้",
+        "กรุณารออีเมลตอบกลับ ยังไม่ต้องโอนเงิน",
+        "เมื่อได้ราคา เราจะส่งรายละเอียดกลับมาที่อีเมลนี้",
+      ]
+    : ready
+      ? [
+          `ราคาที่ตรวจสอบแล้วคือ ${escapeHtml(price)}`,
+          "เปิดหน้าติดตามเพื่อดูเส้นทาง วันเวลา และประเภทรถ",
+          "หากต้องการยืนยันหรือเปลี่ยนรายละเอียด ตอบกลับอีเมลนี้",
+          "ทีมงานจะติดต่อเรื่องคนขับหลังยืนยัน",
+        ]
+      : [
+          "บันทึกคำขอของคุณแล้ว ใช้เลขที่จองด้านล่างในการติดตาม",
+          "ทีมงานจะตรวจสอบและตอบกลับทางอีเมลนี้",
+          "กรุณารอการยืนยันก่อนวันเดินทาง",
+          "เปิดหน้าติดตามสถานะได้จากปุ่มด้านล่าง",
+        ];
   return emailShell(`
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
           <tr>
             <td style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:22px 28px;">
               <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.85);">KRABI LINKS TAXI</p>
-              <p style="margin:8px 0 0;font-size:22px;font-weight:700;color:#ffffff;line-height:1.3;">ยืนยันการจองของคุณ</p>
+              <p style="margin:8px 0 0;font-size:22px;font-weight:700;color:#ffffff;line-height:1.3;">${title}</p>
             </td>
           </tr>
           <tr>
             <td style="padding:28px;">
               <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#3f3f46;">สวัสดีคุณ <strong style="color:#18181b;">${name}</strong>,</p>
-              <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3f3f46;">ขอบคุณที่จองกับเรา รายละเอียดการจองพร้อมลิงก์ e-Voucher อยู่ด้านล่าง</p>
+              <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3f3f46;">${intro}</p>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border:1px solid #ececef;border-radius:12px;">
                 <tr>
                   <td style="padding:16px 18px;">
                     <p style="margin:0 0 4px;font-size:12px;color:#71717a;text-transform:uppercase;letter-spacing:0.06em;">เลขที่จอง</p>
-                    <p style="margin:0;font-size:20px;font-weight:700;color:#18181b;letter-spacing:0.02em;">${bookingNumber}</p>
+                    <p style="margin:0 0 14px;font-size:20px;font-weight:700;color:#18181b;letter-spacing:0.02em;">${bookingNumber}</p>
+                    <p style="margin:0 0 4px;font-size:12px;color:#71717a;">รายละเอียด</p>
+                    <p style="margin:0 0 14px;font-size:14px;line-height:1.5;color:#18181b;">${trip}</p>
+                    <p style="margin:0 0 4px;font-size:12px;color:#71717a;">ราคา</p>
+                    <p style="margin:0;font-size:16px;font-weight:700;color:#18181b;">${escapeHtml(price)}</p>
                   </td>
                 </tr>
               </table>
-              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px;">
-                <tr><td>${primaryButton(opts.voucherUrl, "เปิด e-Voucher")}</td></tr>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
+                ${stepList(steps)}
               </table>
-              <p style="margin:18px 0 0;font-size:13px;line-height:1.55;color:#71717a;">หากจองแบบจ่ายคนขับ หรือจองช่วงดึก ทีมงานจะยืนยันก่อนออก voucher</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px;">
+                <tr><td>${primaryButton(opts.voucherUrl, quote ? "ดูคำขอ" : "เปิดหน้าติดตาม")}</td></tr>
+              </table>
             </td>
           </tr>
         </table>`);
@@ -106,16 +164,21 @@ function adminEmailHtml(opts: {
   bookingNumber: string;
   voucherUrl: string;
   adminUrl: string;
+  kind: "confirmed" | "quote-request" | "quote-ready";
+  tripSummary: string;
 }) {
   const name = escapeHtml(opts.name);
   const email = escapeHtml(opts.email);
   const bookingNumber = escapeHtml(opts.bookingNumber);
+  const trip = escapeHtml(opts.tripSummary || "—");
+  const quote = opts.kind === "quote-request";
+  const title = quote ? "มีคำขอรอตรวจราคา" : "มีการจองใหม่เข้ามา";
   return emailShell(`
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
           <tr>
             <td style="background:#18181b;padding:22px 28px;">
               <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#fbbf24;">ADMIN ALERT</p>
-              <p style="margin:8px 0 0;font-size:22px;font-weight:700;color:#ffffff;line-height:1.3;">มีการจองใหม่เข้ามา</p>
+              <p style="margin:8px 0 0;font-size:22px;font-weight:700;color:#ffffff;line-height:1.3;">${title}</p>
             </td>
           </tr>
           <tr>
@@ -139,6 +202,9 @@ function adminEmailHtml(opts: {
                   <td style="padding:10px 0;">
                     <p style="margin:0;font-size:12px;color:#71717a;">อีเมล</p>
                     <p style="margin:4px 0 0;font-size:15px;color:#18181b;">${email}</p>
+                    <p style="margin:12px 0 0;font-size:12px;color:#71717a;">เส้นทาง</p>
+                    <p style="margin:4px 0 0;font-size:14px;line-height:1.5;color:#18181b;">${trip}</p>
+                    ${quote ? `<p style="margin:12px 0 0;font-size:14px;font-weight:700;color:#92400e;">ใส่ราคาในหลังบ้าน แล้วกดส่งอีเมลกลับให้ลูกค้า</p>` : ""}
                   </td>
                 </tr>
               </table>
@@ -172,6 +238,9 @@ Deno.serve(async (req) => {
     locale?: string;
     voucherUrl?: string;
     siteUrl?: string;
+    kind?: string;
+    tripSummary?: string;
+    totalPrice?: number;
   };
   try {
     body = await req.json();
@@ -191,6 +260,18 @@ Deno.serve(async (req) => {
     ""
   );
   const adminUrl = `${siteBase}/th/admin/`;
+  const kind =
+    body.kind === "quote-request" || body.kind === "quote-ready"
+      ? body.kind
+      : "confirmed";
+  const tripSummary = body.tripSummary?.trim() || "";
+  const totalPrice = Number(body.totalPrice) || 0;
+  const subject =
+    kind === "quote-request"
+      ? `Krabi Links Taxi · รอตรวจสอบราคา ${bookingNumber}`
+      : kind === "quote-ready"
+        ? `Krabi Links Taxi · ราคาการเดินทาง ${bookingNumber}`
+        : `Krabi Links Taxi · ได้รับคำขอจอง ${bookingNumber}`;
 
   if (!email || !voucherUrl || !bookingNumber) {
     return new Response(JSON.stringify({ error: "missing fields" }), {
@@ -220,11 +301,18 @@ Deno.serve(async (req) => {
 
   results.email = await sendResend(
     email,
-    `Krabi Links Taxi · Booking ${bookingNumber}`,
-    customerEmailHtml({ name, bookingNumber, voucherUrl })
+    subject,
+    customerEmailHtml({
+      name,
+      bookingNumber,
+      voucherUrl,
+      kind,
+      tripSummary,
+      totalPrice,
+    })
   );
 
-  if (ADMIN_NOTIFY_EMAIL) {
+  if (ADMIN_NOTIFY_EMAIL && kind !== "quote-ready") {
     const sameAsCustomer =
       ADMIN_NOTIFY_EMAIL.toLowerCase() === email.toLowerCase();
     if (sameAsCustomer) {
@@ -232,13 +320,17 @@ Deno.serve(async (req) => {
     } else {
       results.adminEmail = await sendResend(
         ADMIN_NOTIFY_EMAIL,
-        `[Admin] New booking ${bookingNumber}`,
+        kind === "quote-request"
+          ? `[Admin] รอตรวจราคา ${bookingNumber}`
+          : `[Admin] New booking ${bookingNumber}`,
         adminEmailHtml({
           name,
           email,
           bookingNumber,
           voucherUrl,
           adminUrl,
+          kind,
+          tripSummary,
         })
       );
     }
