@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Building2, ChevronRight, MapPin, Search } from "lucide-react";
+import { Building2, ChevronRight, MapPin } from "lucide-react";
 import { PublicImage } from "@/components/shared/public-image";
-import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -26,12 +25,10 @@ export function HotelPicker({
   selectedId,
   customName,
   onSelect,
-  onCustomName,
 }: {
   selectedId: string;
   customName: string;
   onSelect: (hotelId: string) => void;
-  onCustomName: (name: string) => void;
 }) {
   const t = useTranslations("Booking");
   const locale = useLocale();
@@ -76,17 +73,6 @@ export function HotelPicker({
             onSelect={() => choose(hotel.id)}
           />
         ))}
-      </div>
-
-      <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400" />
-        <Input
-          value={customName}
-          onChange={(event) => onCustomName(event.target.value)}
-          placeholder={t("hotelCustomPlaceholder")}
-          aria-label={t("hotelCustom")}
-          className="h-11 rounded-xl border-zinc-200 bg-zinc-50 pl-10"
-        />
       </div>
 
       <Sheet open={open} onOpenChange={setOpen}>

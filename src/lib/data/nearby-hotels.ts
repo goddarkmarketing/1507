@@ -1,4 +1,5 @@
 import { getLocation, locations } from "@/lib/data/locations";
+import { SET1_PLACE_NAMES } from "@/lib/data/set1-place-names";
 import type { Location } from "@/lib/types";
 
 /**
@@ -42,6 +43,20 @@ export function dropoffAreaName(toId: string, locale: string): string {
   if (!loc) return "";
   const area = loc.pricingAreaId ? (getLocation(loc.pricingAreaId) ?? loc) : loc;
   return placeName(area, locale);
+}
+
+/**
+ * Name to put in the pickup/drop-off box.
+ * Airports and listed hotels are filled in. Zones stay blank so the guest types the hotel.
+ */
+export function suggestedPlaceName(locationId: string, locale: string): string {
+  const loc = getLocation(locationId);
+  if (!loc || (loc.type !== "airport" && loc.type !== "hotel")) return "";
+  const sheet = SET1_PLACE_NAMES[locationId];
+  if (loc.type === "airport" && sheet) {
+    return locale === "th" ? sheet.th : sheet.en;
+  }
+  return placeName(loc, locale);
 }
 
 /** Resort the guest asked for: a listed hotel, or a name they typed. */

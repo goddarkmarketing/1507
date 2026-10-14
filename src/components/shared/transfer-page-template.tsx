@@ -149,7 +149,7 @@ export function TransferPageTemplate({ pageKey }: TransferPageTemplateProps) {
             </ButtonLink>
           </div>
 
-          <div className="lg:sticky lg:top-24">
+          <div className="min-w-0 lg:sticky lg:top-24">
             <PriceChecker
               compact
               defaultFrom={defaultFrom}

@@ -99,46 +99,50 @@ function WelcomeBoard({
     (to?.type === "hotel" && to.name && to.name !== toLabel ? to.name : null);
 
   return (
-    <section className="voucher-page voucher-board relative mx-auto box-border aspect-[1024/724] w-full max-w-[297mm] overflow-hidden bg-white print:border-0">
+    <section className="voucher-page voucher-board relative mx-auto box-border aspect-[1024/724] w-full max-w-[297mm] overflow-hidden bg-white print:border-0 [container-type:inline-size]">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={assetPath("/voucher/welcome-sign.jpg")}
         alt=""
         className="absolute inset-0 h-full w-full object-fill"
       />
-      <div className="absolute inset-x-[6%] top-[56%] flex flex-col items-center gap-0.5 px-1 text-center sm:inset-x-[10%] sm:gap-2 sm:px-3">
-        {route ? (
-          <p className="voucher-board-meta max-w-full text-[10px] leading-tight font-bold sm:text-xl sm:leading-snug">
-            <span style={{ color: BOARD_INK }}>{route}</span>
-          </p>
-        ) : null}
-        {placeLine ? (
+      <div className="absolute inset-x-[5%] top-[54%] flex flex-col items-center gap-1 px-1 text-center sm:inset-x-[10%] sm:top-[55%] sm:gap-8">
+        <div className="flex w-full flex-col items-center">
           <p
-            className="voucher-board-meta max-w-full text-[9px] leading-tight font-semibold sm:text-base sm:leading-snug"
+            className="voucher-board-title max-w-full text-[clamp(1.05rem,8cqi,6rem)] leading-none font-bold break-words"
             style={{ color: BOARD_INK }}
           >
-            {placeLine}
+            {booking.customerName}
           </p>
-        ) : null}
-        <p
-          className="voucher-board-meta max-w-full text-[10px] leading-tight font-bold whitespace-nowrap sm:text-xl sm:leading-snug"
-          style={{ color: BOARD_INK }}
-        >
-          {leg.date} · {leg.time} · {vehicleLabel}
-        </p>
-        <p
-          className="voucher-board-title max-w-full text-4xl leading-none font-bold break-words sm:text-6xl sm:leading-tight md:text-8xl"
-          style={{ color: BOARD_INK }}
-        >
-          {booking.customerName}
-        </p>
-        <div className="mt-1 flex items-center gap-2 sm:gap-3">
-          <span className="h-px w-10 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
-          <span
-            className="size-1.5 shrink-0 rotate-45"
-            style={{ backgroundColor: BOARD_GOLD }}
-          />
-          <span className="h-px w-10 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
+          <div className="mt-0.5 flex items-center gap-2 sm:mt-2 sm:gap-3">
+            <span className="h-px w-8 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
+            <span
+              className="size-1 shrink-0 rotate-45 sm:size-1.5"
+              style={{ backgroundColor: BOARD_GOLD }}
+            />
+            <span className="h-px w-8 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
+          </div>
+        </div>
+        <div className="flex w-full flex-col items-center gap-0.5 sm:gap-1">
+          {route ? (
+            <p className="voucher-board-meta max-w-full text-[clamp(0.5rem,2.7cqi,1.25rem)] leading-tight font-bold">
+              <span style={{ color: BOARD_INK }}>{route}</span>
+            </p>
+          ) : null}
+          {placeLine ? (
+            <p
+              className="voucher-board-meta max-w-full text-[clamp(0.48rem,2.4cqi,1rem)] leading-tight font-semibold"
+              style={{ color: BOARD_INK }}
+            >
+              {placeLine}
+            </p>
+          ) : null}
+          <p
+            className="voucher-board-meta max-w-full text-[clamp(0.48rem,2.45cqi,1.25rem)] leading-tight font-bold whitespace-nowrap"
+            style={{ color: BOARD_INK }}
+          >
+            {leg.date} · {leg.time} · {vehicleLabel}
+          </p>
         </div>
       </div>
     </section>
@@ -232,7 +236,13 @@ export function EVoucher({ booking }: EVoucherProps) {
             <SectionBar>{t("arrivalDetails")}</SectionBar>
             <Cell label={t("start")} value={locName(outFrom)} />
             <Cell label={t("destination")} value={locName(outArea)} />
-            <Cell label={t("from")} value={outFrom ? locName(outFrom) : "—"} />
+            <Cell
+              label={t("from")}
+              value={
+                outbound?.pickupPlace?.trim() ||
+                (outFrom ? locName(outFrom) : "—")
+              }
+            />
             <Cell
               label={t("to")}
               value={outHotel || (outTo ? locName(outTo) : "—")}

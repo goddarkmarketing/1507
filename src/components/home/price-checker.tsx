@@ -97,7 +97,7 @@ export function PriceChecker({
   return (
     <div
       className={cn(
-        "w-full rounded-[1.75rem] border border-zinc-100 bg-white shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]",
+        "w-full min-w-0 max-w-full overflow-hidden rounded-[1.75rem] border border-zinc-100 bg-white shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]",
         compact ? "p-4" : "p-5 sm:p-6",
         className
       )}

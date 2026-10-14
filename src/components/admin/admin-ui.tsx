@@ -77,7 +77,9 @@ export function useRouteLabel() {
     const from = fromId ? getLocation(fromId) : undefined;
     const short = (name: string | undefined | null) =>
       (name || "—").split("(")[0].trim();
-    const left = short(locName(from) || fromId || null);
+    const pickup = leg.pickupPlace?.trim();
+    const area = short(locName(from) || fromId || null);
+    const left = pickup && pickup !== area ? `${area} · ${pickup}` : area;
     const right =
       dropoffDetailLabel(toId, leg.hotelName, locale) || toId || "—";
     if (left === "—" && right === "—") return "—";

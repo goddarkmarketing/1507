@@ -116,7 +116,9 @@ export interface BookingLeg {
   time: string;
   vehicleCode: VehicleCode;
   price: number;
-  /** Hotel the guest named when it is not one of the listed resorts. */
+  /** Hotel or airport the guest named for pickup. */
+  pickupPlace?: string;
+  /** Hotel or airport the guest named for drop-off. */
   hotelName?: string;
 }
 

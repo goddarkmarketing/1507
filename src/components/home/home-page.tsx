@@ -82,20 +82,19 @@ export function HomePage() {
 
   return (
     <>
-      <section className="relative -mt-18 overflow-hidden bg-zinc-100 sm:-mt-20 lg:mt-0 lg:border-b">
+      <section className="relative -mt-18 overflow-hidden bg-white sm:-mt-20 lg:mt-0 lg:border-b lg:bg-zinc-100">
         <div className="mx-auto grid max-w-7xl items-start gap-8 px-4 pb-0 pt-0 sm:px-6 lg:grid-cols-[minmax(0,420px)_1fr] lg:gap-10 lg:px-8 lg:py-14">
-          <div className="lg:sticky lg:top-24">
-            <div className="relative -mx-4 min-h-[13.25rem] sm:-mx-6 lg:hidden">
+          <div className="min-w-0 lg:sticky lg:top-24">
+            <div className="relative -mx-4 sm:-mx-6 lg:hidden">
               <PublicImage
                 src="/images/hero-airport-sunset.png"
                 alt=""
                 width={1024}
                 height={576}
                 priority
-                className="block h-auto w-full"
+                className="block h-auto w-full [mask-image:linear-gradient(to_bottom,black_58%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_58%,transparent_100%)]"
               />
               <div className="pointer-events-none absolute inset-y-0 left-0 w-[70%] bg-gradient-to-r from-background via-background/75 to-transparent" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-zinc-100 to-transparent" />
               <div className="absolute inset-x-0 top-20 px-5 sm:top-24">
                 <p className="text-[1.85rem] font-extrabold leading-[1.15] text-zinc-950">
                   {tPrice("title")}
@@ -108,7 +107,7 @@ export function HomePage() {
                 </p>
               </div>
             </div>
-            <div className="relative z-10 -mt-3 lg:mt-0">
+            <div className="relative z-10 mt-6 lg:mt-0">
               <PriceChecker hideIntro />
             </div>
           </div>

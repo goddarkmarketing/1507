@@ -129,7 +129,7 @@ export function LocationSelect({
       >
         <span
           className={cn(
-            "line-clamp-1 text-left",
+            "min-w-0 flex-1 truncate text-left",
             !selected && "text-muted-foreground"
           )}
         >
@@ -141,7 +141,7 @@ export function LocationSelect({
       <PopoverContent
         align="start"
         sideOffset={4}
-        className="w-[var(--anchor-width)] min-w-[min(100vw-2rem,20rem)] p-0"
+        className="w-[var(--anchor-width)] max-w-[calc(100vw-1.5rem)] min-w-0 p-0"
         initialFocus={false}
       >
         <div className="border-b p-2">
@@ -187,7 +187,7 @@ export function LocationSelect({
                             isSelected && "bg-accent/70"
                           )}
                         >
-                          <span className="min-w-0 flex-1 leading-snug">
+                          <span className="min-w-0 flex-1 leading-snug break-words whitespace-normal">
                             {labelOf(loc)}
                           </span>
                           {isSelected && (

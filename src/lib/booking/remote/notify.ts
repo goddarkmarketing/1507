@@ -9,7 +9,10 @@ function tripSummary(booking: Booking): string {
       const from = getLocation(leg.fromId)?.name ?? leg.fromId;
       const to = getLocation(leg.toId)?.name ?? leg.toId;
       const hotel = leg.hotelName?.trim();
-      return `${from} → ${to}${hotel ? ` (${hotel})` : ""} · ${leg.date} ${leg.time} · ${leg.vehicleCode}`;
+      const pickup = leg.pickupPlace?.trim();
+      const fromLabel = pickup ? `${from} (${pickup})` : from;
+      const toLabel = hotel ? `${to} (${hotel})` : to;
+      return `${fromLabel} → ${toLabel} · ${leg.date} ${leg.time} · ${leg.vehicleCode}`;
     })
     .join(" | ");
 }

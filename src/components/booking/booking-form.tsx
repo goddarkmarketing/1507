@@ -69,6 +69,7 @@ import {
   dropoffAreaName,
   dropoffHotelName,
   hotelAreaId,
+  suggestedPlaceName,
 } from "@/lib/data/nearby-hotels";
 import { getLocation } from "@/lib/data/locations";
 import { routeHasOfficialPrice } from "@/lib/data/pricing";
@@ -208,10 +209,18 @@ export function BookingForm() {
       const updates: {
         fromId?: string;
         toId?: string;
+        pickupPlace?: string;
+        hotelName?: string;
         vehicleCode?: typeof draft.legs[0]["vehicleCode"];
       } = {};
-      if (from) updates.fromId = from;
-      if (to) updates.toId = to;
+      if (from) {
+        updates.fromId = from;
+        updates.pickupPlace = suggestedPlaceName(from, locale);
+      }
+      if (to) {
+        updates.toId = to;
+        updates.hotelName = suggestedPlaceName(to, locale);
+      }
       if (
         vehicle &&
         ["ECO", "PREM", "SUV", "VAN", "EXE", "VIP", "BUS"].includes(vehicle)
@@ -317,6 +326,19 @@ export function BookingForm() {
       if (!leg.date || !leg.time || !leg.vehicleCode) {
         toast.error(t("toastTripIncomplete"));
         return false;
+      }
+      const pickup = (
+        leg.pickupPlace ?? suggestedPlaceName(leg.fromId, locale)
+      ).trim();
+      const dropoff = (
+        leg.hotelName ?? suggestedPlaceName(leg.toId, locale)
+      ).trim();
+      if (!pickup || !dropoff) {
+        toast.error(t("toastPlaceNames"));
+        return false;
+      }
+      if (leg.pickupPlace?.trim() !== pickup || (leg.hotelName ?? "").trim() !== dropoff) {
+        updateLeg(leg.id, { pickupPlace: pickup, hotelName: dropoff });
       }
     }
 
@@ -592,7 +614,7 @@ export function BookingForm() {
                   </Button>
                 )}
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3 sm:gap-4">
+              <CardContent className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4">
                 {!isCharter && (
                   <>
                     <div className="col-span-2 space-y-1.5 sm:space-y-2">
@@ -604,10 +626,30 @@ export function BookingForm() {
                         includeHotels
                         placeholder={t("pickup")}
                         onValueChange={(fromId) => {
-                          updateLeg(leg.id, { fromId });
+                          const pickupPlace = suggestedPlaceName(fromId, locale);
+                          updateLeg(leg.id, { fromId, pickupPlace });
                           if (draft.type === "round-trip" && index === 0) {
                             const back = draft.legs[1];
-                            if (back) updateLeg(back.id, { toId: fromId });
+                            if (back) updateLeg(back.id, { toId: fromId, hotelName: pickupPlace });
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="col-span-2 space-y-1.5 sm:space-y-2">
+                      <Label htmlFor={`pickup-place-${leg.id}`}>
+                        {t("placeNameLabel")}
+                      </Label>
+                      <Input
+                        id={`pickup-place-${leg.id}`}
+                        className={fieldClass}
+                        value={leg.pickupPlace ?? suggestedPlaceName(leg.fromId, locale)}
+                        placeholder={t("placeNamePlaceholder")}
+                        onChange={(event) => {
+                          const pickupPlace = event.target.value;
+                          updateLeg(leg.id, { pickupPlace });
+                          if (draft.type === "round-trip" && index === 0) {
+                            const back = draft.legs[1];
+                            if (back) updateLeg(back.id, { hotelName: pickupPlace });
                           }
                         }}
                       />
@@ -621,10 +663,31 @@ export function BookingForm() {
                         includeHotels
                         placeholder={t("dropoff")}
                         onValueChange={(toId) => {
-                          updateLeg(leg.id, { toId, hotelName: "" });
+                          const hotelName = suggestedPlaceName(toId, locale);
+                          updateLeg(leg.id, { toId, hotelName });
                           if (draft.type === "round-trip" && index === 0) {
                             const back = draft.legs[1];
-                            if (back) updateLeg(back.id, { fromId: toId });
+                            if (back) updateLeg(back.id, { fromId: toId, pickupPlace: hotelName });
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="col-span-2 space-y-1.5 sm:space-y-2">
+                      <Label htmlFor={`dropoff-place-${leg.id}`}>
+                        {t("placeNameLabel")}
+                      </Label>
+                      <Input
+                        id={`dropoff-place-${leg.id}`}
+                        className={fieldClass}
+                        value={leg.hotelName ?? suggestedPlaceName(leg.toId, locale)}
+                        placeholder={t("placeNamePlaceholder")}
+                        onChange={(event) => {
+                          const hotelName = event.target.value;
+                          const areaId = hotelAreaId(leg.toId);
+                          updateLeg(leg.id, { toId: areaId, hotelName });
+                          if (draft.type === "round-trip" && index === 0) {
+                            const back = draft.legs[1];
+                            if (back) updateLeg(back.id, { fromId: areaId, pickupPlace: hotelName });
                           }
                         }}
                       />
@@ -633,18 +696,11 @@ export function BookingForm() {
                       selectedId={leg.toId}
                       customName={leg.hotelName ?? ""}
                       onSelect={(hotelId) => {
-                        updateLeg(leg.id, { toId: hotelId, hotelName: "" });
+                        const hotelName = suggestedPlaceName(hotelId, locale);
+                        updateLeg(leg.id, { toId: hotelId, hotelName });
                         if (draft.type === "round-trip" && index === 0) {
                           const back = draft.legs[1];
-                          if (back) updateLeg(back.id, { fromId: hotelId });
-                        }
-                      }}
-                      onCustomName={(name) => {
-                        const areaId = hotelAreaId(leg.toId);
-                        updateLeg(leg.id, { toId: areaId, hotelName: name });
-                        if (draft.type === "round-trip" && index === 0) {
-                          const back = draft.legs[1];
-                          if (back) updateLeg(back.id, { fromId: areaId });
+                          if (back) updateLeg(back.id, { fromId: hotelId, pickupPlace: hotelName });
                         }
                       }}
                     />
@@ -990,6 +1046,9 @@ export function BookingForm() {
               const to = getLocation(leg.toId);
               const area = dropoffAreaName(leg.toId, locale);
               const hotel = dropoffHotelName(leg.toId, leg.hotelName, locale);
+              const pickupPlace = (
+                leg.pickupPlace ?? suggestedPlaceName(leg.fromId, locale)
+              ).trim();
               const vehicle = activeVehicles.find((v) => v.code === leg.vehicleCode);
               return (
                 <div key={leg.id} className="space-y-1 text-sm">
@@ -998,9 +1057,14 @@ export function BookingForm() {
                       ? t("charterN", { n: i + 1 })
                       : `${locName(from).split("(")[0].trim()} → ${area || locName(to).split("(")[0].trim()}`}
                   </p>
+                  {pickupPlace ? (
+                    <p className="text-muted-foreground">
+                      {t("pickup")}: {pickupPlace}
+                    </p>
+                  ) : null}
                   {hotel && hotel !== area ? (
                     <p className="text-muted-foreground">
-                      {t("summaryHotel")}: {hotel}
+                      {t("dropoff")}: {hotel}
                     </p>
                   ) : null}
                   <p className="text-muted-foreground">

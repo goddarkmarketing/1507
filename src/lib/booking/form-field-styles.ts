@@ -14,9 +14,9 @@ export const bookingFieldClass = cn(
 );
 
 export const bookingSelectTriggerClass = cn(
-  "flex w-full min-w-0 items-center justify-between gap-1.5",
+  "flex w-full min-w-0 max-w-full items-center justify-between gap-1.5 overflow-hidden",
   "rounded-lg border border-input bg-transparent px-2.5",
-  "whitespace-nowrap text-base outline-none select-none",
+  "text-base outline-none select-none",
   BOOKING_FIELD_HEIGHT,
   BOOKING_FIELD_RESET
 );

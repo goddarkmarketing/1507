@@ -134,12 +134,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     finish();
     const unsubAdmin = useAdminStore.persist.onFinishHydration(finish);
     const unsubSettings = useSettingsStore.persist.onFinishHydration(finish);
-    const timeout = window.setTimeout(() => {
-      if (alive) setReady(true);
-    }, 600);
     return () => {
       alive = false;
-      window.clearTimeout(timeout);
       unsubAdmin?.();
       unsubSettings?.();
     };
@@ -160,14 +156,24 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!ready || !authenticated) return;
+    const pull = () => {
+      void useAdminStore.getState().pullRemoteBookings();
+    };
     void (async () => {
       await useAdminStore.getState().pullRemoteBookings();
       useAdminStore.getState().ensureBookingsMenuSeeded();
     })();
-    const timer = window.setInterval(() => {
-      void useAdminStore.getState().pullRemoteBookings();
-    }, 45_000);
-    return () => window.clearInterval(timer);
+    const timer = window.setInterval(pull, 15_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") pull();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", pull);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", pull);
+    };
   }, [ready, authenticated]);
 
   useEffect(() => {

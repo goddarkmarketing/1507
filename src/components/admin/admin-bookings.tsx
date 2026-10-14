@@ -726,9 +726,14 @@ export function AdminBookingsPage() {
                 const leg = b.legs?.[0];
                 const fromId = leg?.fromId || "";
                 const toId = leg?.toId || "";
-                const from = fromId
+                const fromArea = fromId
                   ? locationShortName(getLocation(fromId), locale) || fromId
-                  : "—";
+                  : "";
+                const fromPlace = leg?.pickupPlace?.trim() || "";
+                const from =
+                  fromPlace && fromPlace !== fromArea
+                    ? `${fromArea} · ${fromPlace}`
+                    : fromArea || "—";
                 const to = toId
                   ? dropoffDetailLabel(toId, leg?.hotelName, locale) || toId
                   : "—";
@@ -839,6 +844,10 @@ export function AdminBookingsPage() {
                   const leg = b.legs?.[0];
                   const fromId = leg?.fromId || "";
                   const toId = leg?.toId || "";
+                  const fromArea = fromId
+                    ? locationShortName(getLocation(fromId), locale) || fromId
+                    : "";
+                  const fromPlace = leg?.pickupPlace?.trim() || "";
                   const toArea = toId ? dropoffAreaName(toId, locale) : "";
                   const toHotel = toId
                     ? dropoffHotelName(toId, leg?.hotelName, locale)
@@ -877,11 +886,13 @@ export function AdminBookingsPage() {
                           {b.bookingNumber}
                         </button>
                       </td>
-                      <td className="truncate px-3 py-2.5 text-zinc-800">
-                        {fromId
-                          ? locationShortName(getLocation(fromId), locale) ||
-                            fromId
-                          : "—"}
+                      <td className="px-3 py-2.5 text-zinc-800">
+                        <p className="truncate">{fromArea || "—"}</p>
+                        {fromPlace && fromPlace !== fromArea ? (
+                          <p className="font-normal break-words text-zinc-500">
+                            {fromPlace}
+                          </p>
+                        ) : null}
                       </td>
                       <td
                         className={cn(
