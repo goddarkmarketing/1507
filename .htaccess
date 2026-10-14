@@ -1,0 +1,8 @@
+RewriteEngine On
+RewriteBase /
+
+# Homepage → Thai
+RewriteRule ^$ /th/ [R=302,L]
+
+# Next.js assets live in /_next/ — do not treat as hidden
+RewriteRule ^_next/ - [L]
