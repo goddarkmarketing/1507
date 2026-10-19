@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Car, Check, ChevronDown, ChevronRight, Download, Phone, Search, Settings2, SlidersHorizontal } from "lucide-react";
+import { Car, Check, ChevronDown, ChevronRight, Download, Pencil, Phone, Search, Settings2, SlidersHorizontal } from "lucide-react";
+import { BookingEditForm } from "@/components/admin/booking-edit-form";
 import { useAdminStore } from "@/lib/admin/store";
 import {
   money,
@@ -293,6 +294,7 @@ export function AdminBookingsPage() {
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [mobileChip, setMobileChip] = useState<MobileChip>("all");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -339,10 +341,12 @@ export function AdminBookingsPage() {
     setConfirmTarget(null);
     setSelectedId(id);
     setDetailOpen(true);
+    setEditing(false);
   };
 
   const closeDetail = () => {
     setDetailOpen(false);
+    setEditing(false);
     setSelectedId(null);
     if (confirmTarget) {
       setConfirmTarget(null);
@@ -1032,8 +1036,21 @@ export function AdminBookingsPage() {
                 >
                   {statusLabel(detailStatusOf(selected))}
                 </DialogDescription>
+                {!editing ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 w-fit gap-1.5"
+                    onClick={() => setEditing(true)}
+                  >
+                    <Pencil className="size-3.5" />
+                    {t("editBooking")}
+                  </Button>
+                ) : null}
               </DialogHeader>
-              {selected.status === "pending" &&
+              {!editing &&
+              selected.status === "pending" &&
               selected.priceStatus !== "pending" ? (
                 <div className="shrink-0 space-y-2 border-b border-amber-100 bg-amber-50 px-5 py-3">
                   <p className="text-xs leading-relaxed text-amber-900">
@@ -1049,6 +1066,15 @@ export function AdminBookingsPage() {
                   </Button>
                 </div>
               ) : null}
+              {editing ? (
+                <div className="overflow-y-auto px-5 py-4">
+                  <BookingEditForm
+                    key={selected.id}
+                    booking={selected}
+                    onDone={() => setEditing(false)}
+                  />
+                </div>
+              ) : (
               <div className="overflow-y-auto px-5 py-3">
                 <table className="w-full text-sm">
                   <tbody>
@@ -1075,6 +1101,7 @@ export function AdminBookingsPage() {
                   </div>
                 ) : null}
               </div>
+              )}
             </div>
           )}
         </DialogContent>

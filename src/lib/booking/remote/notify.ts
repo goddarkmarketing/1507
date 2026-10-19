@@ -5,7 +5,8 @@ export type BookingEmailKind =
   | "confirmed"
   | "quote-request"
   | "quote-ready"
-  | "approved";
+  | "approved"
+  | "updated";
 
 function tripSummary(booking: Booking): string {
   return booking.legs

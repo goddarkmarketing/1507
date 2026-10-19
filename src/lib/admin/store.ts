@@ -39,6 +39,12 @@ function bookingPatchFromAdmin(booking: AdminBooking): Partial<Booking> {
     paymentPlan: booking.paymentPlan,
     rentalPackageId: booking.rentalPackageId,
     rentalDays: booking.rentalDays,
+    customerName: booking.customerName,
+    customerEmail: booking.customerEmail,
+    customerPhone: booking.customerPhone,
+    flightNumber: booking.flightNumber,
+    passengerCount: booking.passengerCount,
+    notes: booking.notes,
   };
 }
 
@@ -64,7 +70,11 @@ interface AdminState {
   pullRemoteBookings: () => Promise<{ ok: boolean; error?: string }>;
   ensureBookingsMenuSeeded: () => void;
   markBookingsMenuSeen: () => void;
-  updateBooking: (id: string, patch: AdminBookingPatch) => void;
+  updateBooking: (
+    id: string,
+    patch: AdminBookingPatch,
+    options?: { emailCustomer?: boolean }
+  ) => void;
   assignDriver: (bookingId: string, driverId: string | null) => void;
   setOpsStatus: (bookingId: string, opsStatus: OpsStatus) => void;
   verifyPayment: (bookingId: string, approve: boolean) => void;
@@ -156,7 +166,7 @@ export const useAdminStore = create<AdminState>()(
         });
       },
 
-      updateBooking: (id, patch) => {
+      updateBooking: (id, patch, options) => {
         const before = get().bookings.find((b) => b.id === id);
         const next = get().bookings.map((b) =>
           b.id === id
@@ -180,7 +190,13 @@ export const useAdminStore = create<AdminState>()(
             patch.priceStatus !== undefined ||
             patch.legs !== undefined ||
             patch.amountDueNow !== undefined ||
-            patch.balanceDue !== undefined)
+            patch.balanceDue !== undefined ||
+            "customerName" in patch ||
+            "customerEmail" in patch ||
+            "customerPhone" in patch ||
+            "flightNumber" in patch ||
+            "passengerCount" in patch ||
+            "notes" in patch)
         ) {
           syncToCustomerStore(updated);
           const approved =
@@ -189,8 +205,11 @@ export const useAdminStore = create<AdminState>()(
             updated.priceStatus !== "pending";
           if (isBookingRemoteEnabled()) {
             void patchRemoteBooking(updated).then((result) => {
-              if (approved && result.ok) {
+              if (!result.ok) return;
+              if (approved) {
                 void notifyCustomerVoucherEmail(updated, "th", "approved");
+              } else if (options?.emailCustomer && updated.customerEmail) {
+                void notifyCustomerVoucherEmail(updated, "th", "updated");
               }
             });
           }

@@ -76,7 +76,7 @@ function stepList(steps: string[]) {
     .join("");
 }
 
-type EmailKind = "confirmed" | "quote-request" | "quote-ready" | "approved";
+type EmailKind = "confirmed" | "quote-request" | "quote-ready" | "approved" | "updated";
 
 function customerEmailHtml(opts: {
   name: string;
@@ -96,21 +96,32 @@ function customerEmailHtml(opts: {
   const quote = opts.kind === "quote-request";
   const ready = opts.kind === "quote-ready";
   const approved = opts.kind === "approved";
+  const updated = opts.kind === "updated";
   const title = quote
     ? "ได้รับคำขอแล้ว — รอตรวจสอบราคา"
     : ready
       ? "ได้ราคาแล้ว — รายละเอียดการเดินทาง"
       : approved
         ? "ยืนยันการจองแล้ว — ใบจองพร้อมใช้งาน"
-        : "ได้รับคำขอจองแล้ว — รอผู้ดูแลยืนยัน";
+        : updated
+          ? "อัปเดตรายละเอียดการจองแล้ว"
+          : "ได้รับคำขอจองแล้ว — รอผู้ดูแลยืนยัน";
   const intro = quote
     ? "เส้นทางนี้ยังไม่มีราคาในระบบ กรุณารอทีมงานตรวจสอบ ยังไม่ต้องชำระเงิน"
     : ready
       ? "ทีมงานตรวจราคาให้แล้ว รายละเอียดอยู่ด้านล่าง กรุณาเก็บอีเมลนี้ไว้"
       : approved
         ? "ผู้ดูแลยืนยันการจองของคุณแล้ว เปิดใบจอง (e-Voucher) จากปุ่มด้านล่าง และแสดงให้คนขับในวันเดินทาง"
-        : "เราบันทึกคำขอของคุณแล้ว ผู้ดูแลจะตรวจสอบและยืนยันก่อน แล้วจะส่งใบจองให้ทางอีเมลนี้";
-  const steps = approved
+        : updated
+          ? "ทีมงานได้แก้ไขรายละเอียดการจองของคุณ กรุณาตรวจสอบข้อมูลล่าสุดด้านล่าง"
+          : "เราบันทึกคำขอของคุณแล้ว ผู้ดูแลจะตรวจสอบและยืนยันก่อน แล้วจะส่งใบจองให้ทางอีเมลนี้";
+  const steps = updated
+    ? [
+        "ตรวจสอบวัน เวลา จุดรับ-ส่ง และราคาล่าสุดด้านบน",
+        "เปิดใบจองจากปุ่มด้านล่าง ใบจองแสดงข้อมูลที่แก้ไขแล้ว",
+        "หากข้อมูลไม่ถูกต้อง ตอบกลับอีเมลนี้หรือติดต่อ 088 443 3309",
+      ]
+    : approved
     ? [
         "การจองได้รับการยืนยันแล้ว",
         "เปิดใบจองจากปุ่มด้านล่าง บันทึกหรือพิมพ์เก็บไว้",
@@ -165,7 +176,7 @@ function customerEmailHtml(opts: {
                 ${stepList(steps)}
               </table>
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px;">
-                <tr><td>${primaryButton(opts.voucherUrl, quote ? "ดูคำขอ" : approved ? "เปิดใบจอง" : "เปิดหน้าติดตาม")}</td></tr>
+                <tr><td>${primaryButton(opts.voucherUrl, quote ? "ดูคำขอ" : approved || updated ? "เปิดใบจอง" : "เปิดหน้าติดตาม")}</td></tr>
               </table>
             </td>
           </tr>
@@ -283,7 +294,8 @@ Deno.serve(async (req) => {
   const kind: EmailKind =
     body.kind === "quote-request" ||
     body.kind === "quote-ready" ||
-    body.kind === "approved"
+    body.kind === "approved" ||
+    body.kind === "updated"
       ? body.kind
       : "confirmed";
   const alertsAdmin = kind === "confirmed" || kind === "quote-request";
@@ -296,7 +308,9 @@ Deno.serve(async (req) => {
         ? `Krabi Links Taxi · ราคาการเดินทาง ${bookingNumber}`
         : kind === "approved"
           ? `Krabi Links Taxi · ยืนยันการจองแล้ว ${bookingNumber}`
-          : `Krabi Links Taxi · ได้รับคำขอจอง ${bookingNumber}`;
+          : kind === "updated"
+            ? `Krabi Links Taxi · อัปเดตรายละเอียดการจอง ${bookingNumber}`
+            : `Krabi Links Taxi · ได้รับคำขอจอง ${bookingNumber}`;
 
   if (!email || !voucherUrl || !bookingNumber) {
     return new Response(JSON.stringify({ error: "missing fields" }), {

@@ -43,7 +43,7 @@ export function BookingDatePicker({
   invalid,
 }: {
   value: string;
-  min: string;
+  min?: string;
   onChange: (value: string) => void;
   invalid?: boolean;
 }) {
@@ -51,7 +51,7 @@ export function BookingDatePicker({
   const t = useTranslations("Booking");
   const [open, setOpen] = useState(false);
   const selected = parseIsoDate(value);
-  const minDate = parseIsoDate(min);
+  const minDate = parseIsoDate(min ?? "");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

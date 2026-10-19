@@ -43,6 +43,12 @@ export type AdminBookingPatch = Partial<
     | "amountDueNow"
     | "balanceDue"
     | "paymentPlan"
+    | "customerName"
+    | "customerEmail"
+    | "customerPhone"
+    | "flightNumber"
+    | "passengerCount"
+    | "notes"
   >
 >;
 

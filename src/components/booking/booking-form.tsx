@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
-import { Plus, Trash2, CalendarClock, Wallet, PlaneTakeoff, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Trash2, CalendarClock, CalendarDays, CarFront, Clock, Flag, MapPin, Wallet, PlaneTakeoff, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -1087,41 +1087,87 @@ export function BookingForm() {
               const hotel = dropoffHotelName(leg.toId, leg.hotelName, locale);
               const pickupPlace = (leg.pickupPlace ?? "").trim();
               const vehicle = activeVehicles.find((v) => v.code === leg.vehicleCode);
+              const fromName = locName(from).split("(")[0].trim();
+              const toName = area || locName(to).split("(")[0].trim();
+              const quoted =
+                needsQuote &&
+                !routeHasOfficialPrice(leg.fromId, leg.toId, leg.vehicleCode);
               return (
-                <div key={leg.id} className="space-y-1 text-sm">
-                  <p className="font-medium">
-                    {isCharter
-                      ? t("charterN", { n: i + 1 })
-                      : `${locName(from).split("(")[0].trim()} → ${area || locName(to).split("(")[0].trim()}`}
-                  </p>
-                  {pickupPlace ? (
-                    <p className="text-muted-foreground">
-                      {t("pickup")}: {pickupPlace}
+                <div
+                  key={leg.id}
+                  className="space-y-3 rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-3 text-sm"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="min-w-0 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
+                      {isCharter
+                        ? t("charterN", { n: i + 1 })
+                        : draft.legs.length > 1
+                          ? t("routeN", { n: i + 1 })
+                          : t("summaryTrip")}
                     </p>
-                  ) : null}
-                  {hotel && hotel !== area ? (
-                    <p className="text-muted-foreground">
-                      {t("dropoff")}: {hotel}
-                    </p>
-                  ) : null}
-                  <p className="text-muted-foreground">
-                    {formatDayMonthYear(leg.date)} {t("at")} {leg.time}
-                    {!isRentalBooking &&
-                      ` · ${vehicle ? vehicleName(vehicle.code) : ""}`}
-                  </p>
-                  {!isRentalBooking && (
-                    <p className="font-medium">
-                      {needsQuote &&
-                      !routeHasOfficialPrice(
-                        leg.fromId,
-                        leg.toId,
-                        leg.vehicleCode
-                      )
-                        ? t("quotePriceLabel")
-                        : `฿${getLegPrice(leg).toLocaleString("en-US")}`}
-                    </p>
+                    {!isRentalBooking && (
+                      <p
+                        className={cn(
+                          "shrink-0 font-semibold tabular-nums",
+                          quoted ? "text-xs text-amber-700" : "text-base text-zinc-950"
+                        )}
+                      >
+                        {quoted
+                          ? t("quotePriceLabel")
+                          : `฿${getLegPrice(leg).toLocaleString("en-US")}`}
+                      </p>
+                    )}
+                  </div>
+
+                  {!isCharter && (
+                    <ol className="relative space-y-3">
+                      <span
+                        aria-hidden
+                        className="absolute top-6 bottom-6 left-[11px] border-l border-dashed border-zinc-300"
+                      />
+                      <li className="relative flex gap-2.5">
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                          <MapPin className="size-3.5" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-[11px] text-zinc-500">{t("pickup")}</p>
+                          <p className="font-medium break-words text-zinc-900">{fromName}</p>
+                          {pickupPlace && pickupPlace !== fromName ? (
+                            <p className="text-xs break-words text-zinc-500">{pickupPlace}</p>
+                          ) : null}
+                        </div>
+                      </li>
+                      <li className="relative flex gap-2.5">
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600">
+                          <Flag className="size-3.5" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-[11px] text-zinc-500">{t("dropoff")}</p>
+                          <p className="font-medium break-words text-zinc-900">{toName}</p>
+                          {hotel && hotel !== toName ? (
+                            <p className="text-xs break-words text-zinc-500">{hotel}</p>
+                          ) : null}
+                        </div>
+                      </li>
+                    </ol>
                   )}
-                  {i < draft.legs.length - 1 && <Separator className="my-3" />}
+
+                  <div className="flex flex-wrap gap-1.5 border-t border-zinc-200/80 pt-3 text-xs text-zinc-700">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 ring-1 ring-zinc-200">
+                      <CalendarDays className="size-3.5 text-amber-600" />
+                      {formatDayMonthYear(leg.date)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 ring-1 ring-zinc-200">
+                      <Clock className="size-3.5 text-amber-600" />
+                      {leg.time}
+                    </span>
+                    {!isRentalBooking && vehicle ? (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 ring-1 ring-zinc-200">
+                        <CarFront className="size-3.5 text-amber-600" />
+                        {vehicleName(vehicle.code)}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               );
             })}
