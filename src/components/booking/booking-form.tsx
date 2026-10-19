@@ -48,10 +48,18 @@ import {
 } from "@/lib/booking/booking-mode";
 import {
   getNightDriverSurcharge,
+  hasValidPickupSequence,
   isNightPickupTime,
+  isPickupInPast,
   NIGHT_DRIVER_SURCHARGE_THB,
   toBangkokDateInput,
+  toBangkokTimeInput,
 } from "@/lib/booking/booking-rules";
+import {
+  BookingDatePicker,
+  BookingTimePicker,
+  formatDayMonthYear,
+} from "@/components/booking/date-time-fields";
 import {
   bookingFieldClass,
   bookingSelectTriggerClass,
@@ -186,11 +194,12 @@ export function BookingForm() {
     }
   }, [draft.legs, isCharter, isRentalBooking]);
 
-  // Default pickup date = today (Bangkok), client-only to avoid SSR mismatch
+  // Default pickup date = tomorrow (Bangkok), client-only to avoid SSR mismatch
   useEffect(() => {
-    const minDate = toBangkokDateInput(new Date());
+    const today = toBangkokDateInput(new Date());
+    const tomorrow = toBangkokDateInput(new Date(Date.now() + 86_400_000));
     draft.legs.forEach((leg) => {
-      if (!leg.date) updateLeg(leg.id, { date: minDate });
+      if (!leg.date || leg.date < today) updateLeg(leg.id, { date: tomorrow });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -240,6 +249,10 @@ export function BookingForm() {
       setStep(2);
       return;
     }
+    if (!validatePickupTimes()) {
+      setStep(1);
+      return;
+    }
     if (!draft.paymentPlan) {
       toast.error(t("toastPaymentPlan"));
       return;
@@ -287,20 +300,25 @@ export function BookingForm() {
       toast.message(t("toastRemoteSyncOk"));
     }
 
-    if (booking.priceStatus === "pending") {
-      toast.success(t("confirmQuote"));
-    } else if (booking.paymentPlan === "pay-driver") {
-      toast.success(t("confirmPayDriver"));
-    } else if (booking.payment?.status === "awaiting-transfer") {
-      if (booking.payment.method === "promptpay") {
-        toast.success(t("confirmPromptPay"));
-      } else {
-        toast.success(t("confirmBank"));
-      }
-    } else {
-      toast.success(t("confirmBooking"));
-    }
+    toast.success(
+      booking.priceStatus === "pending"
+        ? t("confirmQuote")
+        : t("toastAwaitingAdmin")
+    );
     router.push(`/booking/voucher/?n=${booking.bookingNumber}`);
+  };
+
+  const validatePickupTimes = () => {
+    const now = new Date();
+    if (draft.legs.some((leg) => leg.date && leg.time && isPickupInPast(leg.date, leg.time, now))) {
+      toast.error(t("toastPastPickup"));
+      return false;
+    }
+    if (draft.type === "round-trip" && !hasValidPickupSequence(draft.legs, now)) {
+      toast.error(t("toastReturnBeforeOutbound"));
+      return false;
+    }
+    return true;
   };
 
   const validateTripStep = () => {
@@ -315,7 +333,7 @@ export function BookingForm() {
           return false;
         }
       }
-      return true;
+      return validatePickupTimes();
     }
 
     for (const leg of draft.legs) {
@@ -342,12 +360,17 @@ export function BookingForm() {
       }
     }
 
-    return true;
+    return validatePickupTimes();
   };
 
   const validateCustomerStep = () => {
     if (!draft.customerName || !draft.customerEmail || !draft.customerPhone) {
       toast.error(t("toastCustomer"));
+      return false;
+    }
+    if (!(Number.parseInt(draft.passengerCount, 10) > 0)) {
+      toast.error(t("toastPassengerCount"));
+      document.getElementById("passengers")?.focus();
       return false;
     }
     return true;
@@ -390,6 +413,12 @@ export function BookingForm() {
     bookingService === "rental" ? 0 : getNightDriverSurcharge(draft.legs);
   const hasNightPickup = draft.legs.some((leg) => isNightPickupTime(leg.time));
   const minLegDate = toBangkokDateInput(new Date());
+  const legMinDate = (index: number) => {
+    const outboundDate = draft.legs[0]?.date;
+    return draft.type === "round-trip" && index > 0 && outboundDate > minLegDate
+      ? outboundDate
+      : minLegDate;
+  };
   const amountDue = getAmountDueNow(total, bookingService, draft.paymentPlan);
   const balanceDue = getRemainingBalance(
     total,
@@ -709,24 +738,34 @@ export function BookingForm() {
 
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label>{t("date")}</Label>
-                  <Input
-                    type="date"
-                    className={fieldClass}
+                  <BookingDatePicker
                     value={leg.date}
-                    min={minLegDate}
-                    onChange={(e) => updateLeg(leg.id, { date: e.target.value })}
+                    min={legMinDate(index)}
+                    onChange={(date) => updateLeg(leg.id, { date })}
                   />
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label>{t("pickupTime")}</Label>
-                  <Input
-                    type="time"
-                    className={fieldClass}
+                  <BookingTimePicker
                     value={leg.time}
-                    onChange={(e) => updateLeg(leg.id, { time: e.target.value })}
+                    min={
+                      leg.date === minLegDate
+                        ? toBangkokTimeInput(new Date())
+                        : undefined
+                    }
+                    invalid={
+                      Boolean(leg.date && leg.time) &&
+                      isPickupInPast(leg.date, leg.time)
+                    }
+                    onChange={(time) => updateLeg(leg.id, { time })}
                   />
                 </div>
+                {leg.date && leg.time && isPickupInPast(leg.date, leg.time) ? (
+                  <p className="col-span-2 -mt-1 text-xs font-medium text-destructive">
+                    {t("toastPastPickup")}
+                  </p>
+                ) : null}
 
                 {!isRentalBooking && (
                 <div className="col-span-2 space-y-1.5 sm:space-y-2">
@@ -849,6 +888,20 @@ export function BookingForm() {
               <p className="text-[11px] text-muted-foreground">
                 {isRentalBooking ? t("flightHintRental") : t("flightHintTransfer")}
               </p>
+            </div>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="passengers">{t("passengerCount")}</Label>
+              <Input
+                id="passengers"
+                className={fieldClass}
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={99}
+                value={draft.passengerCount}
+                onChange={(e) => setCustomer("passengerCount", e.target.value.replace(/\D/g, "").slice(0, 2))}
+                placeholder={t("phPassengers")}
+              />
             </div>
             <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
               <Label htmlFor="notes">{t("specialRequests")}</Label>
@@ -1068,7 +1121,7 @@ export function BookingForm() {
                     </p>
                   ) : null}
                   <p className="text-muted-foreground">
-                    {leg.date} {t("at")} {leg.time}
+                    {formatDayMonthYear(leg.date)} {t("at")} {leg.time}
                     {!isRentalBooking &&
                       ` · ${vehicle ? vehicleName(vehicle.code) : ""}`}
                   </p>

@@ -131,6 +131,7 @@ export interface Booking {
   customerEmail: string;
   customerPhone: string;
   flightNumber?: string;
+  passengerCount?: number;
   notes?: string;
   totalPrice: number;
   /** pending = customer asked for a route that has no tariff yet */

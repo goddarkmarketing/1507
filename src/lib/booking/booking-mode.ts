@@ -78,7 +78,7 @@ export function getBookingAmountDue(booking: {
 }
 
 /**
- * Every booking can print its order. Staff follow up with the customer afterwards.
+ * The e-voucher is issued once staff have confirmed the booking.
  */
 export function canIssueVoucher(
   booking: Pick<Booking, "status" | "paymentPlan" | "payment" | "legs">,

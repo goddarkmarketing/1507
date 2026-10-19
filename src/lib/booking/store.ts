@@ -13,6 +13,7 @@ import {
 } from "@/lib/booking/booking-mode";
 import {
   getNightDriverSurcharge,
+  isPickupInPast,
   toBangkokDateInput,
 } from "@/lib/booking/booking-rules";
 import { createRemoteBooking } from "@/lib/booking/remote/bookings-remote";
@@ -49,6 +50,7 @@ interface BookingDraft {
   customerEmail: string;
   customerPhone: string;
   flightNumber: string;
+  passengerCount: string;
   notes: string;
   paymentPlan: PaymentPlan | null;
   paymentMethod: PaymentMethod | null;
@@ -71,6 +73,7 @@ interface BookingStore {
       | "customerEmail"
       | "customerPhone"
       | "flightNumber"
+      | "passengerCount"
       | "notes"
     >,
     value: string
@@ -120,6 +123,7 @@ const INITIAL_DRAFT: BookingDraft = {
   customerEmail: "",
   customerPhone: "",
   flightNumber: "",
+  passengerCount: "",
   notes: "",
   paymentPlan: "pay-driver",
   paymentMethod: "cash",
@@ -133,8 +137,13 @@ const INITIAL_DRAFT: BookingDraft = {
   transferProof: null,
 };
 
+function parsePassengerCount(value: string): number | undefined {
+  const count = Number.parseInt(value, 10);
+  return Number.isFinite(count) && count > 0 ? count : undefined;
+}
+
 function defaultPickupDate(): string {
-  return toBangkokDateInput(new Date());
+  return toBangkokDateInput(new Date(Date.now() + 24 * 60 * 60 * 1000));
 }
 
 function createLeg(
@@ -356,10 +365,16 @@ export const useBookingStore = create<BookingStore>()(
         if (!draft.customerName || !draft.customerEmail || !draft.customerPhone) {
           return null;
         }
+        if (!parsePassengerCount(draft.passengerCount)) {
+          return null;
+        }
         if (!draft.paymentPlan) {
           return null;
         }
         if (!draft.paymentMethod) {
+          return null;
+        }
+        if (draft.legs.some((leg) => isPickupInPast(leg.date, leg.time))) {
           return null;
         }
 
@@ -390,6 +405,7 @@ export const useBookingStore = create<BookingStore>()(
             customerEmail: draft.customerEmail,
             customerPhone: draft.customerPhone,
             flightNumber: draft.flightNumber || undefined,
+            passengerCount: parsePassengerCount(draft.passengerCount),
             notes: draft.notes || undefined,
             totalPrice: 0,
             priceStatus: "pending",
@@ -512,6 +528,7 @@ export const useBookingStore = create<BookingStore>()(
           customerEmail: draft.customerEmail,
           customerPhone: draft.customerPhone,
           flightNumber: draft.flightNumber || undefined,
+          passengerCount: parsePassengerCount(draft.passengerCount),
           notes: draft.notes || undefined,
           totalPrice,
           priceStatus: "official",
@@ -525,7 +542,7 @@ export const useBookingStore = create<BookingStore>()(
               }
             : {}),
           createdAt,
-          status: "confirmed",
+          status: "pending",
           payment,
         };
 

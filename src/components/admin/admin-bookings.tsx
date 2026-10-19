@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/dialog";
 
 const DETAIL_STATUSES = [
+  "pending",
   "confirmed",
   "in_progress",
   "completed",
@@ -57,6 +58,7 @@ function cardStatus(booking: AdminBooking): "payment" | DetailStatus {
   if (booking.status === "cancelled" || booking.opsStatus === "cancelled") {
     return "cancelled";
   }
+  if (booking.status === "pending") return "pending";
   if (booking.opsStatus === "payment_review") return "payment";
   return detailStatusOf(booking);
 }
@@ -64,7 +66,7 @@ function cardStatus(booking: AdminBooking): "payment" | DetailStatus {
 function matchesMobileChip(booking: AdminBooking, chip: MobileChip) {
   const status = cardStatus(booking);
   if (chip === "all") return true;
-  if (chip === "payment") return status === "payment";
+  if (chip === "payment") return status === "payment" || status === "pending";
   if (chip === "traveling") return status === "in_progress" || status === "completed";
   if (chip === "cancelled") return status === "cancelled";
   return status === "confirmed";
@@ -74,6 +76,7 @@ function detailStatusOf(booking: AdminBooking): DetailStatus {
   if (booking.status === "cancelled" || booking.opsStatus === "cancelled") {
     return "cancelled";
   }
+  if (booking.status === "pending") return "pending";
   if (booking.opsStatus === "in_progress") return "in_progress";
   if (booking.opsStatus === "completed") return "completed";
   return "confirmed";
@@ -110,6 +113,11 @@ const STATUS_STYLE: Record<
   DetailStatus,
   { trigger: string; dot: string; active: string }
 > = {
+  pending: {
+    trigger: "border-amber-200 bg-amber-50 text-amber-800",
+    dot: "bg-amber-500",
+    active: "bg-amber-50 text-amber-900",
+  },
   confirmed: {
     trigger: "border-emerald-200 bg-emerald-50 text-emerald-800",
     dot: "bg-emerald-500",
@@ -264,7 +272,16 @@ export function AdminBookingsPage() {
   const locale = useLocale();
   const bookings = useAdminStore((s) => s.bookings);
   const setOpsStatus = useAdminStore((s) => s.setOpsStatus);
+  const verifyPayment = useAdminStore((s) => s.verifyPayment);
   const routeLabel = useRouteLabel();
+  const [confirmTarget, setConfirmTarget] = useState<string | null>(() =>
+    typeof window === "undefined"
+      ? null
+      : new URLSearchParams(window.location.search)
+          .get("confirm")
+          ?.trim()
+          .toUpperCase() || null
+  );
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<OpsStatus | "all">("all");
@@ -310,16 +327,36 @@ export function AdminBookingsPage() {
     });
   }, [bookings, query, filter, serviceFilter, paymentFilter]);
 
-  const selected = selectedId
-    ? (bookings.find((b) => b.id === selectedId) ?? null)
+  const deepLinkId = confirmTarget
+    ? (bookings.find((b) => b.bookingNumber === confirmTarget)?.id ?? null)
+    : null;
+  const activeId = selectedId ?? deepLinkId;
+  const selected = activeId
+    ? (bookings.find((b) => b.id === activeId) ?? null)
     : null;
 
   const openDetail = (id: string) => {
+    setConfirmTarget(null);
     setSelectedId(id);
     setDetailOpen(true);
   };
 
+  const closeDetail = () => {
+    setDetailOpen(false);
+    setSelectedId(null);
+    if (confirmTarget) {
+      setConfirmTarget(null);
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  };
+
+  const approveBooking = (booking: AdminBooking) => {
+    verifyPayment(booking.id, true);
+    toast.success(t("bookingApproved"));
+  };
+
   const statusLabel = (status: DetailStatus) => {
+    if (status === "pending") return t("detailPending");
     if (status === "in_progress") return t("ops.in_progress");
     if (status === "completed") return t("ops.completed");
     if (status === "cancelled") return t("detailCancelled");
@@ -342,6 +379,9 @@ export function AdminBookingsPage() {
       return { label: t("quotePending"), className: "text-amber-600" };
     }
     const status = cardStatus(booking);
+    if (status === "pending") {
+      return { label: t("detailPending"), className: "text-amber-600" };
+    }
     if (status === "payment") {
       return { label: t("chipPayment"), className: "text-amber-500" };
     }
@@ -356,6 +396,7 @@ export function AdminBookingsPage() {
 
   const applyStatus = (bookingId: string, status: DetailStatus) => {
     if (status === "cancelled") setOpsStatus(bookingId, "cancelled");
+    else if (status === "pending") setOpsStatus(bookingId, "payment_review");
     else if (status === "in_progress") setOpsStatus(bookingId, "in_progress");
     else if (status === "completed") setOpsStatus(bookingId, "completed");
     else setOpsStatus(bookingId, "new");
@@ -436,6 +477,9 @@ export function AdminBookingsPage() {
     if (booking.flightNumber) {
       rows.splice(6, 0, { label: t("flight"), value: booking.flightNumber });
     }
+    if (booking.passengerCount) {
+      rows.splice(6, 0, { label: t("passengerCount"), value: String(booking.passengerCount) });
+    }
     if (booking.notes) {
       rows.push({ label: t("detailCustomerNotes"), value: booking.notes });
     }
@@ -453,6 +497,7 @@ export function AdminBookingsPage() {
       t("scheduleColTo"),
       t("scheduleColPickup"),
       t("flight"),
+      t("passengerCount"),
       t("scheduleColTrip"),
       t("detailVehicle"),
       t("detailStatus"),
@@ -491,6 +536,7 @@ export function AdminBookingsPage() {
           : "",
         leg ? `${leg.date} ${leg.time}` : "",
         booking.flightNumber || "",
+        booking.passengerCount ? String(booking.passengerCount) : "",
         trip,
         vehicle,
         statusLabel(detailStatusOf(booking)),
@@ -921,6 +967,11 @@ export function AdminBookingsPage() {
                       </td>
                       <td className="px-3 py-2.5 font-semibold text-zinc-800">
                         {trip}
+                        {b.passengerCount ? (
+                          <p className="font-normal text-zinc-500 tabular-nums">
+                            {t("paxShort", { n: b.passengerCount })}
+                          </p>
+                        ) : null}
                       </td>
                       <td className="px-3 py-2.5">
                         <span
@@ -958,10 +1009,10 @@ export function AdminBookingsPage() {
       </div>
 
       <Dialog
-        open={detailOpen && !!selected}
+        open={(detailOpen || !!deepLinkId) && !!selected}
         onOpenChange={(open) => {
-          setDetailOpen(open);
-          if (!open) setSelectedId(null);
+          if (open) setDetailOpen(true);
+          else closeDetail();
         }}
       >
         <DialogContent className="max-h-[min(88vh,640px)] w-full gap-0 overflow-hidden rounded-2xl border-0 p-0 shadow-xl ring-1 ring-zinc-200/80 sm:max-w-lg">
@@ -971,10 +1022,33 @@ export function AdminBookingsPage() {
                 <DialogTitle className="font-mono text-lg font-semibold text-zinc-950">
                   #{selected.bookingNumber}
                 </DialogTitle>
-                <DialogDescription className="text-sm text-emerald-700">
+                <DialogDescription
+                  className={cn(
+                    "text-sm",
+                    selected.status === "pending"
+                      ? "text-amber-700"
+                      : "text-emerald-700"
+                  )}
+                >
                   {statusLabel(detailStatusOf(selected))}
                 </DialogDescription>
               </DialogHeader>
+              {selected.status === "pending" &&
+              selected.priceStatus !== "pending" ? (
+                <div className="shrink-0 space-y-2 border-b border-amber-100 bg-amber-50 px-5 py-3">
+                  <p className="text-xs leading-relaxed text-amber-900">
+                    {t("approveHint")}
+                  </p>
+                  <Button
+                    type="button"
+                    className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
+                    onClick={() => approveBooking(selected)}
+                  >
+                    <Check className="size-4" />
+                    {t("approveBooking")}
+                  </Button>
+                </div>
+              ) : null}
               <div className="overflow-y-auto px-5 py-3">
                 <table className="w-full text-sm">
                   <tbody>

@@ -11,6 +11,7 @@ import { vehicles } from "@/lib/data/vehicles";
 import { useLocationName, useVehicleCopy } from "@/lib/i18n-labels";
 import { useSiteContact } from "@/lib/admin/settings-store";
 import { getBookingAmountDue } from "@/lib/booking/booking-mode";
+import { formatDayMonthYear } from "@/components/booking/date-time-fields";
 import { getDateLocale } from "@/i18n/locales";
 import type { Booking, BookingLeg } from "@/lib/types";
 import { assetPath, cn } from "@/lib/utils";
@@ -80,15 +81,24 @@ function welcomePlaceLabel(id: string | undefined, fallback: string) {
   return SET1_PLACE_NAMES[id]?.en ?? fallback;
 }
 
-function WelcomeBoard({
-  booking,
-  leg,
-  vehicleLabel,
-}: {
-  booking: Booking;
-  leg: BookingLeg;
-  vehicleLabel: string;
-}) {
+const BOARD_VEHICLE_NAMES: Record<string, string> = {
+  ECO: "Economy Taxi",
+  PREM: "Luxury Taxi",
+  SUV: "SUV Taxi",
+  VAN: "Van Taxi",
+  EXE: "VIP Van",
+  VIP: "Alphard VIP",
+  SIG: "Alphard VIP",
+  BUS: "Mini Bus",
+};
+
+/** Name width in cqi: 15 Latin capitals span the full board, short names cap at the line height. */
+function boardNameSize(name: string) {
+  const chars = Math.max(Array.from(name.trim()).length, 1);
+  return Math.min(15, 86 / (chars * 0.7));
+}
+
+function WelcomeBoard({ booking, leg }: { booking: Booking; leg: BookingLeg }) {
   const from = getLocation(leg.fromId);
   const to = getLocation(leg.toId);
   const fromLabel = welcomePlaceLabel(leg.fromId, from?.name ?? "");
@@ -97,6 +107,14 @@ function WelcomeBoard({
   const placeLine =
     leg.hotelName?.trim() ||
     (to?.type === "hotel" && to.name && to.name !== toLabel ? to.name : null);
+  const name = booking.customerName.trim().toUpperCase();
+  const details = [
+    formatDayMonthYear(leg.date),
+    booking.flightNumber?.trim().toUpperCase(),
+    leg.time ? `At ${leg.time}` : null,
+    BOARD_VEHICLE_NAMES[leg.vehicleCode] ?? leg.vehicleCode,
+    booking.passengerCount ? `${booking.passengerCount} pax` : null,
+  ].filter(Boolean);
 
   return (
     <section className="voucher-page voucher-board relative mx-auto box-border aspect-[1024/724] w-full max-w-[297mm] overflow-hidden bg-white print:border-0 [container-type:inline-size]">
@@ -106,42 +124,31 @@ function WelcomeBoard({
         alt=""
         className="absolute inset-0 h-full w-full object-fill"
       />
-      <div className="absolute inset-x-[5%] top-[54%] flex flex-col items-center gap-1 px-1 text-center sm:inset-x-[10%] sm:top-[55%] sm:gap-8">
-        <div className="flex w-full flex-col items-center">
+      <div
+        className="absolute inset-x-[6%] top-[50%] bottom-[6%] flex flex-col items-center justify-between text-center"
+        style={{ color: BOARD_INK }}
+      >
+        <div className="flex w-full flex-1 items-center justify-center">
           <p
-            className="voucher-board-title max-w-full text-[clamp(1.05rem,8cqi,6rem)] leading-none font-bold break-words"
-            style={{ color: BOARD_INK }}
+            className="voucher-board-title max-w-full leading-none font-bold whitespace-nowrap"
+            style={{ fontSize: `${boardNameSize(name)}cqi` }}
           >
-            {booking.customerName}
+            {name}
           </p>
-          <div className="mt-0.5 flex items-center gap-2 sm:mt-2 sm:gap-3">
-            <span className="h-px w-8 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
-            <span
-              className="size-1 shrink-0 rotate-45 sm:size-1.5"
-              style={{ backgroundColor: BOARD_GOLD }}
-            />
-            <span className="h-px w-8 sm:w-16" style={{ backgroundColor: BOARD_GOLD }} />
-          </div>
         </div>
-        <div className="flex w-full flex-col items-center gap-0.5 sm:gap-1">
+        <div className="flex w-full flex-col items-center gap-[0.5cqi]">
           {route ? (
-            <p className="voucher-board-meta max-w-full text-[clamp(0.5rem,2.7cqi,1.25rem)] leading-tight font-bold">
-              <span style={{ color: BOARD_INK }}>{route}</span>
+            <p className="voucher-board-meta max-w-full text-[2cqi] leading-tight font-bold">
+              {route}
             </p>
           ) : null}
           {placeLine ? (
-            <p
-              className="voucher-board-meta max-w-full text-[clamp(0.48rem,2.4cqi,1rem)] leading-tight font-semibold"
-              style={{ color: BOARD_INK }}
-            >
+            <p className="voucher-board-meta max-w-full text-[1.8cqi] leading-tight font-semibold">
               {placeLine}
             </p>
           ) : null}
-          <p
-            className="voucher-board-meta max-w-full text-[clamp(0.48rem,2.45cqi,1.25rem)] leading-tight font-bold whitespace-nowrap"
-            style={{ color: BOARD_INK }}
-          >
-            {leg.date} · {leg.time} · {vehicleLabel}
+          <p className="voucher-board-meta mt-[1cqi] max-w-full text-[2cqi] leading-tight font-bold">
+            {details.join("  ·  ")}
           </p>
         </div>
       </div>
@@ -288,6 +295,7 @@ export function EVoucher({ booking }: EVoucherProps) {
           <div className="voucher-col flex min-h-0 flex-col">
             <SectionBar>{t("reservationDetails")}</SectionBar>
             <Cell label={t("typeOfCar")} value={`1 ${vehicleLabel}`} />
+            <Cell label={t("passengers")} value={booking.passengerCount} />
             <Cell label={t("bookingType")} value={typeLabel} />
             <Cell
               label={t("transferPrice")}
@@ -384,11 +392,7 @@ export function EVoucher({ booking }: EVoucherProps) {
 
       {/* Page 2 — single Welcome board (max 2 printable pages) */}
       {outbound ? (
-        <WelcomeBoard
-          booking={booking}
-          leg={outbound}
-          vehicleLabel={vehicleLabel}
-        />
+        <WelcomeBoard booking={booking} leg={outbound} />
       ) : null}
 
       <div className="voucher-print-actions flex flex-col gap-2 sm:flex-row sm:justify-center print:hidden">

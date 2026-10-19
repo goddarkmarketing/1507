@@ -205,6 +205,9 @@ export function AdminSchedulePage() {
                       </td>
                       <td className="truncate px-0.5 py-0.5 font-medium text-zinc-800">
                         {vehicleShort(leg.vehicleCode)}
+                        {booking.passengerCount
+                          ? ` · ${t("paxShort", { n: booking.passengerCount })}`
+                          : ""}
                       </td>
                       <td className="px-0.5 py-0.5 font-semibold text-zinc-800">
                         {tripCode(booking.type)}

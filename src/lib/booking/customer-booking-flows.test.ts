@@ -23,6 +23,7 @@ function resetAndFillCustomer() {
   store.setCustomer("customerPhone", "+66881234567");
   store.setCustomer("customerEmail", "somchai.test@example.com");
   store.setCustomer("flightNumber", "TG900");
+  store.setCustomer("passengerCount", "3");
   store.setCustomer("notes", "Customer booking QA");
   store.setPaymentPlan("full");
   store.setPaymentMethod("bank-transfer");
@@ -177,7 +178,16 @@ describe("customer booking flows (store)", () => {
     s.updateLeg(leg.id, { date: today, time: "23:59" });
     const booking = useBookingStore.getState().confirmBooking();
     expect(booking).not.toBeNull();
-    expect(booking!.status).toBe("confirmed");
+    expect(booking!.status).toBe("pending");
+  });
+
+  it("rejects a pickup that has already passed", () => {
+    const s = useBookingStore.getState();
+    s.setBookingType("one-way");
+    const leg = s.draft.legs[0];
+    const yesterday = toBangkokDateInput(new Date(Date.now() - 86_400_000));
+    s.updateLeg(leg.id, { date: yesterday, time: "10:00" });
+    expect(useBookingStore.getState().confirmBooking()).toBeNull();
   });
 
   it("books pay-driver plan without transfer slip", () => {

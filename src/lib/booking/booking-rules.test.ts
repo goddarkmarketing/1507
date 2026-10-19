@@ -5,7 +5,9 @@ import {
   getNightDriverSurcharge,
   getVoucherHoldReason,
   hasAdvanceBooking,
+  hasValidPickupSequence,
   isNightClockWindow,
+  isPickupInPast,
   isNightPickupTime,
   legPickupInstant,
   NIGHT_DRIVER_SURCHARGE_THB,
@@ -60,7 +62,7 @@ describe("booking-rules", () => {
     expect(d?.toISOString()).toBe("2026-09-09T19:30:00.000Z");
   });
 
-  it("issues an order immediately, including overnight and short notice", () => {
+  it("holds the voucher until staff confirm", () => {
     const night = new Date("2026-09-07T03:00:00+07:00");
     const legs = [{ date: "2026-09-07", time: "18:00" }];
     expect(
@@ -68,12 +70,37 @@ describe("booking-rules", () => {
         { status: "pending", paymentPlan: "pay-driver", legs },
         night
       )
-    ).toBe(null);
+    ).toBe("awaiting-staff");
     expect(
       getVoucherHoldReason(
-        { status: "pending", paymentPlan: "full", legs },
+        { status: "confirmed", paymentPlan: "full", legs },
         night
       )
     ).toBe(null);
+  });
+
+  it("rejects past pickups and out-of-order legs", () => {
+    const now = new Date("2026-10-19T14:00:00+07:00");
+    expect(isPickupInPast("2026-10-19", "13:59", now)).toBe(true);
+    expect(isPickupInPast("2026-10-18", "18:00", now)).toBe(true);
+    expect(isPickupInPast("2026-10-19", "14:30", now)).toBe(false);
+    expect(
+      hasValidPickupSequence(
+        [
+          { date: "2026-10-20", time: "10:00" },
+          { date: "2026-10-20", time: "09:00" },
+        ],
+        now
+      )
+    ).toBe(false);
+    expect(
+      hasValidPickupSequence(
+        [
+          { date: "2026-10-20", time: "10:00" },
+          { date: "2026-10-22", time: "09:00" },
+        ],
+        now
+      )
+    ).toBe(true);
   });
 });

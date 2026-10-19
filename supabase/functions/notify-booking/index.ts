@@ -76,11 +76,13 @@ function stepList(steps: string[]) {
     .join("");
 }
 
+type EmailKind = "confirmed" | "quote-request" | "quote-ready" | "approved";
+
 function customerEmailHtml(opts: {
   name: string;
   bookingNumber: string;
   voucherUrl: string;
-  kind: "confirmed" | "quote-request" | "quote-ready";
+  kind: EmailKind;
   tripSummary: string;
   totalPrice: number;
 }) {
@@ -93,17 +95,29 @@ function customerEmailHtml(opts: {
       : "รอตรวจสอบราคา";
   const quote = opts.kind === "quote-request";
   const ready = opts.kind === "quote-ready";
+  const approved = opts.kind === "approved";
   const title = quote
     ? "ได้รับคำขอแล้ว — รอตรวจสอบราคา"
     : ready
       ? "ได้ราคาแล้ว — รายละเอียดการเดินทาง"
-      : "ได้รับคำขอจองแล้ว";
+      : approved
+        ? "ยืนยันการจองแล้ว — ใบจองพร้อมใช้งาน"
+        : "ได้รับคำขอจองแล้ว — รอผู้ดูแลยืนยัน";
   const intro = quote
     ? "เส้นทางนี้ยังไม่มีราคาในระบบ กรุณารอทีมงานตรวจสอบ ยังไม่ต้องชำระเงิน"
     : ready
       ? "ทีมงานตรวจราคาให้แล้ว รายละเอียดอยู่ด้านล่าง กรุณาเก็บอีเมลนี้ไว้"
-      : "เราบันทึกคำขอของคุณแล้ว กรุณารอทีมงานตอบกลับทางอีเมลนี้ก่อนเดินทาง";
-  const steps = quote
+      : approved
+        ? "ผู้ดูแลยืนยันการจองของคุณแล้ว เปิดใบจอง (e-Voucher) จากปุ่มด้านล่าง และแสดงให้คนขับในวันเดินทาง"
+        : "เราบันทึกคำขอของคุณแล้ว ผู้ดูแลจะตรวจสอบและยืนยันก่อน แล้วจะส่งใบจองให้ทางอีเมลนี้";
+  const steps = approved
+    ? [
+        "การจองได้รับการยืนยันแล้ว",
+        "เปิดใบจองจากปุ่มด้านล่าง บันทึกหรือพิมพ์เก็บไว้",
+        "แสดงใบจองให้คนขับในวันเดินทาง",
+        "หากต้องการเปลี่ยนรายละเอียด ตอบกลับอีเมลนี้",
+      ]
+    : quote
     ? [
         "ระบบบันทึกคำขอและเลขที่จองให้แล้ว",
         "ทีมงานจะตรวจสอบราคาเส้นทางนี้",
@@ -119,8 +133,8 @@ function customerEmailHtml(opts: {
         ]
       : [
           "บันทึกคำขอของคุณแล้ว ใช้เลขที่จองด้านล่างในการติดตาม",
-          "ทีมงานจะตรวจสอบและตอบกลับทางอีเมลนี้",
-          "กรุณารอการยืนยันก่อนวันเดินทาง",
+          "ผู้ดูแลจะตรวจสอบรายละเอียดและยืนยันการจอง",
+          "เมื่อยืนยันแล้ว เราจะส่งใบจองให้ทางอีเมลนี้",
           "เปิดหน้าติดตามสถานะได้จากปุ่มด้านล่าง",
         ];
   return emailShell(`
@@ -151,7 +165,7 @@ function customerEmailHtml(opts: {
                 ${stepList(steps)}
               </table>
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px;">
-                <tr><td>${primaryButton(opts.voucherUrl, quote ? "ดูคำขอ" : "เปิดหน้าติดตาม")}</td></tr>
+                <tr><td>${primaryButton(opts.voucherUrl, quote ? "ดูคำขอ" : approved ? "เปิดใบจอง" : "เปิดหน้าติดตาม")}</td></tr>
               </table>
             </td>
           </tr>
@@ -164,7 +178,8 @@ function adminEmailHtml(opts: {
   bookingNumber: string;
   voucherUrl: string;
   adminUrl: string;
-  kind: "confirmed" | "quote-request" | "quote-ready";
+  confirmUrl: string;
+  kind: EmailKind;
   tripSummary: string;
 }) {
   const name = escapeHtml(opts.name);
@@ -172,7 +187,7 @@ function adminEmailHtml(opts: {
   const bookingNumber = escapeHtml(opts.bookingNumber);
   const trip = escapeHtml(opts.tripSummary || "—");
   const quote = opts.kind === "quote-request";
-  const title = quote ? "มีคำขอรอตรวจราคา" : "มีการจองใหม่เข้ามา";
+  const title = quote ? "มีคำขอรอตรวจราคา" : "มีการจองใหม่ — รอยืนยัน";
   return emailShell(`
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
           <tr>
@@ -204,14 +219,18 @@ function adminEmailHtml(opts: {
                     <p style="margin:4px 0 0;font-size:15px;color:#18181b;">${email}</p>
                     <p style="margin:12px 0 0;font-size:12px;color:#71717a;">เส้นทาง</p>
                     <p style="margin:4px 0 0;font-size:14px;line-height:1.5;color:#18181b;">${trip}</p>
-                    ${quote ? `<p style="margin:12px 0 0;font-size:14px;font-weight:700;color:#92400e;">ใส่ราคาในหลังบ้าน แล้วกดส่งอีเมลกลับให้ลูกค้า</p>` : ""}
+                    <p style="margin:12px 0 0;font-size:14px;font-weight:700;color:#92400e;">${
+                      quote
+                        ? "ใส่ราคาในหลังบ้าน แล้วกดส่งอีเมลกลับให้ลูกค้า"
+                        : "ตรวจรายละเอียดแล้วกดยืนยัน ระบบจะส่งใบจองให้ลูกค้าทางอีเมล"
+                    }</p>
                   </td>
                 </tr>
               </table>
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
                 <tr>
-                  <td style="padding-right:10px;">${primaryButton(opts.adminUrl, "เข้าหลังบ้าน")}</td>
-                  <td>${secondaryButton(opts.voucherUrl, "เปิด Voucher")}</td>
+                  <td style="padding-right:10px;">${primaryButton(quote ? opts.adminUrl : opts.confirmUrl, quote ? "เข้าหลังบ้าน" : "ยืนยันการจอง")}</td>
+                  <td>${quote ? secondaryButton(opts.voucherUrl, "เปิดคำขอ") : secondaryButton(opts.adminUrl, "เข้าหลังบ้าน")}</td>
                 </tr>
               </table>
             </td>
@@ -260,10 +279,14 @@ Deno.serve(async (req) => {
     ""
   );
   const adminUrl = `${siteBase}/th/admin/`;
-  const kind =
-    body.kind === "quote-request" || body.kind === "quote-ready"
+  const confirmUrl = `${siteBase}/th/admin/bookings/?confirm=${encodeURIComponent(bookingNumber ?? "")}`;
+  const kind: EmailKind =
+    body.kind === "quote-request" ||
+    body.kind === "quote-ready" ||
+    body.kind === "approved"
       ? body.kind
       : "confirmed";
+  const alertsAdmin = kind === "confirmed" || kind === "quote-request";
   const tripSummary = body.tripSummary?.trim() || "";
   const totalPrice = Number(body.totalPrice) || 0;
   const subject =
@@ -271,7 +294,9 @@ Deno.serve(async (req) => {
       ? `Krabi Links Taxi · รอตรวจสอบราคา ${bookingNumber}`
       : kind === "quote-ready"
         ? `Krabi Links Taxi · ราคาการเดินทาง ${bookingNumber}`
-        : `Krabi Links Taxi · ได้รับคำขอจอง ${bookingNumber}`;
+        : kind === "approved"
+          ? `Krabi Links Taxi · ยืนยันการจองแล้ว ${bookingNumber}`
+          : `Krabi Links Taxi · ได้รับคำขอจอง ${bookingNumber}`;
 
   if (!email || !voucherUrl || !bookingNumber) {
     return new Response(JSON.stringify({ error: "missing fields" }), {
@@ -312,7 +337,7 @@ Deno.serve(async (req) => {
     })
   );
 
-  if (ADMIN_NOTIFY_EMAIL && kind !== "quote-ready") {
+  if (ADMIN_NOTIFY_EMAIL && alertsAdmin) {
     const sameAsCustomer =
       ADMIN_NOTIFY_EMAIL.toLowerCase() === email.toLowerCase();
     if (sameAsCustomer) {
@@ -322,13 +347,14 @@ Deno.serve(async (req) => {
         ADMIN_NOTIFY_EMAIL,
         kind === "quote-request"
           ? `[Admin] รอตรวจราคา ${bookingNumber}`
-          : `[Admin] New booking ${bookingNumber}`,
+          : `[Admin] รอยืนยันการจอง ${bookingNumber}`,
         adminEmailHtml({
           name,
           email,
           bookingNumber,
           voucherUrl,
           adminUrl,
+          confirmUrl,
           kind,
           tripSummary,
         })
@@ -336,7 +362,7 @@ Deno.serve(async (req) => {
     }
   }
 
-  if (ADMIN_WEBHOOK) {
+  if (ADMIN_WEBHOOK && alertsAdmin) {
     try {
       await fetch(ADMIN_WEBHOOK, {
         method: "POST",

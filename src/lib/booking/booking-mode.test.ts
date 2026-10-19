@@ -62,7 +62,7 @@ describe("booking-mode", () => {
     expect(getBookingAmountDue({ totalPrice: 900 })).toBe(900);
   });
 
-  it("issues a voucher for pay-driver without waiting for staff", () => {
+  it("holds the voucher until staff confirm the booking", () => {
     const legs = [{ date: "2026-09-20", time: "10:00" }] as Booking["legs"];
     expect(
       canIssueVoucher({
@@ -71,15 +71,15 @@ describe("booking-mode", () => {
         payment: { method: "cash", status: "awaiting-transfer", summary: "x" },
         legs,
       }, new Date("2026-09-10T12:00:00+07:00"))
-    ).toBe(true);
+    ).toBe(false);
   });
 
-  it("issues a voucher during night hours", () => {
+  it("issues a voucher once confirmed, even during night hours", () => {
     const legs = [{ date: "2026-09-20", time: "10:00" }] as Booking["legs"];
     expect(
       canIssueVoucher(
         {
-          status: "pending",
+          status: "confirmed",
           paymentPlan: "full",
           payment: { method: "promptpay", status: "paid", summary: "x" },
           legs,

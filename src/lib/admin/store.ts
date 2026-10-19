@@ -157,6 +157,7 @@ export const useAdminStore = create<AdminState>()(
       },
 
       updateBooking: (id, patch) => {
+        const before = get().bookings.find((b) => b.id === id);
         const next = get().bookings.map((b) =>
           b.id === id
             ? {
@@ -182,8 +183,16 @@ export const useAdminStore = create<AdminState>()(
             patch.balanceDue !== undefined)
         ) {
           syncToCustomerStore(updated);
+          const approved =
+            before?.status !== "confirmed" &&
+            updated.status === "confirmed" &&
+            updated.priceStatus !== "pending";
           if (isBookingRemoteEnabled()) {
-            void patchRemoteBooking(updated);
+            void patchRemoteBooking(updated).then((result) => {
+              if (approved && result.ok) {
+                void notifyCustomerVoucherEmail(updated, "th", "approved");
+              }
+            });
           }
         }
       },

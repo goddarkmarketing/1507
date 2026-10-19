@@ -84,18 +84,52 @@ export function toBangkokDateInput(date: Date): string {
   }).format(date);
 }
 
+/** HH:MM in Asia/Bangkok for <input type="time" min>. */
+export function toBangkokTimeInput(date: Date): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Bangkok",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(date);
+}
+
+/** Pickup is missing, unparseable, or not after `now`. */
+export function isPickupInPast(
+  date: string,
+  time: string,
+  now: Date = new Date()
+): boolean {
+  const at = legPickupInstant(date, time);
+  return !at || at.getTime() <= now.getTime();
+}
+
+/** Each leg is in the future and no leg starts before the previous one. */
+export function hasValidPickupSequence(
+  legs: PickupLegLike[],
+  now: Date = new Date()
+): boolean {
+  let previous = now.getTime();
+  for (const leg of legs) {
+    const at = legPickupInstant(leg.date, leg.time);
+    if (!at || at.getTime() <= now.getTime() || at.getTime() < previous) {
+      return false;
+    }
+    previous = at.getTime();
+  }
+  return true;
+}
+
 export type VoucherHoldReason =
   | "pay-driver"
   | "night-hours"
   | "short-notice"
+  | "awaiting-staff"
   | null;
 
-/**
- * Every submitted booking gets an order immediately.
- * Pay-to-driver, night pickups, and short notice are followed up by staff.
- */
+/** The e-voucher is issued only after staff confirm the booking. */
 export function getVoucherHoldReason(
-  _booking: {
+  booking: {
     status: string;
     paymentPlan?: string | null;
     payment?: { method?: string } | null;
@@ -103,5 +137,5 @@ export function getVoucherHoldReason(
   },
   _now: Date = new Date()
 ): VoucherHoldReason {
-  return null;
+  return booking.status === "confirmed" ? null : "awaiting-staff";
 }

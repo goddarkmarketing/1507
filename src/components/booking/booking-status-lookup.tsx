@@ -30,7 +30,9 @@ function StatusPanel({ booking }: { booking: Booking }) {
 
   const statusLabel = (() => {
     if (booking.status === "cancelled") return t("statusCancelled");
-    if (hold === "pay-driver") return t("statusAwaitingStaff");
+    if (hold === "pay-driver" || hold === "awaiting-staff") {
+      return t("statusAwaitingStaff");
+    }
     if (hold === "night-hours") return t("statusNightHold");
     if (hold === "short-notice") return t("statusShortNotice");
     if (booking.payment?.status === "awaiting-transfer" && !issued) {

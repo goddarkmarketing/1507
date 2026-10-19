@@ -1,7 +1,11 @@
 import { getLocation } from "@/lib/data/locations";
 import type { Booking } from "@/lib/types";
 
-export type BookingEmailKind = "confirmed" | "quote-request" | "quote-ready";
+export type BookingEmailKind =
+  | "confirmed"
+  | "quote-request"
+  | "quote-ready"
+  | "approved";
 
 function tripSummary(booking: Booking): string {
   return booking.legs
