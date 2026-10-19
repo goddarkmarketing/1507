@@ -218,18 +218,10 @@ export function BookingForm() {
       const updates: {
         fromId?: string;
         toId?: string;
-        pickupPlace?: string;
-        hotelName?: string;
         vehicleCode?: typeof draft.legs[0]["vehicleCode"];
       } = {};
-      if (from) {
-        updates.fromId = from;
-        updates.pickupPlace = suggestedPlaceName(from, locale);
-      }
-      if (to) {
-        updates.toId = to;
-        updates.hotelName = suggestedPlaceName(to, locale);
-      }
+      if (from) updates.fromId = from;
+      if (to) updates.toId = to;
       if (
         vehicle &&
         ["ECO", "PREM", "SUV", "VAN", "EXE", "VIP", "BUS"].includes(vehicle)
@@ -345,17 +337,13 @@ export function BookingForm() {
         toast.error(t("toastTripIncomplete"));
         return false;
       }
-      const pickup = (
-        leg.pickupPlace ?? suggestedPlaceName(leg.fromId, locale)
-      ).trim();
-      const dropoff = (
-        leg.hotelName ?? suggestedPlaceName(leg.toId, locale)
-      ).trim();
+      const pickup = (leg.pickupPlace ?? "").trim();
+      const dropoff = (leg.hotelName ?? "").trim();
       if (!pickup || !dropoff) {
         toast.error(t("toastPlaceNames"));
         return false;
       }
-      if (leg.pickupPlace?.trim() !== pickup || (leg.hotelName ?? "").trim() !== dropoff) {
+      if (leg.pickupPlace !== pickup || leg.hotelName !== dropoff) {
         updateLeg(leg.id, { pickupPlace: pickup, hotelName: dropoff });
       }
     }
@@ -655,11 +643,10 @@ export function BookingForm() {
                         includeHotels
                         placeholder={t("pickup")}
                         onValueChange={(fromId) => {
-                          const pickupPlace = suggestedPlaceName(fromId, locale);
-                          updateLeg(leg.id, { fromId, pickupPlace });
+                          updateLeg(leg.id, { fromId });
                           if (draft.type === "round-trip" && index === 0) {
                             const back = draft.legs[1];
-                            if (back) updateLeg(back.id, { toId: fromId, hotelName: pickupPlace });
+                            if (back) updateLeg(back.id, { toId: fromId });
                           }
                         }}
                       />
@@ -671,7 +658,7 @@ export function BookingForm() {
                       <Input
                         id={`pickup-place-${leg.id}`}
                         className={fieldClass}
-                        value={leg.pickupPlace ?? suggestedPlaceName(leg.fromId, locale)}
+                        value={leg.pickupPlace ?? ""}
                         placeholder={t("placeNamePlaceholder")}
                         onChange={(event) => {
                           const pickupPlace = event.target.value;
@@ -692,11 +679,10 @@ export function BookingForm() {
                         includeHotels
                         placeholder={t("dropoff")}
                         onValueChange={(toId) => {
-                          const hotelName = suggestedPlaceName(toId, locale);
-                          updateLeg(leg.id, { toId, hotelName });
+                          updateLeg(leg.id, { toId });
                           if (draft.type === "round-trip" && index === 0) {
                             const back = draft.legs[1];
-                            if (back) updateLeg(back.id, { fromId: toId, pickupPlace: hotelName });
+                            if (back) updateLeg(back.id, { fromId: toId });
                           }
                         }}
                       />
@@ -708,7 +694,7 @@ export function BookingForm() {
                       <Input
                         id={`dropoff-place-${leg.id}`}
                         className={fieldClass}
-                        value={leg.hotelName ?? suggestedPlaceName(leg.toId, locale)}
+                        value={leg.hotelName ?? ""}
                         placeholder={t("placeNamePlaceholder")}
                         onChange={(event) => {
                           const hotelName = event.target.value;
@@ -1099,9 +1085,7 @@ export function BookingForm() {
               const to = getLocation(leg.toId);
               const area = dropoffAreaName(leg.toId, locale);
               const hotel = dropoffHotelName(leg.toId, leg.hotelName, locale);
-              const pickupPlace = (
-                leg.pickupPlace ?? suggestedPlaceName(leg.fromId, locale)
-              ).trim();
+              const pickupPlace = (leg.pickupPlace ?? "").trim();
               const vehicle = activeVehicles.find((v) => v.code === leg.vehicleCode);
               return (
                 <div key={leg.id} className="space-y-1 text-sm">

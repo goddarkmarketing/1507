@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { useCatalogStore } from "@/lib/admin/catalog-store";
 import {
   downloadCsv,
+  mergeRentalPackages,
+  mergeTransferRoutes,
   parseRentalCsv,
   parseTransferCsv,
   rentalPackagesToCsv,
@@ -193,13 +195,16 @@ export function AdminCatalogPage() {
         toast.error(t("catalogEmpty"));
         return;
       }
-      setRentalPackages(parsed.rows);
-      toast.success(t("catalogRentalOk", { n: parsed.rows.length }));
+      const merged = mergeRentalPackages(currentRentals(), parsed.rows);
+      setRentalPackages(merged.rows);
+      toast.success(
+        t("catalogMergeOk", { updated: merged.updated, added: merged.added, total: merged.rows.length })
+      );
       void publish(
         "rentalPackages",
         rentalCatalogDocument(
           useCatalogStore.getState().rentalBookingEnabled,
-          parsed.rows
+          merged.rows
         )
       );
       if (parsed.issues.length) {
@@ -230,9 +235,15 @@ export function AdminCatalogPage() {
         toast.error(t("catalogEmpty"));
         return;
       }
-      setTransferRoutes(parsed.rows);
-      toast.success(t("catalogTransferOk", { n: parsed.rows.length }));
-      void publish("transferRoutes", parsed.rows);
+      const merged = mergeTransferRoutes(
+        transferRoutes ?? officialTransferRoutes,
+        parsed.rows
+      );
+      setTransferRoutes(merged.rows);
+      toast.success(
+        t("catalogMergeOk", { updated: merged.updated, added: merged.added, total: merged.rows.length })
+      );
+      void publish("transferRoutes", merged.rows);
       if (parsed.issues.length) {
         toast.message(
           t("catalogSkipped", {

@@ -155,11 +155,74 @@ export function parseRentalCsv(text: string): ParseResult<RentalPackage> {
         days7to20: toNumber(pick(map, cells, ["days7to20", "7-20", "d7to20"])),
         days21to30: toNumber(pick(map, cells, ["days21to30", "21-30", "d21to30"])),
       },
-      image: pick(map, cells, ["image"]) || "/vehicles/toyota/altis.webp",
+      image: pick(map, cells, ["image"]),
     });
   });
 
   return { rows, issues };
+}
+
+export interface MergeResult<T> {
+  rows: T[];
+  added: number;
+  updated: number;
+}
+
+/** Imported cars update the matching car (same id, else same model) and new ones are appended. */
+export function mergeRentalPackages(
+  existing: RentalPackage[],
+  imported: RentalPackage[]
+): MergeResult<RentalPackage> {
+  const rows = [...existing];
+  let added = 0;
+  let updated = 0;
+  for (const pkg of imported) {
+    const index = rows.findIndex(
+      (row) =>
+        row.id === pkg.id || normalizeKey(row.model) === normalizeKey(pkg.model)
+    );
+    if (index >= 0) {
+      const current = rows[index];
+      rows[index] = { ...pkg, id: current.id, image: pkg.image || current.image };
+      updated += 1;
+    } else {
+      rows.push({ ...pkg, image: pkg.image || "/vehicles/toyota/altis.webp" });
+      added += 1;
+    }
+  }
+  return { rows, added, updated };
+}
+
+function routeKey(route: { fromId: string; toId: string }) {
+  return [route.fromId, route.toId].sort().join("|");
+}
+
+/** Imported routes replace the same pair (either direction) and new pairs are appended. */
+export function mergeTransferRoutes(
+  existing: OfficialTransferRoute[],
+  imported: OfficialTransferRoute[]
+): MergeResult<OfficialTransferRoute> {
+  const rows = [...existing];
+  const indexByKey = new Map(rows.map((row, i) => [routeKey(row), i]));
+  let added = 0;
+  let updated = 0;
+  for (const route of imported) {
+    const key = routeKey(route);
+    const index = indexByKey.get(key);
+    if (index != null) {
+      const current = rows[index];
+      rows[index] = {
+        ...route,
+        ...(route.name || !current.name ? {} : { name: current.name }),
+      };
+      updated += 1;
+    } else {
+      indexByKey.set(key, rows.length);
+      rows.push(route);
+      added += 1;
+    }
+  }
+  return { rows, added, updated };
 }
 
 function resolveLocationId(raw: string): string | undefined {

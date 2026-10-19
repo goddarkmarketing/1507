@@ -71,9 +71,9 @@ export function AdminVehiclesPage() {
         return;
       }
 
-      const overrides: Partial<
-        Record<VehicleCode, Vehicle>
-      > = {};
+      const overrides: Partial<Record<VehicleCode, Vehicle>> = {
+        ...(vehicleOverrides ?? {}),
+      };
 
       for (const row of parsed.rows) {
         overrides[row.code] = row;
