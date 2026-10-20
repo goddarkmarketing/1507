@@ -46,8 +46,8 @@ function StatusPanel({ booking }: { booking: Booking }) {
   })();
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border bg-card p-5 sm:p-6">
+    <div className="space-y-6 print:space-y-0">
+      <div className="rounded-2xl border bg-card p-5 sm:p-6 print:hidden">
         <p className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
           {t("resultTitle")}
         </p>
@@ -134,8 +134,8 @@ export function BookingStatusLookup() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:px-6 sm:py-10">
-      <div className="space-y-2 text-center">
+    <div className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:px-6 sm:py-10 print:m-0 print:max-w-none print:space-y-0 print:p-0">
+      <div className="space-y-2 text-center print:hidden">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
           {t("title")}
         </h1>
@@ -147,7 +147,7 @@ export function BookingStatusLookup() {
 
       <form
         onSubmit={onSubmit}
-        className="mx-auto max-w-md space-y-4 rounded-2xl border bg-card p-5 sm:p-6"
+        className="mx-auto max-w-md space-y-4 rounded-2xl border bg-card p-5 sm:p-6 print:hidden"
       >
         <div className="space-y-1.5">
           <Label htmlFor="booking-number">{t("bookingNumber")}</Label>
