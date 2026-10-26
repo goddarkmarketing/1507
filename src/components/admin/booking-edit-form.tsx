@@ -13,6 +13,8 @@ import {
 } from "@/components/booking/date-time-fields";
 import { useAdminStore } from "@/lib/admin/store";
 import type { AdminBooking, AdminBookingPatch } from "@/lib/admin/types";
+import { legsAtTariff, tariffTotal } from "@/lib/booking/admin-price";
+import { getNightDriverSurcharge } from "@/lib/booking/booking-rules";
 import { isBookingRemoteEnabled, voucherUrl } from "@/lib/booking/remote/config";
 import { whatsappHref } from "@/lib/contact-links";
 import { getLocation } from "@/lib/data/locations";
@@ -70,8 +72,9 @@ export function BookingEditForm({
   const [notes, setNotes] = useState(booking.notes ?? "");
   const [legs, setLegs] = useState<BookingLeg[]>(booking.legs ?? []);
   const [price, setPrice] = useState(String(booking.totalPrice ?? ""));
-  const [sendEmail, setSendEmail] = useState(true);
+  const [sendEmail, setSendEmail] = useState(false);
   const [sendWhatsapp, setSendWhatsapp] = useState(false);
+  const [priceNote, setPriceNote] = useState<"tariff" | "missing" | null>(null);
 
   const priceEditable =
     booking.priceStatus !== "pending" &&
@@ -81,8 +84,28 @@ export function BookingEditForm({
     ...new Set<VehicleCode>([...tariffVehicleCodes, ...legs.map((leg) => leg.vehicleCode)]),
   ];
 
-  const updateLeg = (id: string, patch: Partial<BookingLeg>) =>
-    setLegs((current) => current.map((leg) => (leg.id === id ? { ...leg, ...patch } : leg)));
+  const reprice = (next: BookingLeg[], changedTariff: boolean) => {
+    if (!changedTariff || !priceEditable) {
+      setLegs(next);
+      return;
+    }
+    const total = tariffTotal(booking.type, booking.service, next);
+    const priced = total == null ? null : legsAtTariff(booking.type, booking.service, next);
+    if (total == null || !priced) {
+      setLegs(next);
+      setPriceNote("missing");
+      return;
+    }
+    setLegs(priced);
+    setPrice(String(total));
+    setPriceNote("tariff");
+  };
+
+  const updateLeg = (id: string, patch: Partial<BookingLeg>) => {
+    const next = legs.map((leg) => (leg.id === id ? { ...leg, ...patch } : leg));
+    const changedTariff = patch.vehicleCode !== undefined || patch.time !== undefined;
+    reprice(next, changedTariff);
+  };
 
   const save = () => {
     if (!name.trim() || !phone.trim()) {
@@ -114,15 +137,22 @@ export function BookingEditForm({
         toast.error(t("editBadPrice"));
         return;
       }
-      if (total !== booking.totalPrice) {
-        const rest = (patch.legs ?? []).slice(1).reduce((sum, leg) => sum + leg.price, 0);
-        patch.legs = (patch.legs ?? []).map((leg, index) =>
-          index === 0 ? { ...leg, price: Math.max(0, total - rest) } : leg
-        );
+      const night = getNightDriverSurcharge(patch.legs ?? []);
+      const legSum = (patch.legs ?? []).reduce((sum, leg) => sum + leg.price, 0);
+      const legsMatchTotal = legSum + night === total;
+      if (total !== booking.totalPrice || !legsMatchTotal) {
+        if (!legsMatchTotal) {
+          const rest = (patch.legs ?? []).slice(1).reduce((sum, leg) => sum + leg.price, 0);
+          patch.legs = (patch.legs ?? []).map((leg, index) =>
+            index === 0 ? { ...leg, price: Math.max(0, total - night - rest) } : leg
+          );
+        }
         patch.totalPrice = total;
+        patch.serviceCharge = night;
         patch.balanceDue = total;
+        patch.amountDueNow = 0;
         patch.payment = booking.payment
-          ? { ...booking.payment, balanceDue: total }
+          ? { ...booking.payment, amountDue: 0, balanceDue: total }
           : booking.payment;
       }
     }
@@ -240,6 +270,10 @@ export function BookingEditForm({
           />
           {!priceEditable ? (
             <span className="font-normal text-zinc-400">{t("editPriceLocked")}</span>
+          ) : priceNote === "tariff" ? (
+            <span className="font-normal text-emerald-700">{t("editPriceFromTariff")}</span>
+          ) : priceNote === "missing" ? (
+            <span className="font-normal text-amber-700">{t("editNoTariff")}</span>
           ) : null}
         </label>
         <label className={field}>
@@ -250,6 +284,7 @@ export function BookingEditForm({
 
       <fieldset className="space-y-2 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
         <legend className="px-1 text-xs font-semibold text-emerald-800">{t("editNotifyTitle")}</legend>
+        <p className="text-xs leading-relaxed text-emerald-900">{t("editNotifyKeep")}</p>
         <label className="flex items-center gap-2 text-sm text-zinc-800">
           <input
             type="checkbox"

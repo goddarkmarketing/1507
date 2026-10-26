@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Check, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Printer, Trash2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAdminStore } from "@/lib/admin/store";
 import { dropoffDetailLabel } from "@/lib/data/nearby-hotels";
@@ -117,6 +117,9 @@ export function AdminSchedulePage() {
           >
             {t("nextDay")}
           </Button>
+          <span className="text-xs font-semibold text-zinc-700">
+            {t("scheduleJobCount", { n: jobs.length })}
+          </span>
         </div>
       </div>
 
@@ -183,7 +186,12 @@ export function AdminSchedulePage() {
                             : "text-zinc-900"
                         )}
                       >
-                        {booking.bookingNumber}
+                        <Link
+                          href={`/admin/bookings/?confirm=${encodeURIComponent(booking.bookingNumber)}`}
+                          className="underline-offset-2 hover:underline"
+                        >
+                          {booking.bookingNumber}
+                        </Link>
                       </td>
                       <td className="truncate px-0.5 py-0.5 text-zinc-800">
                         {short(leg.fromId)}
@@ -225,14 +233,15 @@ export function AdminSchedulePage() {
                       <td className="px-0.5 py-0.5">
                         <div className="flex items-center justify-center gap-0.5">
                           <Link
-                            href="/admin/bookings"
+                            href={`/booking/voucher/?n=${encodeURIComponent(booking.bookingNumber)}`}
+                            target="_blank"
                             className="inline-flex size-4 items-center justify-center rounded bg-emerald-600 text-white sm:size-6"
-                            title={t("scheduleActionOk")}
+                            title={t("scheduleActionPrint")}
                           >
-                            <Check className="size-2.5 sm:size-3.5" />
+                            <Printer className="size-2.5 sm:size-3.5" />
                           </Link>
                           <Link
-                            href="/admin/bookings"
+                            href={`/admin/bookings/?confirm=${encodeURIComponent(booking.bookingNumber)}&edit=1`}
                             className="inline-flex size-4 items-center justify-center rounded bg-amber-500 text-white sm:size-6"
                             title={t("scheduleActionEdit")}
                           >

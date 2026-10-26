@@ -33,6 +33,7 @@ function bookingPatchFromAdmin(booking: AdminBooking): Partial<Booking> {
     amountDueNow: booking.amountDueNow,
     balanceDue: booking.balanceDue,
     totalPrice: booking.totalPrice,
+    serviceCharge: booking.serviceCharge,
     priceStatus: booking.priceStatus,
     legs: booking.legs,
     service: booking.service,
@@ -187,6 +188,7 @@ export const useAdminStore = create<AdminState>()(
             patch.driverId !== undefined ||
             patch.adminNotes !== undefined ||
             patch.totalPrice !== undefined ||
+            patch.serviceCharge !== undefined ||
             patch.priceStatus !== undefined ||
             patch.legs !== undefined ||
             patch.amountDueNow !== undefined ||

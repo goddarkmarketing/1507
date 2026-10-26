@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Car, Check, ChevronDown, ChevronRight, Download, Pencil, Phone, Search, Settings2, SlidersHorizontal } from "lucide-react";
+import { Car, Check, ChevronDown, ChevronRight, Download, Pencil, Phone, Printer, Search, Settings2, SlidersHorizontal } from "lucide-react";
 import { BookingEditForm } from "@/components/admin/booking-edit-form";
 import { useAdminStore } from "@/lib/admin/store";
 import {
@@ -26,6 +26,7 @@ import { getLocation } from "@/lib/data/locations";
 import { getVehicle } from "@/lib/data/vehicles";
 import { locationShortName } from "@/lib/i18n-labels";
 import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button-link";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
@@ -275,14 +276,7 @@ export function AdminBookingsPage() {
   const setOpsStatus = useAdminStore((s) => s.setOpsStatus);
   const verifyPayment = useAdminStore((s) => s.verifyPayment);
   const routeLabel = useRouteLabel();
-  const [confirmTarget, setConfirmTarget] = useState<string | null>(() =>
-    typeof window === "undefined"
-      ? null
-      : new URLSearchParams(window.location.search)
-          .get("confirm")
-          ?.trim()
-          .toUpperCase() || null
-  );
+  const [confirmTarget, setConfirmTarget] = useState<string | null>(null);
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<OpsStatus | "all">("all");
@@ -297,6 +291,18 @@ export function AdminBookingsPage() {
   const [editing, setEditing] = useState(false);
   const [mobileChip, setMobileChip] = useState<MobileChip>("all");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const confirm = params.get("confirm")?.trim().toUpperCase();
+    if (!confirm) return;
+    const edit = params.get("edit") === "1";
+    const timer = window.setTimeout(() => {
+      setConfirmTarget(confirm);
+      if (edit) setEditing(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -1036,18 +1042,30 @@ export function AdminBookingsPage() {
                 >
                   {statusLabel(detailStatusOf(selected))}
                 </DialogDescription>
-                {!editing ? (
-                  <Button
-                    type="button"
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {!editing ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-fit gap-1.5"
+                      onClick={() => setEditing(true)}
+                    >
+                      <Pencil className="size-3.5" />
+                      {t("editBooking")}
+                    </Button>
+                  ) : null}
+                  <ButtonLink
+                    href={`/booking/voucher/?n=${encodeURIComponent(selected.bookingNumber)}`}
+                    target="_blank"
                     variant="outline"
                     size="sm"
-                    className="mt-2 w-fit gap-1.5"
-                    onClick={() => setEditing(true)}
+                    className="w-fit gap-1.5"
                   >
-                    <Pencil className="size-3.5" />
-                    {t("editBooking")}
-                  </Button>
-                ) : null}
+                    <Printer className="size-3.5" />
+                    {t("scheduleActionPrint")}
+                  </ButtonLink>
+                </div>
               </DialogHeader>
               {!editing &&
               selected.status === "pending" &&
