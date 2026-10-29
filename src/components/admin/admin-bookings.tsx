@@ -466,6 +466,30 @@ export function AdminBookingsPage() {
             money(booking.totalPrice)
           ),
       },
+      ...((booking.discountAmount ?? 0) > 0
+        ? [
+            {
+              label: t("detailDiscount"),
+              value: money(booking.discountAmount!),
+            },
+          ]
+        : []),
+      ...((booking.amountDueNow ?? 0) > 0 && booking.paymentPlan === "deposit"
+        ? [
+            {
+              label: t("detailDeposit"),
+              value: money(booking.amountDueNow!),
+            },
+          ]
+        : []),
+      ...((booking.balanceDue ?? 0) > 0 && booking.paymentPlan === "deposit"
+        ? [
+            {
+              label: t("detailBalanceDue"),
+              value: money(booking.balanceDue!),
+            },
+          ]
+        : []),
       { label: t("payment"), value: pay },
       {
         label: t("detailBookedAt"),

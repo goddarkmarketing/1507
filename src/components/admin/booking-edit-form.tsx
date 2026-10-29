@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,18 @@ import {
   BookingTimePicker,
   formatDayMonthYear,
 } from "@/components/booking/date-time-fields";
+import { LocationSelect } from "@/components/booking/location-select";
 import { useAdminStore } from "@/lib/admin/store";
 import type { AdminBooking, AdminBookingPatch } from "@/lib/admin/types";
 import { legsAtTariff, tariffTotal } from "@/lib/booking/admin-price";
 import { getNightDriverSurcharge } from "@/lib/booking/booking-rules";
-import { isBookingRemoteEnabled, voucherUrl } from "@/lib/booking/remote/config";
+import {
+  isBookingRemoteEnabled,
+  statusUrl,
+  voucherUrl,
+} from "@/lib/booking/remote/config";
 import { whatsappHref } from "@/lib/contact-links";
+import { getBankAccounts, getPromptPay } from "@/lib/data/payment";
 import { getLocation } from "@/lib/data/locations";
 import { tariffVehicleCodes } from "@/lib/data/vehicles";
 import { useLocationName } from "@/lib/i18n-labels";
@@ -24,6 +30,15 @@ import type { BookingLeg, VehicleCode } from "@/lib/types";
 
 function isCashBooking(booking: AdminBooking) {
   return booking.paymentPlan === "pay-driver" || booking.payment?.method === "cash";
+}
+
+function money(n: number) {
+  return `฿${n.toLocaleString("en-US")}`;
+}
+
+function parseBaht(value: string) {
+  const n = Math.round(Number(value));
+  return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
 function updateMessage(
@@ -43,8 +58,36 @@ function updateMessage(
     `Hello ${name}, your booking ${bookingNumber} has been updated.`,
     `สวัสดีค่ะ คุณ${name} การจอง ${bookingNumber} ได้รับการแก้ไขแล้ว`,
     ...lines,
-    total > 0 ? `Total / ราคา: ฿${total.toLocaleString("en-US")}` : "",
+    total > 0 ? `Total / ราคา: ${money(total)}` : "",
     `Voucher: ${voucherUrl(bookingNumber, "en")}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function depositMessage(
+  bookingNumber: string,
+  name: string,
+  deposit: number,
+  balance: number,
+  total: number
+) {
+  const banks = getBankAccounts()
+    .slice(0, 2)
+    .map((bank) => `${bank.symbol} ${bank.accountNumber} ${bank.accountName}`)
+    .join("\n");
+  const promptPay = getPromptPay();
+  return [
+    `Krabi Links Taxi · Deposit request`,
+    `สวัสดีค่ะ คุณ${name}`,
+    `การจอง ${bookingNumber}`,
+    `ราคาหลังส่วนลด ${money(total)}`,
+    `มัดจำที่ต้องโอนตอนนี้ ${money(deposit)}`,
+    `ส่วนต่างจ่ายภายหลัง ${money(balance)}`,
+    promptPay.id ? `PromptPay: ${promptPay.id} (${promptPay.accountName})` : "",
+    banks ? `โอนธนาคาร:\n${banks}` : "",
+    `หลังโอนแล้ว แจ้งแอดมิน หรือตรวจสถานะที่ ${statusUrl("th")}`,
+    `Booking no. ${bookingNumber}`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -71,7 +114,17 @@ export function BookingEditForm({
   );
   const [notes, setNotes] = useState(booking.notes ?? "");
   const [legs, setLegs] = useState<BookingLeg[]>(booking.legs ?? []);
-  const [price, setPrice] = useState(String(booking.totalPrice ?? ""));
+  const [price, setPrice] = useState(
+    String((booking.totalPrice ?? 0) + (booking.discountAmount ?? 0))
+  );
+  const [discount, setDiscount] = useState(
+    booking.discountAmount ? String(booking.discountAmount) : ""
+  );
+  const [deposit, setDeposit] = useState(
+    booking.paymentPlan === "deposit" && (booking.amountDueNow ?? 0) > 0
+      ? String(booking.amountDueNow)
+      : ""
+  );
   const [sendEmail, setSendEmail] = useState(false);
   const [sendWhatsapp, setSendWhatsapp] = useState(false);
   const [priceNote, setPriceNote] = useState<"tariff" | "missing" | null>(null);
@@ -79,10 +132,23 @@ export function BookingEditForm({
   const priceEditable =
     booking.priceStatus !== "pending" &&
     booking.payment?.status !== "paid" &&
-    isCashBooking(booking);
+    (isCashBooking(booking) ||
+      booking.paymentPlan === "deposit" ||
+      booking.payment?.status === "awaiting-transfer");
   const vehicleCodes = [
     ...new Set<VehicleCode>([...tariffVehicleCodes, ...legs.map((leg) => leg.vehicleCode)]),
   ];
+
+  const listPrice = parseBaht(price) ?? 0;
+  const discountAmount = Math.min(parseBaht(discount) ?? 0, listPrice);
+  const netPrice = Math.max(0, listPrice - discountAmount);
+  const depositAmount = Math.min(parseBaht(deposit) ?? 0, netPrice);
+  const balanceAfterDeposit = Math.max(0, netPrice - depositAmount);
+
+  const priceSummary = useMemo(
+    () => ({ listPrice, discountAmount, netPrice, depositAmount, balanceAfterDeposit }),
+    [listPrice, discountAmount, netPrice, depositAmount, balanceAfterDeposit]
+  );
 
   const reprice = (next: BookingLeg[], changedTariff: boolean) => {
     if (!changedTariff || !priceEditable) {
@@ -103,18 +169,22 @@ export function BookingEditForm({
 
   const updateLeg = (id: string, patch: Partial<BookingLeg>) => {
     const next = legs.map((leg) => (leg.id === id ? { ...leg, ...patch } : leg));
-    const changedTariff = patch.vehicleCode !== undefined || patch.time !== undefined;
+    const changedTariff =
+      patch.vehicleCode !== undefined ||
+      patch.time !== undefined ||
+      patch.fromId !== undefined ||
+      patch.toId !== undefined;
     reprice(next, changedTariff);
   };
 
-  const save = () => {
+  const buildPatch = (): AdminBookingPatch | null => {
     if (!name.trim() || !phone.trim()) {
       toast.error(t("editRequired"));
-      return;
+      return null;
     }
     if (legs.some((leg) => !leg.date || !leg.time)) {
       toast.error(t("editRequired"));
-      return;
+      return null;
     }
     const count = Number.parseInt(passengers, 10);
     const patch: AdminBookingPatch = {
@@ -132,48 +202,104 @@ export function BookingEditForm({
     };
 
     if (priceEditable) {
-      const total = Math.round(Number(price));
-      if (!Number.isFinite(total) || total < 0) {
+      if (parseBaht(price) == null) {
         toast.error(t("editBadPrice"));
-        return;
+        return null;
       }
       const night = getNightDriverSurcharge(patch.legs ?? []);
-      const legSum = (patch.legs ?? []).reduce((sum, leg) => sum + leg.price, 0);
-      const legsMatchTotal = legSum + night === total;
-      if (total !== booking.totalPrice || !legsMatchTotal) {
-        if (!legsMatchTotal) {
-          const rest = (patch.legs ?? []).slice(1).reduce((sum, leg) => sum + leg.price, 0);
-          patch.legs = (patch.legs ?? []).map((leg, index) =>
-            index === 0 ? { ...leg, price: Math.max(0, total - night - rest) } : leg
-          );
-        }
-        patch.totalPrice = total;
-        patch.serviceCharge = night;
-        patch.balanceDue = total;
+      const rest = (patch.legs ?? []).slice(1).reduce((sum, leg) => sum + leg.price, 0);
+      patch.legs = (patch.legs ?? []).map((leg, index) =>
+        index === 0
+          ? { ...leg, price: Math.max(0, priceSummary.listPrice - night - rest) }
+          : leg
+      );
+      patch.totalPrice = priceSummary.netPrice;
+      patch.discountAmount = priceSummary.discountAmount || undefined;
+      patch.serviceCharge = night;
+
+      if (priceSummary.depositAmount > 0) {
+        patch.paymentPlan = "deposit";
+        patch.amountDueNow = priceSummary.depositAmount;
+        patch.balanceDue = priceSummary.balanceAfterDeposit;
+        patch.payment = {
+          method:
+            booking.payment?.method === "cash"
+              ? "promptpay"
+              : booking.payment?.method ?? "promptpay",
+          summary: `Deposit ${money(priceSummary.depositAmount)} · balance ${money(priceSummary.balanceAfterDeposit)}`,
+          status: booking.payment?.status === "paid" ? "paid" : "awaiting-transfer",
+          amountDue: priceSummary.depositAmount,
+          balanceDue: priceSummary.balanceAfterDeposit,
+          transferProof: booking.payment?.transferProof,
+          bankSymbol: booking.payment?.bankSymbol,
+        };
+      } else {
+        patch.paymentPlan = "pay-driver";
         patch.amountDueNow = 0;
-        patch.payment = booking.payment
-          ? { ...booking.payment, amountDue: 0, balanceDue: total }
-          : booking.payment;
+        patch.balanceDue = priceSummary.netPrice;
+        patch.payment = {
+          method: "cash",
+          summary: booking.payment?.summary || "Pay driver in cash",
+          status: booking.payment?.status === "paid" ? "paid" : "awaiting-transfer",
+          amountDue: 0,
+          balanceDue: priceSummary.netPrice,
+        };
       }
     }
 
+    return patch;
+  };
+
+  const openWhatsApp = (text: string, phoneValue: string) => {
+    window.open(
+      `${whatsappHref(phoneValue)}?text=${encodeURIComponent(text)}`,
+      "_blank",
+      "noopener"
+    );
+  };
+
+  const save = () => {
+    const patch = buildPatch();
+    if (!patch) return;
     const emailCustomer = sendEmail && Boolean(patch.customerEmail) && isBookingRemoteEnabled();
     updateBooking(booking.id, patch, { emailCustomer });
     if (sendWhatsapp && patch.customerPhone) {
-      const text = updateMessage(
-        booking.bookingNumber,
-        patch.customerName ?? "",
-        patch.legs ?? [],
-        patch.totalPrice ?? booking.totalPrice,
-        (id) => getLocation(id)?.name ?? id
-      );
-      window.open(
-        `${whatsappHref(patch.customerPhone)}?text=${encodeURIComponent(text)}`,
-        "_blank",
-        "noopener"
+      openWhatsApp(
+        updateMessage(
+          booking.bookingNumber,
+          patch.customerName ?? "",
+          patch.legs ?? [],
+          patch.totalPrice ?? booking.totalPrice,
+          (id) => getLocation(id)?.name ?? id
+        ),
+        patch.customerPhone
       );
     }
     toast.success(emailCustomer ? t("editSavedEmailed") : t("editSaved"));
+    onDone();
+  };
+
+  const sendDepositLink = () => {
+    if (priceSummary.depositAmount <= 0) {
+      toast.error(t("editDepositRequired"));
+      return;
+    }
+    const patch = buildPatch();
+    if (!patch) return;
+    updateBooking(booking.id, patch, { emailCustomer: false });
+    if (patch.customerPhone) {
+      openWhatsApp(
+        depositMessage(
+          booking.bookingNumber,
+          patch.customerName ?? "",
+          priceSummary.depositAmount,
+          priceSummary.balanceAfterDeposit,
+          priceSummary.netPrice
+        ),
+        patch.customerPhone
+      );
+    }
+    toast.success(t("editDepositSent"));
     onDone();
   };
 
@@ -217,6 +343,26 @@ export function BookingEditForm({
             {locName(getLocation(leg.fromId))} → {locName(getLocation(leg.toId))}
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
+            <div className={`${field} sm:col-span-2`}>
+              {t("editPickupArea")}
+              <LocationSelect
+                role="pickup"
+                value={leg.fromId}
+                excludeId={leg.toId}
+                pairedId={leg.toId}
+                onValueChange={(fromId) => updateLeg(leg.id, { fromId })}
+              />
+            </div>
+            <div className={`${field} sm:col-span-2`}>
+              {t("editDropoffArea")}
+              <LocationSelect
+                role="dropoff"
+                value={leg.toId}
+                excludeId={leg.fromId}
+                pairedId={leg.fromId}
+                onValueChange={(toId) => updateLeg(leg.id, { toId })}
+              />
+            </div>
             <label className={field}>
               {t("editPickupPlace")}
               <Input
@@ -257,25 +403,84 @@ export function BookingEditForm({
         </section>
       ))}
 
-      <section className="grid gap-3">
+      <section className="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className={field}>
+            {t("editListPrice")} (฿)
+            <Input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={price}
+              disabled={!priceEditable}
+              onChange={(e) => {
+                setPrice(e.target.value);
+                setPriceNote(null);
+              }}
+            />
+          </label>
+          <label className={field}>
+            {t("editDiscount")} (฿)
+            <Input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={discount}
+              disabled={!priceEditable}
+              onChange={(e) => setDiscount(e.target.value)}
+            />
+          </label>
+        </div>
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950">
+          {t("editNetPrice")}: {money(priceSummary.netPrice)}
+          {priceSummary.discountAmount > 0 ? (
+            <span className="ml-2 font-normal text-amber-800">
+              ({t("editListPrice")} {money(priceSummary.listPrice)} − {t("editDiscount")}{" "}
+              {money(priceSummary.discountAmount)})
+            </span>
+          ) : null}
+        </p>
+        {!priceEditable ? (
+          <span className="text-xs text-zinc-400">{t("editPriceLocked")}</span>
+        ) : priceNote === "tariff" ? (
+          <span className="text-xs text-emerald-700">{t("editPriceFromTariff")}</span>
+        ) : priceNote === "missing" ? (
+          <span className="text-xs text-amber-700">{t("editNoTariff")}</span>
+        ) : null}
+      </section>
+
+      <fieldset className="space-y-3 rounded-xl border border-sky-200 bg-sky-50/70 p-3">
+        <legend className="px-1 text-xs font-semibold text-sky-900">{t("editDepositTitle")}</legend>
+        <p className="text-xs leading-relaxed text-sky-900">{t("editDepositHint")}</p>
         <label className={field}>
-          {t("detailPrice")} (฿)
+          {t("editDepositAmount")} (฿)
           <Input
             type="number"
             inputMode="numeric"
             min={0}
-            value={price}
+            value={deposit}
             disabled={!priceEditable}
-            onChange={(e) => setPrice(e.target.value)}
+            onChange={(e) => setDeposit(e.target.value)}
           />
-          {!priceEditable ? (
-            <span className="font-normal text-zinc-400">{t("editPriceLocked")}</span>
-          ) : priceNote === "tariff" ? (
-            <span className="font-normal text-emerald-700">{t("editPriceFromTariff")}</span>
-          ) : priceNote === "missing" ? (
-            <span className="font-normal text-amber-700">{t("editNoTariff")}</span>
-          ) : null}
         </label>
+        {priceSummary.depositAmount > 0 ? (
+          <p className="text-sm text-sky-950">
+            {t("editDepositBalance")}:{" "}
+            <span className="font-semibold">{money(priceSummary.balanceAfterDeposit)}</span>
+          </p>
+        ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full border-sky-300 bg-white"
+          disabled={!priceEditable || priceSummary.depositAmount <= 0 || !phone.trim()}
+          onClick={sendDepositLink}
+        >
+          {t("editDepositSend")}
+        </Button>
+      </fieldset>
+
+      <section className="grid gap-3">
         <label className={field}>
           {t("detailCustomerNotes")}
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="min-h-16" />

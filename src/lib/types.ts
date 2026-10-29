@@ -134,6 +134,8 @@ export interface Booking {
   passengerCount?: number;
   notes?: string;
   totalPrice: number;
+  /** Staff discount in THB — list price is totalPrice + discountAmount */
+  discountAmount?: number;
   /** pending = customer asked for a route that has no tariff yet */
   priceStatus?: "official" | "pending";
   /** Night driver surcharge (00:00–08:00 pickup), included in totalPrice */
