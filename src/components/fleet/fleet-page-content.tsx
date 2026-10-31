@@ -102,7 +102,7 @@ export function FleetPageContent() {
 
   const capacityLabel = (id: (typeof capacityFilterIds)[number]) => {
     if (id === "all") return t("seatsAll");
-    if (id === "1-20" || id === "9-20") return t("seatsGroup");
+    if (id === "1-20") return t("seatsGroup");
     return id.replace("-", "–");
   };
 
