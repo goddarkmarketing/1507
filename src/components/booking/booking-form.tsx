@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
-import { Plus, Trash2, CalendarClock, CalendarDays, CarFront, Clock, Flag, MapPin, Wallet, PlaneTakeoff, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Trash2, CalendarClock, CalendarDays, CarFront, Clock, Flag, MapPin, Wallet, PlaneTakeoff, ChevronDown, ChevronLeft, ChevronRight, User, UserRound, Baby } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -879,7 +879,10 @@ export function BookingForm() {
             <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="adults">{t("adultCount")}</Label>
+                  <Label htmlFor="adults" className="inline-flex items-center gap-1.5">
+                    <User className="size-3.5 shrink-0 text-amber-700" aria-hidden />
+                    {t("adultCount")}
+                  </Label>
                   <Input
                     id="adults"
                     className={fieldClass}
@@ -895,7 +898,10 @@ export function BookingForm() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="children">{t("childCount")}</Label>
+                  <Label htmlFor="children" className="inline-flex items-center gap-1.5">
+                    <UserRound className="size-3.5 shrink-0 text-amber-700" aria-hidden />
+                    {t("childCount")}
+                  </Label>
                   <Input
                     id="children"
                     className={fieldClass}
@@ -911,7 +917,10 @@ export function BookingForm() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="infants">{t("infantCount")}</Label>
+                  <Label htmlFor="infants" className="inline-flex items-center gap-1.5">
+                    <Baby className="size-3.5 shrink-0 text-amber-700" aria-hidden />
+                    {t("infantCount")}
+                  </Label>
                   <Input
                     id="infants"
                     className={fieldClass}
