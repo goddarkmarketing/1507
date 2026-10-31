@@ -285,7 +285,10 @@ export function EVoucher({ booking }: EVoucherProps) {
               }
             />
             <SectionBar>{t("specialRequirements")}</SectionBar>
-            <Cell label={t("babySeatNo")} value={0} />
+            <Cell
+              label={t("babySeatNo")}
+              value={booking.carSeatRequested ? 1 : 0}
+            />
             <Cell label={t("otherServices")} value={booking.notes || "—"} />
             <Cell label={t("touringTime")} value="—" />
           </div>
@@ -295,7 +298,20 @@ export function EVoucher({ booking }: EVoucherProps) {
           <div className="voucher-col flex min-h-0 flex-col">
             <SectionBar>{t("reservationDetails")}</SectionBar>
             <Cell label={t("typeOfCar")} value={`1 ${vehicleLabel}`} />
-            <Cell label={t("passengers")} value={booking.passengerCount} />
+            <Cell
+              label={t("passengers")}
+              value={
+                booking.adultCount || booking.childCount || booking.infantCount
+                  ? [
+                      booking.adultCount ? `A${booking.adultCount}` : null,
+                      booking.childCount ? `C${booking.childCount}` : null,
+                      booking.infantCount ? `I${booking.infantCount}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")
+                  : booking.passengerCount
+              }
+            />
             <Cell label={t("bookingType")} value={typeLabel} />
             <Cell
               label={t("transferPrice")}

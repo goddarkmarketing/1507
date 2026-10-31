@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 import type { RentalCategory } from "@/lib/types";
 
 const sectionFilterIds = ["all", "rental", "transfer"] as const;
-const capacityFilterIds = ["all", "1-3", "1-4", "1-6", "1-8", "9-20"] as const;
+const capacityFilterIds = ["all", "1-3", "1-4", "1-7", "1-8", "1-20"] as const;
 
 const rentalCatKey: Record<
   RentalCategory,
@@ -102,7 +102,7 @@ export function FleetPageContent() {
 
   const capacityLabel = (id: (typeof capacityFilterIds)[number]) => {
     if (id === "all") return t("seatsAll");
-    if (id === "9-20") return t("seatsGroup");
+    if (id === "1-20" || id === "9-20") return t("seatsGroup");
     return id.replace("-", "–");
   };
 

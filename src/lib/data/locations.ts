@@ -136,7 +136,10 @@ export const locations: Location[] = [
     "type": "beach",
     "province": "Krabi",
     "connections": [
-      "kbv-airport"
+      "kbv-airport",
+      "koh-lanta-z1",
+      "koh-lanta-z2",
+      "koh-lanta-z3"
     ]
   },
   {
@@ -208,7 +211,8 @@ export const locations: Location[] = [
     "connections": [
       "kbv-airport",
       "phuket-airport",
-      "ao-nang-beach"
+      "ao-nang-beach",
+      "klong-muang"
     ]
   },
   {
@@ -220,7 +224,8 @@ export const locations: Location[] = [
     "connections": [
       "kbv-airport",
       "phuket-airport",
-      "ao-nang-beach"
+      "ao-nang-beach",
+      "klong-muang"
     ]
   },
   {
@@ -232,7 +237,8 @@ export const locations: Location[] = [
     "connections": [
       "kbv-airport",
       "phuket-airport",
-      "ao-nang-beach"
+      "ao-nang-beach",
+      "klong-muang"
     ]
   },
   {

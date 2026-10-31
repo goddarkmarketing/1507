@@ -46,6 +46,10 @@ function bookingPatchFromAdmin(booking: AdminBooking): Partial<Booking> {
     customerPhone: booking.customerPhone,
     flightNumber: booking.flightNumber,
     passengerCount: booking.passengerCount,
+    adultCount: booking.adultCount,
+    childCount: booking.childCount,
+    infantCount: booking.infantCount,
+    carSeatRequested: booking.carSeatRequested,
     notes: booking.notes,
   };
 }
@@ -200,6 +204,10 @@ export const useAdminStore = create<AdminState>()(
             "customerPhone" in patch ||
             "flightNumber" in patch ||
             "passengerCount" in patch ||
+            "adultCount" in patch ||
+            "childCount" in patch ||
+            "infantCount" in patch ||
+            "carSeatRequested" in patch ||
             "notes" in patch)
         ) {
           syncToCustomerStore(updated);

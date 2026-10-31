@@ -116,6 +116,7 @@ export function BookingForm() {
     removeLeg,
     updateLeg,
     setCustomer,
+    setCarSeatRequested,
     setService,
     setRentalPackage,
     setRentalDays,
@@ -356,9 +357,9 @@ export function BookingForm() {
       toast.error(t("toastCustomer"));
       return false;
     }
-    if (!(Number.parseInt(draft.passengerCount, 10) > 0)) {
+    if (!(Number.parseInt(draft.adultCount, 10) > 0)) {
       toast.error(t("toastPassengerCount"));
-      document.getElementById("passengers")?.focus();
+      document.getElementById("adults")?.focus();
       return false;
     }
     return true;
@@ -429,14 +430,14 @@ export function BookingForm() {
   const selectTriggerClass = bookingSelectTriggerClass;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:space-y-8 sm:px-4 sm:py-8 md:pb-8 lg:px-8">
+    <div className="mx-auto max-w-7xl space-y-4 overflow-x-hidden px-2.5 py-3 pb-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:space-y-8 sm:px-4 sm:py-8 md:pb-8 lg:px-8">
       {isRentalBooking && <RentalConditions />}
 
-      <div className="grid gap-5 sm:gap-8 lg:grid-cols-3">
-      <div className="space-y-4 sm:space-y-6 lg:col-span-2">
+      <div className="grid min-w-0 gap-4 sm:gap-8 lg:grid-cols-3">
+      <div className="min-w-0 space-y-3 sm:space-y-6 lg:col-span-2">
         <nav
           aria-label={t("wizardStepOf", { current: step, total: WIZARD_STEPS })}
-          className="rounded-xl border bg-card px-3 py-3 sm:px-4"
+          className="rounded-xl border bg-card px-2.5 py-2.5 sm:px-4 sm:py-3"
         >
           <p className="mb-3 text-xs font-medium text-muted-foreground sm:text-sm">
             {t("wizardStepOf", { current: step, total: WIZARD_STEPS })}
@@ -875,19 +876,67 @@ export function BookingForm() {
                 {isRentalBooking ? t("flightHintRental") : t("flightHintTransfer")}
               </p>
             </div>
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="passengers">{t("passengerCount")}</Label>
-              <Input
-                id="passengers"
-                className={fieldClass}
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={99}
-                value={draft.passengerCount}
-                onChange={(e) => setCustomer("passengerCount", e.target.value.replace(/\D/g, "").slice(0, 2))}
-                placeholder={t("phPassengers")}
-              />
+            <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="adults">{t("adultCount")}</Label>
+                  <Input
+                    id="adults"
+                    className={fieldClass}
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={99}
+                    value={draft.adultCount}
+                    onChange={(e) =>
+                      setCustomer("adultCount", e.target.value.replace(/\D/g, "").slice(0, 2))
+                    }
+                    placeholder={t("phAdults")}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="children">{t("childCount")}</Label>
+                  <Input
+                    id="children"
+                    className={fieldClass}
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={99}
+                    value={draft.childCount}
+                    onChange={(e) =>
+                      setCustomer("childCount", e.target.value.replace(/\D/g, "").slice(0, 2) || "0")
+                    }
+                    placeholder={t("phChildren")}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="infants">{t("infantCount")}</Label>
+                  <Input
+                    id="infants"
+                    className={fieldClass}
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={99}
+                    value={draft.infantCount}
+                    onChange={(e) =>
+                      setCustomer("infantCount", e.target.value.replace(/\D/g, "").slice(0, 2) || "0")
+                    }
+                    placeholder={t("phInfants")}
+                  />
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm text-zinc-700">
+                <input
+                  type="checkbox"
+                  className="size-4 accent-amber-600"
+                  checked={draft.carSeatRequested}
+                  onChange={(e) => setCarSeatRequested(e.target.checked)}
+                />
+                {t("carSeatRequested")}
+              </label>
+              <p className="text-[11px] text-muted-foreground">{t("paxHint")}</p>
             </div>
             <div className="space-y-1.5 sm:col-span-2 sm:space-y-2">
               <Label htmlFor="notes">{t("specialRequests")}</Label>

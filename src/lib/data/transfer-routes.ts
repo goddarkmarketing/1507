@@ -1033,6 +1033,31 @@ const set2OfficialRoutes: OfficialTransferRoute[] = [
     category: "beach",
     prices: tariffPrices(2600, 2800, 2800, 2900, 3200, 9500, 11000),
   },
+  // Klong Muang ≈ Ao Nang + ฿100 (same delta as airport beach fares)
+  {
+    fromId: "klong-muang",
+    toId: "koh-lanta-z1",
+    distanceKm: 100,
+    durationMin: 130,
+    category: "beach",
+    prices: tariffPrices(2300, 2500, 2500, 2600, 2900, 9600, 10100),
+  },
+  {
+    fromId: "klong-muang",
+    toId: "koh-lanta-z2",
+    distanceKm: 105,
+    durationMin: 140,
+    category: "beach",
+    prices: tariffPrices(2500, 2700, 2700, 2800, 3100, 9600, 11100),
+  },
+  {
+    fromId: "klong-muang",
+    toId: "koh-lanta-z3",
+    distanceKm: 110,
+    durationMin: 150,
+    category: "beach",
+    prices: tariffPrices(2700, 2900, 2900, 3000, 3300, 9600, 11100),
+  },
 ];
 
 export const officialTransferRoutes: OfficialTransferRoute[] = [
@@ -1052,11 +1077,14 @@ export function getOfficialRoute(
 ): OfficialTransferRoute | undefined {
   const imported = getImportedTransferRoutes();
   if (imported?.length) {
-    return imported.find(
+    const hit = imported.find(
       (route) =>
         (route.fromId === fromId && route.toId === toId) ||
         (route.fromId === toId && route.toId === fromId)
     );
+    // Imported sheets may be partial (e.g. airport-only). Keep built-in
+    // tariff rows so routes like Ao Nang ↔ Koh Lanta still price.
+    if (hit) return hit;
   }
   return routeIndex.get(`${fromId}>${toId}`);
 }

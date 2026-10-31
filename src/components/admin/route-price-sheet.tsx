@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useCatalogStore } from "@/lib/admin/catalog-store";
+import { locations } from "@/lib/data/locations";
 import { routeSheetName } from "@/lib/data/set1-place-names";
 import { officialTransferRoutes } from "@/lib/data/transfer-routes";
 import type { OfficialTransferRoute } from "@/lib/data/transfer-routes";
@@ -11,6 +12,27 @@ import type { VehicleCode } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const PRICE_KEYS = ["ECO", "PREM", "SUV", "VAN", "EXE", "VIP", "BUS"] as const;
+
+const PLACE_TYPES = new Set([
+  "airport",
+  "beach",
+  "city",
+  "pier",
+  "bus_station",
+]);
+
+function emptyPrices(): OfficialTransferRoute["prices"] {
+  return {
+    ECO: 0,
+    PREM: 0,
+    SUV: 0,
+    VAN: 0,
+    EXE: 0,
+    VIP: 0,
+    SIG: 0,
+    BUS: 0,
+  };
+}
 
 function cloneRoutes(rows: OfficialTransferRoute[]): OfficialTransferRoute[] {
   return rows.map((row) => ({
@@ -35,7 +57,18 @@ export function RoutePriceSheet({
   const transferImportedAt = useCatalogStore((s) => s.transferImportedAt);
   const [rows, setRows] = useState<OfficialTransferRoute[]>(sheetSource);
   const [dirty, setDirty] = useState(false);
+  const [fromId, setFromId] = useState("ao-nang-beach");
+  const [toId, setToId] = useState("koh-lanta-z1");
   const saving = useRef(false);
+
+  const placeOptions = useMemo(
+    () =>
+      locations
+        .filter((loc) => PLACE_TYPES.has(loc.type))
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    []
+  );
 
   useEffect(() => {
     if (saving.current) {
@@ -67,6 +100,31 @@ export function RoutePriceSheet({
     setDirty(true);
   };
 
+  const addRoute = () => {
+    if (!fromId || !toId || fromId === toId) return;
+    const exists = rows.some(
+      (row) =>
+        (row.fromId === fromId && row.toId === toId) ||
+        (row.fromId === toId && row.toId === fromId)
+    );
+    if (exists) {
+      setDirty(true);
+      return;
+    }
+    setRows((current) => [
+      ...current,
+      {
+        fromId,
+        toId,
+        distanceKm: 0,
+        durationMin: 0,
+        category: "beach",
+        prices: emptyPrices(),
+      },
+    ]);
+    setDirty(true);
+  };
+
   return (
     <section className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -89,6 +147,41 @@ export function RoutePriceSheet({
         >
           {t("routeSheetSave")}
         </Button>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-2 rounded-xl border border-dashed border-zinc-300 bg-zinc-50/80 p-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <label className="grid min-w-0 flex-1 gap-1 text-xs font-medium text-zinc-500">
+          {t("routeSheetFrom")}
+          <select
+            className="h-9 rounded-lg border border-zinc-200 bg-white px-2 text-sm text-zinc-900"
+            value={fromId}
+            onChange={(e) => setFromId(e.target.value)}
+          >
+            {placeOptions.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.nameTh || loc.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="grid min-w-0 flex-1 gap-1 text-xs font-medium text-zinc-500">
+          {t("routeSheetTo")}
+          <select
+            className="h-9 rounded-lg border border-zinc-200 bg-white px-2 text-sm text-zinc-900"
+            value={toId}
+            onChange={(e) => setToId(e.target.value)}
+          >
+            {placeOptions.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.nameTh || loc.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Button type="button" size="sm" variant="outline" className="h-9" onClick={addRoute}>
+          {t("routeSheetAdd")}
+        </Button>
+        <p className="w-full text-[11px] text-zinc-500">{t("routeSheetAddHint")}</p>
       </div>
 
       <div className="mt-4 max-h-[70vh] overflow-auto rounded-lg border border-zinc-300">

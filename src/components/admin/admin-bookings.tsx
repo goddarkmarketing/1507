@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Car, Check, ChevronDown, ChevronRight, Download, Pencil, Phone, Printer, Search, Settings2, SlidersHorizontal } from "lucide-react";
+import { Check, ChevronDown, Download, FileText, MessageCircle, Pencil, Phone, Printer, Search, SlidersHorizontal, X } from "lucide-react";
 import { BookingEditForm } from "@/components/admin/booking-edit-form";
 import { useAdminStore } from "@/lib/admin/store";
 import {
@@ -25,6 +25,8 @@ import {
 import { getLocation } from "@/lib/data/locations";
 import { getVehicle } from "@/lib/data/vehicles";
 import { locationShortName } from "@/lib/i18n-labels";
+import { whatsappHref } from "@/lib/contact-links";
+import { voucherUrl } from "@/lib/booking/remote/config";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Input } from "@/components/ui/input";
@@ -266,6 +268,56 @@ function csvCell(value: string) {
   const text = value.replace(/\r?\n/g, " ").trim();
   if (/[",]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
   return text;
+}
+
+function opsRow(booking: AdminBooking, locale: string) {
+  const leg = booking.legs?.[0];
+  const fromId = leg?.fromId || "";
+  const toId = leg?.toId || "";
+  const fromArea = fromId
+    ? locationShortName(getLocation(fromId), locale) || fromId
+    : "";
+  const fromPlace = leg?.pickupPlace?.trim() || "";
+  const from =
+    fromPlace && fromPlace !== fromArea
+      ? `${fromArea} / ${fromPlace}`
+      : fromArea || "—";
+  const toArea = toId ? dropoffAreaName(toId, locale) : "";
+  const toHotel = toId ? dropoffHotelName(toId, leg?.hotelName, locale) : "";
+  const to =
+    toHotel && toHotel !== toArea
+      ? `${toArea || toId} / ${toHotel}`
+      : toArea || toId || "—";
+  const toIsAirport = Boolean(toId) && getLocation(toId)?.type === "airport";
+  const trip =
+    booking.type === "round-trip"
+      ? "RT"
+      : booking.type === "one-way"
+        ? "OW"
+        : (booking.type || "—").toString().slice(0, 2).toUpperCase() || "—";
+  const whenFull = leg?.date
+    ? `${leg.date.slice(8, 10)}/${leg.date.slice(5, 7)}/${leg.date.slice(0, 4)} - ${leg.time}`
+    : "—";
+  const adults =
+    booking.adultCount ??
+    Math.max(
+      0,
+      (booking.passengerCount ?? 0) -
+        (booking.childCount ?? 0) -
+        (booking.infantCount ?? 0)
+    );
+  const kids = (booking.childCount ?? 0) + (booking.infantCount ?? 0);
+  return {
+    from,
+    to,
+    toIsAirport,
+    whenFull,
+    flight: booking.flightNumber?.trim() || "NA",
+    ctype: leg?.vehicleCode || "—",
+    trip,
+    vd: adults,
+    vc: kids,
+  };
 }
 
 export function AdminBookingsPage() {
@@ -511,8 +563,19 @@ export function AdminBookingsPage() {
     if (booking.flightNumber) {
       rows.splice(6, 0, { label: t("flight"), value: booking.flightNumber });
     }
-    if (booking.passengerCount) {
-      rows.splice(6, 0, { label: t("passengerCount"), value: String(booking.passengerCount) });
+    {
+      const parts: string[] = [];
+      if (booking.adultCount) parts.push(`${t("adultCount")} ${booking.adultCount}`);
+      if (booking.childCount) parts.push(`${t("childCount")} ${booking.childCount}`);
+      if (booking.infantCount) parts.push(`${t("infantCount")} ${booking.infantCount}`);
+      if (booking.carSeatRequested) parts.push(t("carSeatYes"));
+      const pax =
+        parts.length > 0
+          ? parts.join(" · ")
+          : booking.passengerCount
+            ? String(booking.passengerCount)
+            : "";
+      if (pax) rows.splice(6, 0, { label: t("passengerCount"), value: pax });
     }
     if (booking.notes) {
       rows.push({ label: t("detailCustomerNotes"), value: booking.notes });
@@ -794,251 +857,305 @@ export function AdminBookingsPage() {
             </button>
           ))}
         </div>
-        {filtered.filter((booking) => matchesMobileChip(booking, mobileChip)).length === 0 ? (
-          <p className="rounded-2xl border border-zinc-200 bg-white px-4 py-10 text-center text-sm text-zinc-500">
-            {t("emptyBookings")}
-          </p>
-        ) : (
-          <ul className="space-y-2.5">
-            {filtered
-              .filter((booking) => matchesMobileChip(booking, mobileChip))
-              .map((b) => {
-                const leg = b.legs?.[0];
-                const fromId = leg?.fromId || "";
-                const toId = leg?.toId || "";
-                const fromArea = fromId
-                  ? locationShortName(getLocation(fromId), locale) || fromId
-                  : "";
-                const fromPlace = leg?.pickupPlace?.trim() || "";
-                const from =
-                  fromPlace && fromPlace !== fromArea
-                    ? `${fromArea} · ${fromPlace}`
-                    : fromArea || "—";
-                const to = toId
-                  ? dropoffDetailLabel(toId, leg?.hotelName, locale) || toId
-                  : "—";
-                const status = cardStatusLabel(b);
-                const code = leg?.vehicleCode || "";
-                return (
-                  <li key={b.id}>
-                    <button
-                      type="button"
-                      onClick={() => openDetail(b.id)}
-                      className="flex w-full items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 text-left shadow-sm"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p
+        {(() => {
+          const mobileRows = filtered.filter((booking) =>
+            matchesMobileChip(booking, mobileChip)
+          );
+          if (mobileRows.length === 0) {
+            return (
+              <p className="rounded-2xl border border-zinc-200 bg-white px-4 py-10 text-center text-sm text-zinc-500">
+                {t("emptyBookings")}
+              </p>
+            );
+          }
+          return (
+            <div className="-mx-1 overflow-x-auto rounded-xl border border-zinc-300 bg-white">
+              <table className="w-max min-w-full border-collapse text-left text-[10px] leading-tight">
+                <thead>
+                  <tr className="bg-zinc-100 text-[9px] font-semibold uppercase tracking-wide text-zinc-600">
+                    <th className="sticky left-0 z-20 border-b border-zinc-300 bg-zinc-100 px-1.5 py-1.5">
+                      #
+                    </th>
+                    <th className="border-b border-zinc-300 px-1.5 py-1.5">{t("scheduleColFrom")}</th>
+                    <th className="border-b border-zinc-300 px-1.5 py-1.5">{t("scheduleColTo")}</th>
+                    <th className="border-b border-zinc-300 px-1.5 py-1.5 whitespace-nowrap">
+                      {t("colPickupFull")}
+                    </th>
+                    <th className="border-b border-zinc-300 px-1.5 py-1.5">{t("scheduleColFlight")}</th>
+                    <th className="border-b border-zinc-300 px-1.5 py-1.5" title={t("colCtype")}>
+                      {t("colCtype")}
+                    </th>
+                    <th className="border-b border-zinc-300 px-1.5 py-1.5">{t("colOwRt")}</th>
+                    <th className="border-b border-zinc-300 px-1.5 py-1.5 text-center" title={t("colVdHint")}>
+                      {t("colVd")}
+                    </th>
+                    <th className="border-b border-zinc-300 px-1.5 py-1.5 text-center" title={t("colVcHint")}>
+                      {t("colVc")}
+                    </th>
+                    <th className="border-b border-zinc-300 px-1 py-1.5 text-center" colSpan={4}>
+                      {t("colActions")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mobileRows.map((b, index) => {
+                    const row = opsRow(b, locale);
+                    const canConfirm =
+                      b.status === "pending" && b.priceStatus !== "pending";
+                    const cancelled = detailStatusOf(b) === "cancelled";
+                    return (
+                      <tr
+                        key={b.id}
+                        className={cn(
+                          "border-b border-zinc-200",
+                          index % 2 === 0 ? "bg-white" : "bg-zinc-50"
+                        )}
+                      >
+                        <td className="sticky left-0 z-10 bg-inherit px-1.5 py-1.5">
+                          <button
+                            type="button"
+                            className={cn(
+                              "max-w-[7.5rem] truncate text-left font-semibold underline decoration-zinc-300 underline-offset-2",
+                              b.type === "round-trip" ? "text-rose-600" : "text-sky-700"
+                            )}
+                            onClick={() => openDetail(b.id)}
+                          >
+                            {b.bookingNumber}
+                          </button>
+                        </td>
+                        <td className="max-w-[6.5rem] truncate px-1.5 py-1.5 text-zinc-800">
+                          {row.from}
+                        </td>
+                        <td
                           className={cn(
-                            "text-[15px] font-semibold",
-                            b.type === "round-trip" ? "text-rose-600" : "text-zinc-950"
+                            "max-w-[6.5rem] truncate px-1.5 py-1.5 font-medium",
+                            row.toIsAirport ? "text-rose-600" : "text-zinc-800"
                           )}
                         >
-                          #{b.bookingNumber}
-                        </p>
-                        <p className="mt-0.5 text-xs text-zinc-500">
-                          {pickupLabel(leg?.date, leg?.time, locale)}
-                        </p>
-                        <p className="mt-1 truncate text-sm text-zinc-800">
-                          {from}
-                          <span className="px-1 text-zinc-400">→</span>
-                          {to}
-                        </p>
-                        <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-zinc-500">
-                          <Car className="size-3.5 shrink-0" />
-                          {vehicleLabel(code)}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2.5">
-                        <div className="text-right">
-                          <p className={cn("text-xs font-medium", status.className)}>
-                            {status.label}
-                          </p>
-                          <p className="mt-1 text-sm font-semibold tabular-nums text-zinc-950">
-                            {money(b.totalPrice)}
-                          </p>
-                        </div>
-                        <span className="inline-flex size-8 items-center justify-center rounded-full bg-emerald-500 text-white">
-                          <ChevronRight className="size-4" />
-                        </span>
-                      </div>
-                    </button>
-                  </li>
-                );
-              })}
-          </ul>
-        )}
+                          {row.to}
+                        </td>
+                        <td className="whitespace-nowrap px-1.5 py-1.5 tabular-nums text-zinc-800">
+                          {row.whenFull}
+                        </td>
+                        <td className="max-w-[4.5rem] truncate px-1.5 py-1.5 text-zinc-700">
+                          {row.flight}
+                        </td>
+                        <td className="px-1.5 py-1.5 font-semibold text-zinc-800">{row.ctype}</td>
+                        <td className="px-1.5 py-1.5 font-semibold text-zinc-800">{row.trip}</td>
+                        <td className="px-1.5 py-1.5 text-center font-semibold text-amber-600 tabular-nums">
+                          {row.vd}
+                        </td>
+                        <td className="px-1.5 py-1.5 text-center font-semibold text-rose-600 tabular-nums">
+                          {row.vc}
+                        </td>
+                        <td className="px-0.5 py-1.5">
+                          <button
+                            type="button"
+                            disabled={!canConfirm || cancelled}
+                            title={t("approveBooking")}
+                            aria-label={t("approveBooking")}
+                            className="inline-flex size-5 items-center justify-center rounded bg-emerald-600 text-white disabled:opacity-30"
+                            onClick={() => approveBooking(b)}
+                          >
+                            <Check className="size-3" />
+                          </button>
+                        </td>
+                        <td className="px-0.5 py-1.5">
+                          <button
+                            type="button"
+                            disabled={cancelled}
+                            title={t("detailCancelled")}
+                            aria-label={t("detailCancelled")}
+                            className="inline-flex size-5 items-center justify-center rounded bg-rose-600 text-white disabled:opacity-30"
+                            onClick={() => setOpsStatus(b.id, "cancelled")}
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </td>
+                        <td className="px-0.5 py-1.5">
+                          <button
+                            type="button"
+                            title={t("editBooking")}
+                            aria-label={t("editBooking")}
+                            className="inline-flex size-5 items-center justify-center rounded bg-amber-400 text-zinc-900"
+                            onClick={() => {
+                              openDetail(b.id);
+                              setEditing(true);
+                            }}
+                          >
+                            <Pencil className="size-3" />
+                          </button>
+                        </td>
+                        <td className="px-0.5 py-1.5 pr-1.5">
+                          <a
+                            href={`/booking/voucher/?n=${encodeURIComponent(b.bookingNumber)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={t("scheduleActionPrint")}
+                            aria-label={t("scheduleActionPrint")}
+                            className="inline-flex size-5 items-center justify-center rounded bg-rose-500 text-white"
+                          >
+                            <FileText className="size-3" />
+                          </a>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
       </div>
 
-      <div className="-mx-4 hidden overflow-hidden border-y border-zinc-300 bg-white sm:mx-0 sm:rounded-lg sm:border sm:shadow-sm lg:block">
+      <div className="-mx-4 hidden overflow-x-auto border-y border-zinc-300 bg-white sm:mx-0 sm:rounded-lg sm:border sm:shadow-sm lg:block">
         {filtered.length === 0 ? (
           <p className="px-4 py-10 text-center text-sm text-zinc-500">
             {t("emptyBookings")}
           </p>
         ) : (
-          <div className="w-full">
-            <table className="w-full table-fixed border-collapse text-left text-xs leading-snug sm:text-sm">
-              <colgroup>
-                <col className="w-[13%]" />
-                <col className="w-[15%]" />
-                <col className="w-[24%]" />
-                <col className="w-[11%]" />
-                <col className="w-[9%]" />
-                <col className="w-[7%]" />
-                <col className="w-[9%]" />
-                <col className="w-[7%]" />
-                <col className="w-[5%]" />
-              </colgroup>
-              <thead>
-                <tr className="bg-zinc-100 text-[11px] font-semibold text-zinc-600 sm:text-xs">
-                  <th className="border-b border-zinc-300 px-3 py-2.5">
-                    {t("colBooking")}
-                  </th>
-                  <th className="border-b border-zinc-300 px-3 py-2.5">
-                    {t("scheduleColFrom")}
-                  </th>
-                  <th className="border-b border-zinc-300 px-3 py-2.5">
-                    {t("scheduleColTo")}
-                  </th>
-                  <th className="border-b border-zinc-300 px-3 py-2.5">
-                    {t("colWhen")}
-                  </th>
-                  <th className="border-b border-zinc-300 px-3 py-2.5">
-                    {t("scheduleColFlight")}
-                  </th>
-                  <th className="border-b border-zinc-300 px-3 py-2.5">
-                    {t("scheduleColTrip")}
-                  </th>
-                  <th className="border-b border-zinc-300 px-3 py-2.5">
-                    {t("colStatus")}
-                  </th>
-                  <th className="border-b border-zinc-300 px-3 py-2.5 text-right">
-                    {t("colAmount")}
-                  </th>
-                  <th className="border-b border-zinc-300 px-2 py-2.5 text-center">
-                    ·
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((b, index) => {
-                  const leg = b.legs?.[0];
-                  const fromId = leg?.fromId || "";
-                  const toId = leg?.toId || "";
-                  const fromArea = fromId
-                    ? locationShortName(getLocation(fromId), locale) || fromId
-                    : "";
-                  const fromPlace = leg?.pickupPlace?.trim() || "";
-                  const toArea = toId ? dropoffAreaName(toId, locale) : "";
-                  const toHotel = toId
-                    ? dropoffHotelName(toId, leg?.hotelName, locale)
-                    : "";
-                  const toIsAirport =
-                    Boolean(toId) && getLocation(toId)?.type === "airport";
-                  const trip =
-                    b.type === "round-trip"
-                      ? "RT"
-                      : b.type === "one-way"
-                        ? "OW"
-                        : (b.type || "—").toString().slice(0, 2).toUpperCase() ||
-                          "—";
-                  const when = leg
-                    ? `${leg.date.slice(8, 10)}/${leg.date.slice(5, 7)} ${leg.time}`
-                    : "—";
-                  return (
-                    <tr
-                      key={b.id}
+          <table className="w-max min-w-full border-collapse text-left text-xs leading-snug">
+            <thead>
+              <tr className="bg-zinc-100 text-[11px] font-semibold text-zinc-600">
+                <th className="sticky left-0 z-20 border-b border-zinc-300 bg-zinc-100 px-2 py-2">
+                  {t("colBooking")}
+                </th>
+                <th className="border-b border-zinc-300 px-2 py-2">{t("scheduleColFrom")}</th>
+                <th className="border-b border-zinc-300 px-2 py-2">{t("scheduleColTo")}</th>
+                <th className="border-b border-zinc-300 px-2 py-2 whitespace-nowrap">
+                  {t("colPickupFull")}
+                </th>
+                <th className="border-b border-zinc-300 px-2 py-2">{t("scheduleColFlight")}</th>
+                <th className="border-b border-zinc-300 px-2 py-2">{t("colCtype")}</th>
+                <th className="border-b border-zinc-300 px-2 py-2">{t("colOwRt")}</th>
+                <th className="border-b border-zinc-300 px-2 py-2 text-center" title={t("colVdHint")}>
+                  {t("colVd")}
+                </th>
+                <th className="border-b border-zinc-300 px-2 py-2 text-center" title={t("colVcHint")}>
+                  {t("colVc")}
+                </th>
+                <th className="border-b border-zinc-300 px-2 py-2">{t("colStatus")}</th>
+                <th className="border-b border-zinc-300 px-2 py-2 text-right">{t("colAmount")}</th>
+                <th className="border-b border-zinc-300 px-1 py-2 text-center" colSpan={4}>
+                  {t("colActions")}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((b, index) => {
+                const row = opsRow(b, locale);
+                const canConfirm =
+                  b.status === "pending" && b.priceStatus !== "pending";
+                const cancelled = detailStatusOf(b) === "cancelled";
+                return (
+                  <tr
+                    key={b.id}
+                    className={cn(
+                      "border-b border-zinc-200",
+                      index % 2 === 0 ? "bg-white" : "bg-zinc-50/80"
+                    )}
+                  >
+                    <td className="sticky left-0 z-10 bg-inherit px-2 py-2">
+                      <button
+                        type="button"
+                        className={cn(
+                          "max-w-[9rem] truncate text-left font-semibold underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-900",
+                          b.type === "round-trip" ? "text-rose-600" : "text-sky-700"
+                        )}
+                        onClick={() => openDetail(b.id)}
+                      >
+                        {b.bookingNumber}
+                      </button>
+                    </td>
+                    <td className="max-w-[8rem] truncate px-2 py-2 text-zinc-800">{row.from}</td>
+                    <td
                       className={cn(
-                        "border-b border-zinc-200",
-                        index % 2 === 0 ? "bg-white" : "bg-zinc-50/80"
+                        "max-w-[8rem] truncate px-2 py-2 font-medium",
+                        row.toIsAirport ? "text-rose-600" : "text-zinc-800"
                       )}
                     >
-                      <td className="truncate px-3 py-2.5">
-                        <button
-                          type="button"
-                          className={cn(
-                            "max-w-full truncate text-left font-semibold underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-900",
-                            b.type === "round-trip"
-                              ? "text-rose-600"
-                              : "text-zinc-900"
-                          )}
-                          onClick={() => openDetail(b.id)}
-                        >
-                          {b.bookingNumber}
-                        </button>
-                      </td>
-                      <td className="px-3 py-2.5 text-zinc-800">
-                        <p className="truncate">{fromArea || "—"}</p>
-                        {fromPlace && fromPlace !== fromArea ? (
-                          <p className="font-normal break-words text-zinc-500">
-                            {fromPlace}
-                          </p>
-                        ) : null}
-                      </td>
-                      <td
+                      {row.to}
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2 tabular-nums text-zinc-800">
+                      {row.whenFull}
+                    </td>
+                    <td className="max-w-[5rem] truncate px-2 py-2 text-zinc-700">{row.flight}</td>
+                    <td className="px-2 py-2 font-semibold text-zinc-800">{row.ctype}</td>
+                    <td className="px-2 py-2 font-semibold text-zinc-800">{row.trip}</td>
+                    <td className="px-2 py-2 text-center font-semibold text-amber-600 tabular-nums">
+                      {row.vd}
+                    </td>
+                    <td className="px-2 py-2 text-center font-semibold text-rose-600 tabular-nums">
+                      {row.vc}
+                    </td>
+                    <td className="px-2 py-2">
+                      <span
                         className={cn(
-                          "px-3 py-2.5 font-medium",
-                          toIsAirport ? "text-rose-600" : "text-zinc-800"
+                          "inline-flex max-w-full items-center gap-1 truncate rounded-full px-1.5 py-0.5 text-[11px] font-medium ring-1",
+                          STATUS_STYLE[detailStatusOf(b)].trigger
                         )}
                       >
-                        {toId ? (
-                          <div className="min-w-0">
-                            <p className="truncate">{toArea || toId}</p>
-                            {toHotel && toHotel !== toArea ? (
-                              <p className="font-normal break-words text-zinc-500">
-                                {toHotel}
-                              </p>
-                            ) : null}
-                          </div>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td className="truncate px-3 py-2.5 text-zinc-800 tabular-nums">
-                        {when}
-                      </td>
-                      <td className="truncate px-3 py-2.5 text-zinc-700">
-                        {b.flightNumber || "—"}
-                      </td>
-                      <td className="px-3 py-2.5 font-semibold text-zinc-800">
-                        {trip}
-                        {b.passengerCount ? (
-                          <p className="font-normal text-zinc-500 tabular-nums">
-                            {t("paxShort", { n: b.passengerCount })}
-                          </p>
-                        ) : null}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <span
-                          className={cn(
-                            "inline-flex max-w-full items-center gap-1 truncate rounded-full px-1.5 py-0.5 font-medium ring-1",
-                            STATUS_STYLE[detailStatusOf(b)].trigger
-                          )}
-                        >
-                          {statusLabel(detailStatusOf(b))}
-                        </span>
-                      </td>
-                      <td className="truncate px-3 py-2.5 text-right font-semibold tabular-nums text-zinc-950">
-                        {money(b.totalPrice)}
-                      </td>
-                      <td className="px-2 py-2.5">
-                        <div className="flex items-center justify-center">
-                          <button
-                            type="button"
-                            className="inline-flex size-5 items-center justify-center rounded bg-emerald-600 text-white sm:size-6"
-                            title={t("manageDetail")}
-                            aria-label={t("manageDetail")}
-                            onClick={() => openDetail(b.id)}
-                          >
-                            <Settings2 className="size-3" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        {statusLabel(detailStatusOf(b))}
+                      </span>
+                    </td>
+                    <td className="px-2 py-2 text-right font-semibold tabular-nums text-zinc-950">
+                      {money(b.totalPrice)}
+                    </td>
+                    <td className="px-0.5 py-2">
+                      <button
+                        type="button"
+                        disabled={!canConfirm || cancelled}
+                        title={t("approveBooking")}
+                        aria-label={t("approveBooking")}
+                        className="inline-flex size-6 items-center justify-center rounded bg-emerald-600 text-white disabled:opacity-30"
+                        onClick={() => approveBooking(b)}
+                      >
+                        <Check className="size-3.5" />
+                      </button>
+                    </td>
+                    <td className="px-0.5 py-2">
+                      <button
+                        type="button"
+                        disabled={cancelled}
+                        title={t("detailCancelled")}
+                        aria-label={t("detailCancelled")}
+                        className="inline-flex size-6 items-center justify-center rounded bg-rose-600 text-white disabled:opacity-30"
+                        onClick={() => setOpsStatus(b.id, "cancelled")}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </td>
+                    <td className="px-0.5 py-2">
+                      <button
+                        type="button"
+                        title={t("editBooking")}
+                        aria-label={t("editBooking")}
+                        className="inline-flex size-6 items-center justify-center rounded bg-amber-400 text-zinc-900"
+                        onClick={() => {
+                          openDetail(b.id);
+                          setEditing(true);
+                        }}
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                    </td>
+                    <td className="px-0.5 py-2 pr-2">
+                      <a
+                        href={`/booking/voucher/?n=${encodeURIComponent(b.bookingNumber)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={t("scheduleActionPrint")}
+                        aria-label={t("scheduleActionPrint")}
+                        className="inline-flex size-6 items-center justify-center rounded bg-rose-500 text-white"
+                      >
+                        <FileText className="size-3.5" />
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
       </div>
 
@@ -1089,6 +1206,32 @@ export function AdminBookingsPage() {
                     <Printer className="size-3.5" />
                     {t("scheduleActionPrint")}
                   </ButtonLink>
+                  {selected.customerPhone?.trim() ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-fit gap-1.5 border-emerald-200 text-emerald-800"
+                      onClick={() => {
+                        const link = voucherUrl(selected.bookingNumber, "th");
+                        const text = [
+                          `Krabi Links Taxi`,
+                          `สวัสดีค่ะ คุณ${selected.customerName}`,
+                          `ลิงก์ใบจอง / e-Voucher: ${selected.bookingNumber}`,
+                          link,
+                        ].join("\n");
+                        window.open(
+                          `${whatsappHref(selected.customerPhone)}?text=${encodeURIComponent(text)}`,
+                          "_blank",
+                          "noopener"
+                        );
+                        toast.success(t("voucherWhatsappOpened"));
+                      }}
+                    >
+                      <MessageCircle className="size-3.5" />
+                      {t("sendVoucherWhatsapp")}
+                    </Button>
+                  ) : null}
                 </div>
               </DialogHeader>
               {!editing &&

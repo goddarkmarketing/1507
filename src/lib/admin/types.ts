@@ -50,6 +50,10 @@ export type AdminBookingPatch = Partial<
     | "customerPhone"
     | "flightNumber"
     | "passengerCount"
+    | "adultCount"
+    | "childCount"
+    | "infantCount"
+    | "carSeatRequested"
     | "notes"
   >
 >;

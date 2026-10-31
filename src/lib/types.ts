@@ -132,13 +132,21 @@ export interface Booking {
   customerPhone: string;
   flightNumber?: string;
   passengerCount?: number;
+  /** Adults — used with child/infant for ops (bags / car seats). */
+  adultCount?: number;
+  /** Children about 2–5 years (or older kids counted as child). */
+  childCount?: number;
+  /** Infants about 0–2 years. */
+  infantCount?: number;
+  /** Customer asked for a child car seat. */
+  carSeatRequested?: boolean;
   notes?: string;
   totalPrice: number;
   /** Staff discount in THB — list price is totalPrice + discountAmount */
   discountAmount?: number;
   /** pending = customer asked for a route that has no tariff yet */
   priceStatus?: "official" | "pending";
-  /** Night driver surcharge (00:00–08:00 pickup), included in totalPrice */
+  /** Night driver surcharge (00:00–05:00 pickup), included in totalPrice */
   serviceCharge?: number;
   /** transfer = pay full total; rental = pay advance deposit online */
   service?: BookingService;

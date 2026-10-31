@@ -109,9 +109,12 @@ export function BookingEditForm({
   const [email, setEmail] = useState(booking.customerEmail ?? "");
   const [phone, setPhone] = useState(booking.customerPhone ?? "");
   const [flight, setFlight] = useState(booking.flightNumber ?? "");
-  const [passengers, setPassengers] = useState(
-    booking.passengerCount ? String(booking.passengerCount) : ""
+  const [adults, setAdults] = useState(
+    String(booking.adultCount ?? (booking.passengerCount || 1))
   );
+  const [children, setChildren] = useState(String(booking.childCount ?? 0));
+  const [infants, setInfants] = useState(String(booking.infantCount ?? 0));
+  const [carSeat, setCarSeat] = useState(Boolean(booking.carSeatRequested));
   const [notes, setNotes] = useState(booking.notes ?? "");
   const [legs, setLegs] = useState<BookingLeg[]>(booking.legs ?? []);
   const [price, setPrice] = useState(
@@ -186,13 +189,19 @@ export function BookingEditForm({
       toast.error(t("editRequired"));
       return null;
     }
-    const count = Number.parseInt(passengers, 10);
+    const adultN = Math.max(1, Number.parseInt(adults, 10) || 1);
+    const childN = Math.max(0, Number.parseInt(children, 10) || 0);
+    const infantN = Math.max(0, Number.parseInt(infants, 10) || 0);
     const patch: AdminBookingPatch = {
       customerName: name.trim(),
       customerEmail: email.trim(),
       customerPhone: phone.trim(),
       flightNumber: flight.trim() || undefined,
-      passengerCount: count > 0 ? count : undefined,
+      adultCount: adultN,
+      childCount: childN || undefined,
+      infantCount: infantN || undefined,
+      passengerCount: adultN + childN + infantN,
+      carSeatRequested: carSeat || undefined,
       notes: notes.trim() || undefined,
       legs: legs.map((leg) => ({
         ...leg,
@@ -325,14 +334,43 @@ export function BookingEditForm({
           <Input value={flight} onChange={(e) => setFlight(e.target.value)} />
         </label>
         <label className={field}>
-          {t("passengerCount")}
+          {t("adultCount")}
           <Input
             type="number"
             inputMode="numeric"
             min={1}
-            value={passengers}
-            onChange={(e) => setPassengers(e.target.value.replace(/\D/g, "").slice(0, 2))}
+            value={adults}
+            onChange={(e) => setAdults(e.target.value.replace(/\D/g, "").slice(0, 2))}
           />
+        </label>
+        <label className={field}>
+          {t("childCount")}
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            value={children}
+            onChange={(e) => setChildren(e.target.value.replace(/\D/g, "").slice(0, 2) || "0")}
+          />
+        </label>
+        <label className={field}>
+          {t("infantCount")}
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            value={infants}
+            onChange={(e) => setInfants(e.target.value.replace(/\D/g, "").slice(0, 2) || "0")}
+          />
+        </label>
+        <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 sm:col-span-2">
+          <input
+            type="checkbox"
+            className="size-4 accent-amber-600"
+            checked={carSeat}
+            onChange={(e) => setCarSeat(e.target.checked)}
+          />
+          {t("carSeatYes")}
         </label>
       </section>
 

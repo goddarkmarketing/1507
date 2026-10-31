@@ -14,9 +14,11 @@ import {
 } from "@/lib/booking/booking-rules";
 
 describe("booking-rules", () => {
-  it("detects night pickup times", () => {
+  it("detects night pickup times (00:00–04:59 only)", () => {
     expect(isNightPickupTime("00:00")).toBe(true);
-    expect(isNightPickupTime("07:59")).toBe(true);
+    expect(isNightPickupTime("04:59")).toBe(true);
+    expect(isNightPickupTime("05:00")).toBe(false);
+    expect(isNightPickupTime("06:00")).toBe(false);
     expect(isNightPickupTime("08:00")).toBe(false);
     expect(isNightPickupTime("22:30")).toBe(false);
   });
@@ -48,10 +50,13 @@ describe("booking-rules", () => {
     expect(isNightClockWindow(new Date("2026-09-07T00:30:00+07:00"))).toBe(
       true
     );
-    expect(isNightClockWindow(new Date("2026-09-07T07:59:00+07:00"))).toBe(
+    expect(isNightClockWindow(new Date("2026-09-07T04:59:00+07:00"))).toBe(
       true
     );
-    expect(isNightClockWindow(new Date("2026-09-07T08:00:00+07:00"))).toBe(
+    expect(isNightClockWindow(new Date("2026-09-07T05:00:00+07:00"))).toBe(
+      false
+    );
+    expect(isNightClockWindow(new Date("2026-09-07T06:00:00+07:00"))).toBe(
       false
     );
     expect(getBangkokHour(new Date("2026-09-07T15:00:00+07:00"))).toBe(15);

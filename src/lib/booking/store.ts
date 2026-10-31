@@ -51,6 +51,10 @@ interface BookingDraft {
   customerPhone: string;
   flightNumber: string;
   passengerCount: string;
+  adultCount: string;
+  childCount: string;
+  infantCount: string;
+  carSeatRequested: boolean;
   notes: string;
   paymentPlan: PaymentPlan | null;
   paymentMethod: PaymentMethod | null;
@@ -74,10 +78,14 @@ interface BookingStore {
       | "customerPhone"
       | "flightNumber"
       | "passengerCount"
+      | "adultCount"
+      | "childCount"
+      | "infantCount"
       | "notes"
     >,
     value: string
   ) => void;
+  setCarSeatRequested: (value: boolean) => void;
   setService: (service: BookingService) => void;
   setRentalPackage: (packageId: string) => void;
   setRentalDays: (days: number) => void;
@@ -124,6 +132,10 @@ const INITIAL_DRAFT: BookingDraft = {
   customerPhone: "",
   flightNumber: "",
   passengerCount: "",
+  adultCount: "1",
+  childCount: "0",
+  infantCount: "0",
+  carSeatRequested: false,
   notes: "",
   paymentPlan: "pay-driver",
   paymentMethod: "cash",
@@ -140,6 +152,25 @@ const INITIAL_DRAFT: BookingDraft = {
 function parsePassengerCount(value: string): number | undefined {
   const count = Number.parseInt(value, 10);
   return Number.isFinite(count) && count > 0 ? count : undefined;
+}
+
+function parseNonNegInt(value: string): number {
+  const n = Number.parseInt(value, 10);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+function bookingPaxFields(draft: BookingDraft) {
+  const adultCount = Math.max(1, parseNonNegInt(draft.adultCount) || 1);
+  const childCount = parseNonNegInt(draft.childCount);
+  const infantCount = parseNonNegInt(draft.infantCount);
+  const total = adultCount + childCount + infantCount;
+  return {
+    passengerCount: total > 0 ? total : parsePassengerCount(draft.passengerCount) ?? adultCount,
+    adultCount,
+    ...(childCount > 0 ? { childCount } : {}),
+    ...(infantCount > 0 ? { infantCount } : {}),
+    ...(draft.carSeatRequested ? { carSeatRequested: true as const } : {}),
+  };
 }
 
 function defaultPickupDate(): string {
@@ -237,6 +268,11 @@ export const useBookingStore = create<BookingStore>()(
       setCustomer: (field, value) =>
         set((state) => ({
           draft: { ...state.draft, [field]: value },
+        })),
+
+      setCarSeatRequested: (value) =>
+        set((state) => ({
+          draft: { ...state.draft, carSeatRequested: value },
         })),
 
       setService: (service) =>
@@ -365,7 +401,8 @@ export const useBookingStore = create<BookingStore>()(
         if (!draft.customerName || !draft.customerEmail || !draft.customerPhone) {
           return null;
         }
-        if (!parsePassengerCount(draft.passengerCount)) {
+        const paxFields = bookingPaxFields(draft);
+        if (!(paxFields.passengerCount > 0)) {
           return null;
         }
         if (!draft.paymentPlan) {
@@ -405,7 +442,7 @@ export const useBookingStore = create<BookingStore>()(
             customerEmail: draft.customerEmail,
             customerPhone: draft.customerPhone,
             flightNumber: draft.flightNumber || undefined,
-            passengerCount: parsePassengerCount(draft.passengerCount),
+            ...paxFields,
             notes: draft.notes || undefined,
             totalPrice: 0,
             priceStatus: "pending",
@@ -528,7 +565,7 @@ export const useBookingStore = create<BookingStore>()(
           customerEmail: draft.customerEmail,
           customerPhone: draft.customerPhone,
           flightNumber: draft.flightNumber || undefined,
-          passengerCount: parsePassengerCount(draft.passengerCount),
+          ...paxFields,
           notes: draft.notes || undefined,
           totalPrice,
           priceStatus: "official",

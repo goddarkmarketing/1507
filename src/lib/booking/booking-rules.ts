@@ -1,7 +1,8 @@
 /** Booking / voucher rules for Krabi Links Taxi (Asia/Bangkok). */
 
 export const BANGKOK_OFFSET = "+07:00";
-export const NIGHT_WINDOW_END_HOUR = 8; // [00:00, 08:00)
+/** Night surcharge window ends at this hour (exclusive). 5 = 00:00–04:59 only. */
+export const NIGHT_WINDOW_END_HOUR = 5;
 export const ADVANCE_BOOKING_HOURS = 24;
 export const NIGHT_DRIVER_SURCHARGE_THB = 200;
 

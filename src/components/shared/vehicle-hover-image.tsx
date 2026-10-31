@@ -16,7 +16,7 @@ export function VehicleHoverImage({
   return (
     <div
       className={cn(
-        "relative aspect-[16/10] shrink-0 overflow-visible rounded-t-xl bg-muted/30",
+        "relative aspect-[16/10] shrink-0 overflow-hidden rounded-t-xl bg-muted/30",
         className
       )}
     >
@@ -26,8 +26,8 @@ export function VehicleHoverImage({
         fill
         unoptimized
         className={cn(
-          "pointer-events-none object-contain object-bottom p-2 pt-0 transition-transform duration-500 ease-out will-change-transform",
-          "sm:group-hover/vehicle:-translate-y-8 sm:group-hover/vehicle:scale-125 sm:group-hover/vehicle:drop-shadow-xl"
+          "pointer-events-none object-cover object-center transition-transform duration-500 ease-out will-change-transform",
+          "sm:group-hover/vehicle:scale-105"
         )}
         sizes={sizes}
       />
