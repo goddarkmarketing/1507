@@ -197,6 +197,13 @@ export function EVoucher({ booking }: EVoucherProps) {
       : booking.payment?.status === "paid"
         ? t("statusPaid")
         : t("statusAwaiting");
+  const discountAmount = Math.max(0, booking.discountAmount ?? 0);
+  const hasDiscount = discountAmount > 0;
+  const nightCharge = Math.max(0, booking.serviceCharge ?? 0);
+  const netPrice = Math.max(0, booking.totalPrice);
+  const listPrice = netPrice + discountAmount;
+  const listTransfer = Math.max(0, listPrice - nightCharge);
+  const baht = (n: number) => `${n.toLocaleString()} THB`;
 
   return (
     <div className="voucher-sheet mx-auto w-full max-w-[297mm] space-y-8 overflow-x-auto px-3 py-6 sm:px-0 sm:py-8 print:max-w-none print:space-y-0 print:overflow-visible print:px-0 print:py-0">
@@ -314,33 +321,38 @@ export function EVoucher({ booking }: EVoucherProps) {
             />
             <Cell label={t("bookingType")} value={typeLabel} />
             <Cell
-              label={t("transferPrice")}
+              label={hasDiscount ? t("listPrice") : t("transferPrice")}
               value={
                 booking.priceStatus === "pending"
                   ? t("quoteBannerTitle")
-                  : `${Math.max(0, booking.totalPrice - (booking.serviceCharge ?? 0)).toLocaleString()} THB`
+                  : baht(hasDiscount ? listTransfer : Math.max(0, netPrice - nightCharge))
               }
             />
+            {hasDiscount && booking.priceStatus !== "pending" ? (
+              <Cell label={t("discountAmount")} value={`− ${baht(discountAmount)}`} />
+            ) : null}
             <Cell
               label={t("otherServicesPrice")}
-              value={
-                booking.serviceCharge
-                  ? `${booking.serviceCharge.toLocaleString()} THB`
-                  : "0 THB"
-              }
+              value={nightCharge ? baht(nightCharge) : "0 THB"}
             />
             <Cell
-              label={t("totalCost")}
+              label={hasDiscount ? t("netTotal") : t("totalCost")}
               value={
                 booking.priceStatus === "pending"
                   ? t("quoteBannerTitle")
-                  : `${booking.totalPrice.toLocaleString()} THB`
+                  : baht(netPrice)
               }
             />
-            <Cell
-              label={t("amountDue")}
-              value={`${amountDue.toLocaleString()} THB`}
-            />
+            {hasDiscount && booking.priceStatus !== "pending" ? (
+              <p className="voucher-note shrink-0 border border-[#e7d7a8] bg-[#fbf6e8] px-1.5 py-1 text-[9px] leading-snug text-neutral-700">
+                {t("discountSummary", {
+                  list: listPrice.toLocaleString(),
+                  discount: discountAmount.toLocaleString(),
+                  net: netPrice.toLocaleString(),
+                })}
+              </p>
+            ) : null}
+            <Cell label={t("amountDue")} value={baht(amountDue)} />
             <p className="voucher-note shrink-0 border border-[#e7d7a8] bg-[#fbf6e8] px-1.5 py-1 text-[9px] leading-snug text-neutral-700">
               {paid ? t("receiptPaidNote") : t("receiptUnpaidNote")}
             </p>
