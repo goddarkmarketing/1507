@@ -1,6 +1,7 @@
 /** Place names as printed on Set 1 (Krabi Airport ↔ 55). */
 export const SET1_PLACE_NAMES: Record<string, { en: string; th: string }> = {
   "kbv-airport": { en: "Krabi Airport", th: "สนามบินกระบี่" },
+  "nuea-khlong": { en: "Nuea Khlong", th: "เหนือคลอง" },
   "krabi-town": { en: "Krabi Town", th: "ตัวเมืองกระบี่" },
   "krabi-bus-terminal": { en: "Krabi Bus Terminal", th: "สถานีขนส่งกระบี่" },
   "chao-fah-pier": { en: "Chao Fah Pier", th: "ท่าเรือเจ้าฟ้า" },
@@ -68,6 +69,19 @@ export function set1RouteLabel(id: string, locale: string): string | null {
   return `${hub[lang]} ↔ ${place[lang]}`;
 }
 
+function placeLabel(id: string, locale: string): string {
+  const sheet = SET1_PLACE_NAMES[id];
+  if (sheet) return locale === "th" ? sheet.th : sheet.en;
+  if (id.startsWith("custom:")) {
+    try {
+      return decodeURIComponent(id.slice("custom:".length));
+    } catch {
+      return id.slice("custom:".length);
+    }
+  }
+  return id;
+}
+
 /** Name shown in the price sheet. A saved admin name wins over the built-in label. */
 export function routeSheetName(
   route: { fromId: string; toId: string; name?: string },
@@ -80,5 +94,5 @@ export function routeSheetName(
   if (route.toId === "kbv-airport") {
     return set1RouteLabel(route.fromId, locale) ?? route.fromId;
   }
-  return `${route.fromId} → ${route.toId}`;
+  return `${placeLabel(route.fromId, locale)} ↔ ${placeLabel(route.toId, locale)}`;
 }

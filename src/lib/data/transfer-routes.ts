@@ -40,6 +40,23 @@ function tariffPrices(
 const set1OfficialRoutes: OfficialTransferRoute[] = [
   {
     "fromId": "kbv-airport",
+    "toId": "nuea-khlong",
+    "distanceKm": 10,
+    "durationMin": 13,
+    "category": "city",
+    "prices": {
+      "ECO": 250,
+      "PREM": 350,
+      "SUV": 350,
+      "VAN": 450,
+      "EXE": 550,
+      "VIP": 2500,
+      "SIG": 2500,
+      "BUS": 2500
+    }
+  },
+  {
+    "fromId": "kbv-airport",
     "toId": "krabi-town",
     "distanceKm": 15,
     "durationMin": 33,

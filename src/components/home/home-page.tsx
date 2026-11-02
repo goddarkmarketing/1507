@@ -121,7 +121,7 @@ export function HomePage() {
               </p>
               <h1 className="mt-4 text-[2rem] font-extrabold leading-none tracking-tight text-zinc-950 sm:text-4xl">
                 {t("startFrom")}{" "}
-                <span className="text-gold-gradient">฿400</span>
+                <span className="text-gold-gradient">฿250</span>
               </h1>
               <p className="mt-3 text-sm leading-relaxed text-zinc-800 sm:text-[15px]">
                 {t("heroBody")}{" "}

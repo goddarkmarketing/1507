@@ -8,6 +8,7 @@ export const locations: Location[] = [
     "type": "airport",
     "province": "Krabi",
     "connections": [
+      "nuea-khlong",
       "krabi-town",
       "krabi-bus-terminal",
       "chao-fah-pier",
@@ -63,6 +64,16 @@ export const locations: Location[] = [
       "hat-yai-bus",
       "hat-yai-town",
       "dan-nok"
+    ]
+  },
+  {
+    "id": "nuea-khlong",
+    "name": "Nuea Khlong",
+    "nameTh": "เหนือคลอง",
+    "type": "city",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
     ]
   },
   {
@@ -844,6 +855,28 @@ export const locations: Location[] = [
     "pricingAreaId": "tubkaak-beach"
   },
   {
+    "id": "chalalai-hotel-krabi",
+    "name": "Chalalai Hotel Krabi",
+    "nameTh": "โรงแรม ชลาลัย กระบี่",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "nuea-khlong"
+  },
+  {
+    "id": "palmari-boutique-hotel",
+    "name": "Palmari Boutique Hotel",
+    "nameTh": "พาลมารี บูติก โฮเทล",
+    "type": "hotel",
+    "province": "Krabi",
+    "connections": [
+      "kbv-airport"
+    ],
+    "pricingAreaId": "nuea-khlong"
+  },
+  {
     "id": "avani-krabi",
     "name": "Avani+ Krabi Resort",
     "nameTh": "อวานี+ กระบี่ รีสอร์ท",
@@ -908,8 +941,33 @@ export const locations: Location[] = [
   }
 ];
 
+/** Admin-created place id — round-trips the display label. */
+export function customPlaceId(label: string): string {
+  return `custom:${encodeURIComponent(label.trim())}`;
+}
+
+export function customPlaceLabel(id: string): string | null {
+  if (!id.startsWith("custom:")) return null;
+  try {
+    return decodeURIComponent(id.slice("custom:".length));
+  } catch {
+    return id.slice("custom:".length);
+  }
+}
+
 export function getLocation(id: string): Location | undefined {
-  return locations.find((l) => l.id === id);
+  const hit = locations.find((l) => l.id === id);
+  if (hit) return hit;
+  const label = customPlaceLabel(id);
+  if (!label) return undefined;
+  return {
+    id,
+    name: label,
+    nameTh: label,
+    type: "city",
+    province: "",
+    connections: [],
+  };
 }
 
 export function getLocationsByType(type: Location["type"]): Location[] {

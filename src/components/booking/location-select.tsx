@@ -9,7 +9,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { locations } from "@/lib/data/locations";
+import { useCatalogStore } from "@/lib/admin/catalog-store";
+import { getLocation, locations } from "@/lib/data/locations";
 import {
   groupLocations,
   type LocationSelectRole,
@@ -17,8 +18,22 @@ import {
 import { bookingSelectTriggerClass } from "@/lib/booking/form-field-styles";
 import { useLocationName } from "@/lib/i18n-labels";
 import { set1RouteLabel } from "@/lib/data/set1-place-names";
+import { getActiveOfficialRoutes } from "@/lib/data/transfer-routes";
 import type { Location, LocationType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+/** Built-in catalog plus admin-created custom tariff places. */
+function placesForSelect(): Location[] {
+  const byId = new Map(locations.map((loc) => [loc.id, loc]));
+  for (const route of getActiveOfficialRoutes()) {
+    for (const id of [route.fromId, route.toId]) {
+      if (byId.has(id)) continue;
+      const loc = getLocation(id);
+      if (loc) byId.set(id, loc);
+    }
+  }
+  return [...byId.values()];
+}
 
 type LocationSelectProps = {
   value: string;
@@ -61,11 +76,19 @@ export function LocationSelect({
     return set1RouteLabel(loc.id, locale) ?? locName(loc);
   };
 
-  const selected = locations.find((loc) => loc.id === value);
+  const transferImportedAt = useCatalogStore((s) => s.transferImportedAt);
+  const catalogReady = useCatalogStore((s) => s.catalogReady);
+  const allPlaces = useMemo(
+    () => placesForSelect(),
+    // Refresh when admin imports/saves transfer tariffs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [transferImportedAt, catalogReady]
+  );
+  const selected = allPlaces.find((loc) => loc.id === value) ?? getLocation(value);
 
   const groups = useMemo(
     () =>
-      groupLocations(locations, role, {
+      groupLocations(allPlaces, role, {
         excludeId,
         pairedId,
         tariffScope,
@@ -75,7 +98,7 @@ export function LocationSelect({
       }),
     // labelOf changes with locale / tariff scope
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [role, excludeId, pairedId, tariffScope, includeHotels, query, locale]
+    [allPlaces, role, excludeId, pairedId, tariffScope, includeHotels, query, locale]
   );
 
   const typeLabel = (type: LocationType) => {
