@@ -1,6 +1,31 @@
 import type { RentalCategory, RentalPackage } from "@/lib/types";
 import { getImportedRentalPackages } from "@/lib/admin/catalog-store";
 
+/** Correct stock photos per package — used when catalog has wrong/shared placeholders. */
+export const RENTAL_STOCK_IMAGES: Record<string, string> = {
+  "toyota-yaris": "/vehicles/toyota/yaris.webp",
+  "toyota-ativ": "/vehicles/toyota/yarisativ.webp",
+  "toyota-yaris-cross": "/vehicles/toyota/yariscross.webp",
+  "toyota-corolla-altis": "/vehicles/toyota/altis.webp",
+  "toyota-camry": "/vehicles/toyota/camry.webp",
+  "toyota-corolla-cross": "/vehicles/toyota/corollacross.webp",
+  "toyota-veloz": "/vehicles/toyota/veloz.webp",
+  "toyota-innova-zenix": "/vehicles/toyota/innovazenix.webp",
+  "toyota-alphard": "/vehicles/toyota/alphard.webp",
+  "toyota-hiace-commuter": "/vehicles/toyota/commuter.webp",
+};
+
+function withStockImage(pkg: RentalPackage): RentalPackage {
+  const stock = RENTAL_STOCK_IMAGES[pkg.id];
+  if (!stock) return pkg;
+  // Keep photos staff uploaded in admin (data URLs / remote uploads).
+  if (pkg.image?.startsWith("data:") || pkg.image?.startsWith("blob:")) return pkg;
+  if (pkg.image?.includes("://") && !pkg.image.includes("/vehicles/toyota/")) {
+    return pkg;
+  }
+  return { ...pkg, image: stock };
+}
+
 /** Car rental packages — daily rates (THB) by rental duration */
 export const rentalPackages: RentalPackage[] = [
   {
@@ -13,7 +38,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 1,
     doors: 4,
     rates: { days1to3: 1000, days4to6: 900, days7to20: 800, days21to30: 700 },
-    image: "/vehicles/toyota/altis.webp",
+    image: RENTAL_STOCK_IMAGES["toyota-yaris"],
   },
   {
     id: "toyota-ativ",
@@ -25,7 +50,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 1,
     doors: 4,
     rates: { days1to3: 1000, days4to6: 900, days7to20: 800, days21to30: 700 },
-    image: "/vehicles/toyota/altis.webp",
+    image: RENTAL_STOCK_IMAGES["toyota-ativ"],
   },
   {
     id: "toyota-yaris-cross",
@@ -37,7 +62,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 1,
     doors: 4,
     rates: { days1to3: 1200, days4to6: 1100, days7to20: 900, days21to30: 800 },
-    image: "/vehicles/toyota/fortuner.webp",
+    image: RENTAL_STOCK_IMAGES["toyota-yaris-cross"],
   },
   {
     id: "toyota-corolla-altis",
@@ -49,7 +74,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 1,
     doors: 4,
     rates: { days1to3: 1200, days4to6: 1100, days7to20: 900, days21to30: 800 },
-    image: "/vehicles/toyota/altis.webp",
+    image: RENTAL_STOCK_IMAGES["toyota-corolla-altis"],
   },
   {
     id: "toyota-camry",
@@ -61,7 +86,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 2,
     doors: 4,
     rates: { days1to3: 1100, days4to6: 1000, days7to20: 800, days21to30: 750 },
-    image: "/vehicles/toyota/camry.webp",
+    image: RENTAL_STOCK_IMAGES["toyota-camry"],
   },
   {
     id: "toyota-corolla-cross",
@@ -73,7 +98,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 2,
     doors: 4,
     rates: { days1to3: 1400, days4to6: 1300, days7to20: 1200, days21to30: 950 },
-    image: "/vehicles/toyota/fortuner.webp",
+    image: RENTAL_STOCK_IMAGES["toyota-corolla-cross"],
   },
   {
     id: "toyota-veloz",
@@ -85,7 +110,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 2,
     doors: 4,
     rates: { days1to3: 1500, days4to6: 1400, days7to20: 1300, days21to30: 1200 },
-    image: "/vehicles/toyota/hiace.webp",
+    image: RENTAL_STOCK_IMAGES["toyota-veloz"],
   },
   {
     id: "toyota-innova-zenix",
@@ -97,7 +122,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 2,
     doors: 4,
     rates: { days1to3: 1500, days4to6: 1400, days7to20: 1300, days21to30: 1200 },
-    image: "/vehicles/toyota/hiace.webp",
+    image: RENTAL_STOCK_IMAGES["toyota-innova-zenix"],
   },
   {
     id: "toyota-alphard",
@@ -109,7 +134,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 2,
     doors: 4,
     rates: { days1to3: 2000, days4to6: 1900, days7to20: 1700, days21to30: 1550 },
-    image: "/vehicles/toyota/alphard.webp",
+    image: RENTAL_STOCK_IMAGES["toyota-alphard"],
   },
   {
     id: "toyota-hiace-commuter",
@@ -121,7 +146,7 @@ export const rentalPackages: RentalPackage[] = [
     largeBags: 4,
     doors: 4,
     rates: { days1to3: null, days4to6: null, days7to20: null, days21to30: null },
-    image: "/vehicles/toyota/commuter.webp",
+    image: RENTAL_STOCK_IMAGES["toyota-hiace-commuter"],
   },
 ];
 
@@ -140,7 +165,8 @@ export const rentalCategories: RentalCategory[] = [
 ];
 
 export function getActiveRentalPackages(): RentalPackage[] {
-  return getImportedRentalPackages() ?? rentalPackages;
+  const rows = getImportedRentalPackages() ?? rentalPackages;
+  return rows.map(withStockImage);
 }
 
 export function getRentalPackage(id: string): RentalPackage | undefined {

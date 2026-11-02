@@ -186,7 +186,10 @@ export function mergeRentalPackages(
       rows[index] = { ...pkg, id: current.id, image: pkg.image || current.image };
       updated += 1;
     } else {
-      rows.push({ ...pkg, image: pkg.image || "/vehicles/toyota/altis.webp" });
+      rows.push({
+        ...pkg,
+        image: pkg.image || "/vehicles/toyota/yaris.webp",
+      });
       added += 1;
     }
   }

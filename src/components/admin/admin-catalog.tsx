@@ -57,7 +57,7 @@ export function AdminCatalogPage() {
   const rentalInput = useRef<HTMLInputElement>(null);
   const transferInput = useRef<HTMLInputElement>(null);
   const rentalRev = useCatalogStore((s) => s.rentalImportedAt);
-  const activeRentals = rentalRev ? getActiveRentalPackages() : builtInRentals;
+  const activeRentals = getActiveRentalPackages();
   const [addOpen, setAddOpen] = useState(false);
   const [draftName, setDraftName] = useState("");
   const [draftCategory, setDraftCategory] = useState<RentalCategory>("Economy");
