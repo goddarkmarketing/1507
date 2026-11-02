@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn, assetPath } from "@/lib/utils";
 
 /** Synced from /รีวิว — update count when folder changes */
-const REVIEW_COUNT = 76;
+const REVIEW_COUNT = 86;
 const reviewImages = Array.from(
   { length: REVIEW_COUNT },
   (_, i) => assetPath(`/reviews/review-${i + 1}.jpg`)
