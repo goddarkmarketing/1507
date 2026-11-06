@@ -20,8 +20,12 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.tagline,
+  verification: {
+    google: "khsxoSvo5nPH25peUM_ql0ly7gzy3B4cXjAVWK557qs",
+  },
   icons: {
-    icon: "/favicon.png",
+    icon: [{ url: "/favicon.png", type: "image/png", sizes: "48x48" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
   },
 };
 
