@@ -93,8 +93,8 @@ const bookingTypeValues: BookingType[] = [
   "hourly-charter",
 ];
 
-type WizardStep = 1 | 2 | 3;
-const WIZARD_STEPS = 3;
+type WizardStep = 1 | 2;
+const WIZARD_STEPS = 2;
 
 export function BookingForm() {
   const t = useTranslations("Booking");
@@ -239,7 +239,12 @@ export function BookingForm() {
   const handleConfirm = async () => {
     if (!draft.customerName || !draft.customerEmail || !draft.customerPhone) {
       toast.error(t("toastCustomer"));
-      setStep(2);
+      setStep(1);
+      return;
+    }
+    if (!(Number.parseInt(draft.adultCount, 10) > 0)) {
+      toast.error(t("toastPassengerCount"));
+      setStep(1);
       return;
     }
     if (!validatePickupTimes()) {
@@ -366,8 +371,9 @@ export function BookingForm() {
   };
 
   const goNext = () => {
-    if (step === 1 && !validateTripStep()) return;
-    if (step === 2 && !validateCustomerStep()) return;
+    if (step === 1) {
+      if (!validateTripStep() || !validateCustomerStep()) return;
+    }
     if (step < WIZARD_STEPS) {
       setStep((s) => (s + 1) as WizardStep);
       if (typeof window !== "undefined") {
@@ -385,11 +391,7 @@ export function BookingForm() {
     }
   };
 
-  const stepLabels = [
-    t("wizardStepTrip"),
-    t("wizardStepCustomer"),
-    t("wizardStepPayment"),
-  ] as const;
+  const stepLabels = [t("wizardStepDetails"), t("wizardStepPayment")] as const;
 
   const needsQuote =
     !isRentalBooking &&
@@ -801,10 +803,6 @@ export function BookingForm() {
             </Card>
           ))}
         </div>
-          </>
-        )}
-
-        {step === 2 && (
         <Card size="sm">
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">{t("customerTitle")}</CardTitle>
@@ -959,9 +957,10 @@ export function BookingForm() {
             </div>
           </CardContent>
         </Card>
+          </>
         )}
 
-        {step === 3 && needsQuote && (
+        {step === 2 && needsQuote && (
           <Card size="sm">
             <CardHeader className="gap-1">
               <CardTitle className="text-base sm:text-lg">{t("quoteTitle")}</CardTitle>
@@ -979,7 +978,7 @@ export function BookingForm() {
           </Card>
         )}
 
-        {step === 3 && !needsQuote && (
+        {step === 2 && !needsQuote && (
         <Card size="sm">
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">{t("paymentTitle")}</CardTitle>
