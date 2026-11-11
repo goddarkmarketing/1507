@@ -106,7 +106,7 @@ export const articleBodies: Record<
         },
         {
           type: "p",
-          text: "อ่านเพิ่มเติมเกี่ยวกับภาพรวมการรับที่สนามบินได้ที่บทความ [คู่มือรับส่งสนามบินกระบี่](/articles/krabi-airport-transfer-guide) และดูบริการ [รับส่งสนามบิน](/airport-transfer) โดยตรง หากต้องการราคาเส้นทางอื่น เปิด [ตารางราคา](/price-list) หรือใช้ฟอร์มเช็คราคาบนหน้าแรกได้ทันที ข้อมูลท่องเที่ยวกระบี่เพิ่มเติมดูได้จาก [การท่องเที่ยวแห่งประเทศไทย](https://www.tourismthailand.org/Destinations/Provinces/Krabi/219)",
+          text: "อ่านเพิ่มเติมและจองบริการได้ที่หน้า [รับส่งสนามบิน](/airport-transfer) หากต้องการราคาเส้นทางอื่น เปิด [ตารางราคา](/price-list) หรือใช้ฟอร์มเช็คราคาบนหน้าแรกได้ทันที ข้อมูลท่องเที่ยวกระบี่เพิ่มเติมดูได้จาก [การท่องเที่ยวแห่งประเทศไทย](https://www.tourismthailand.org/Destinations/Provinces/Krabi/219)",
         },
         {
           type: "h2",
@@ -224,7 +224,7 @@ export const articleBodies: Record<
         },
         {
           type: "p",
-          text: "For a broader airport arrival checklist, read our [Krabi Airport Transfer Guide](/articles/krabi-airport-transfer-guide). Airport transfer services are listed under [Airport Transfer](/airport-transfer). For other routes, use the [price list](/price-list) or the homepage price checker. Destination background: [Tourism Authority of Thailand – Krabi](https://www.tourismthailand.org/Destinations/Provinces/Krabi/219).",
+          text: "For airport arrival details and booking, open [Airport Transfer](/airport-transfer). For other routes, use the [price list](/price-list) or the homepage price checker. Destination background: [Tourism Authority of Thailand – Krabi](https://www.tourismthailand.org/Destinations/Provinces/Krabi/219).",
         },
         {
           type: "h2",
@@ -301,7 +301,7 @@ export const articleBodies: Record<
         },
         {
           type: "p",
-          text: "更多机场到达说明可阅读 [甲米机场接送指南](/articles/krabi-airport-transfer-guide)。也可打开 [机场接送](/airport-transfer) 或 [价格表](/price-list)。准备好后前往 [预订页](/booking)。",
+          text: "更多机场到达说明与预订请见 [机场接送](/airport-transfer)。也可打开 [价格表](/price-list)。准备好后前往 [预订页](/booking)。",
         },
       ],
       faqs: [
@@ -395,7 +395,7 @@ export const articleBodies: Record<
         },
         {
           type: "p",
-          text: "ดูบริการรับส่งข้ามพื้นที่เพิ่มในหน้า [รับส่งข้ามจังหวัด](/inter-province-transfer) และเปรียบเทียบเส้นทางใกล้ชายหาดใน [รับส่งชายหาด](/beach-transfer) หากมาจากสนามบิน แนะนำอ่าน [คู่มือรับส่งสนามบินกระบี่](/articles/krabi-airport-transfer-guide) ก่อนเพื่อรู้จุดพบคนขับ",
+          text: "ดูบริการรับส่งข้ามพื้นที่เพิ่มในหน้า [รับส่งข้ามจังหวัด](/inter-province-transfer) และเปรียบเทียบเส้นทางใกล้ชายหาดใน [รับส่งชายหาด](/beach-transfer) หากมาจากสนามบิน แนะนำอ่าน [รับส่งสนามบิน](/airport-transfer) ก่อนเพื่อรู้จุดพบคนขับ",
         },
         {
           type: "h2",
@@ -501,7 +501,7 @@ export const articleBodies: Record<
         },
         {
           type: "p",
-          text: "See [inter-province transfer](/inter-province-transfer) for longer corridor options, and [beach transfer](/beach-transfer) for coastal routes. If you start at KBV, read the [Krabi Airport Transfer Guide](/articles/krabi-airport-transfer-guide) for meeting-point basics.",
+          text: "See [inter-province transfer](/inter-province-transfer) for longer corridor options, and [beach transfer](/beach-transfer) for coastal routes. If you start at KBV, read the [Airport Transfer](/airport-transfer) for meeting-point basics.",
         },
         {
           type: "h2",
@@ -570,7 +570,7 @@ export const articleBodies: Record<
         },
         {
           type: "p",
-          text: "更多跨区域线路见跨府接送页面；从机场出发可先阅读甲米机场接送指南。",
+          text: "更多跨区域线路见 [跨府接送](/inter-province-transfer)；从机场出发可先打开 [机场接送](/airport-transfer)。",
         },
       ],
       faqs: [
@@ -930,7 +930,7 @@ export const articleBodies: Record<
         },
         {
           type: "p",
-          text: "สำหรับภาพรวมการรับที่ KBV อ่าน [คู่มือรับส่งสนามบินกระบี่](/articles/krabi-airport-transfer-guide) หากไปอ่าวนางโดยเฉพาะ ดูบทความ [แท็กซี่สนามบินกระบี่ไปอ่าวนาง](/articles/krabi-airport-to-ao-nang-taxi) และเปิดหน้า [รับส่งสนามบิน](/airport-transfer) เพื่อเข้าสู่บริการโดยตรง เมื่อพร้อมแล้วจองผ่าน [หน้าจอง](/booking) โดยเลือกเวลาให้ตรงไฟลต์",
+          text: "สำหรับภาพรวมการรับที่ KBV เปิดหน้า [รับส่งสนามบิน](/airport-transfer) หากไปอ่าวนางโดยเฉพาะ ดูบทความ [แท็กซี่สนามบินกระบี่ไปอ่าวนาง](/articles/krabi-airport-to-ao-nang-taxi) เมื่อพร้อมแล้วจองผ่าน [หน้าจอง](/booking) โดยเลือกเวลาให้ตรงไฟลต์",
         },
         {
           type: "h2",
@@ -1032,7 +1032,7 @@ export const articleBodies: Record<
         },
         {
           type: "p",
-          text: "Read the [Krabi Airport Transfer Guide](/articles/krabi-airport-transfer-guide) for arrival basics, and the [Krabi Airport to Ao Nang taxi](/articles/krabi-airport-to-ao-nang-taxi) article for that route. Services are listed under [Airport Transfer](/airport-transfer). Book from the [booking page](/booking) with the correct pickup clock time.",
+          text: "See [Airport Transfer](/airport-transfer) for arrival basics, and the [Krabi Airport to Ao Nang taxi](/articles/krabi-airport-to-ao-nang-taxi) article for that route. Book from the [booking page](/booking) with the correct pickup clock time.",
         },
         {
           type: "h2",
@@ -1101,7 +1101,7 @@ export const articleBodies: Record<
         },
         {
           type: "p",
-          text: "可先阅读甲米机场接送指南；去奥南可参考甲米机场到奥南打车一文。",
+          text: "可先打开 [机场接送](/airport-transfer)；去奥南可参考 [甲米机场到奥南打车](/articles/krabi-airport-to-ao-nang-taxi)。",
         },
       ],
       faqs: [
