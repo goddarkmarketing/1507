@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { PublicImage } from "@/components/shared/public-image";
 import { Link } from "@/i18n/navigation";
 import { hasLocale } from "next-intl";
@@ -13,16 +14,53 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  ArticleBlocks,
+  ArticleFaqSection,
+} from "@/components/articles/article-body";
+import {
   articles,
   getArticle,
   getRelatedArticles,
 } from "@/lib/data/articles";
+import { getArticleBody } from "@/lib/data/article-bodies";
 import { getArticleCopy } from "@/lib/article-i18n-server";
 import { routing } from "@/i18n/routing";
 import { getDateLocale } from "@/i18n/locales";
+import { siteConfig } from "@/lib/site-config";
 
 export function generateStaticParams() {
   return articles.map((article) => ({ slug: article.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const article = getArticle(slug);
+  if (!article) return {};
+
+  const body = getArticleBody(slug, locale);
+  const title = body?.metaTitle ?? body?.title ?? article.title;
+  const description =
+    body?.metaDescription ?? body?.excerpt ?? article.excerpt;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      images: [{ url: article.coverImage }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
 }
 
 export default async function ArticleDetailPage({
@@ -38,28 +76,77 @@ export default async function ArticleDetailPage({
   if (!raw) notFound();
 
   const t = await getTranslations("Listing");
+  const tHome = await getTranslations("Home");
   const { localize } = await getArticleCopy();
   const article = localize(raw);
   const related = getRelatedArticles(article.slug, 3).map(localize);
 
   const dateLocale = getDateLocale(locale);
+  const coverAlt = article.coverImageAlt || article.title;
+  const faqs = article.faqs ?? [];
+
+  const faqJsonLd =
+    faqs.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"),
+            },
+          })),
+        }
+      : null;
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.metaDescription ?? article.excerpt,
+    datePublished: article.publishedAt,
+    image: `https://${siteConfig.domain}${article.coverImage}`,
+    author: {
+      "@type": "Organization",
+      name: siteConfig.name,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+    },
+  };
 
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      {faqJsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      ) : null}
+
       <section className="border-b bg-zinc-50">
         <div className="mx-auto max-w-7xl px-4 py-10 text-left sm:px-6 lg:px-8">
-          <Link
-            href="/articles"
-            className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="size-3.5" />
-            {t("allArticles")}
-          </Link>
-          <Badge variant="outline">{article.categoryLabel}</Badge>
-          <h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <Link
+              href="/articles"
+              className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="size-3.5" />
+              {t("allArticles")}
+            </Link>
+            <Badge variant="outline">{article.categoryLabel}</Badge>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
             {article.title}
           </h1>
-          <p className="mt-4 max-w-3xl text-lg text-muted-foreground">
+          <p className="mt-4 text-lg text-muted-foreground">
             {article.excerpt}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -83,7 +170,7 @@ export default async function ArticleDetailPage({
           <div className="relative mb-8 aspect-[16/9] overflow-hidden rounded-2xl bg-muted/40">
             <PublicImage
               src={article.coverImage}
-              alt=""
+              alt={coverAlt}
               fill
               unoptimized
               className="object-cover"
@@ -92,11 +179,19 @@ export default async function ArticleDetailPage({
             />
           </div>
 
-          <div className="space-y-5 text-base leading-relaxed text-foreground/90">
-            {article.paragraphs.map((paragraph, index) => (
-              <p key={`${article.slug}-p${index}`}>{paragraph}</p>
-            ))}
-          </div>
+          {article.blocks && article.blocks.length > 0 ? (
+            <ArticleBlocks blocks={article.blocks} />
+          ) : (
+            <div className="space-y-5 text-base leading-relaxed text-foreground/90">
+              {article.paragraphs.map((paragraph, index) => (
+                <p key={`${article.slug}-p${index}`}>{paragraph}</p>
+              ))}
+            </div>
+          )}
+
+          {faqs.length > 0 ? (
+            <ArticleFaqSection faqs={faqs} title={tHome("faqTitle")} />
+          ) : null}
 
           <div className="mt-10 rounded-2xl bg-gold-gradient px-6 py-8 text-primary-foreground shadow-lg shadow-amber-500/20">
             <h2 className="text-xl font-bold">{t("bookRoute")}</h2>
@@ -124,7 +219,7 @@ export default async function ArticleDetailPage({
                       <div className="relative w-28 shrink-0 bg-muted/40 sm:w-32">
                         <PublicImage
                           src={item.coverImage}
-                          alt=""
+                          alt={item.coverImageAlt || item.title}
                           fill
                           unoptimized
                           className="object-cover transition-transform duration-300 group-hover:scale-105"

@@ -186,6 +186,18 @@ export interface Policy {
   content: string;
 }
 
+export type ArticleBlock =
+  | { type: "p"; text: string }
+  | { type: "h2"; text: string }
+  | { type: "h3"; text: string }
+  | { type: "ul"; items: string[] }
+  | { type: "ol"; items: string[] };
+
+export interface ArticleFaq {
+  question: string;
+  answer: string;
+}
+
 export interface Article {
   slug: string;
   title: string;
@@ -195,6 +207,13 @@ export interface Article {
   publishedAt: string;
   readMinutes: number;
   content: string[];
+  /** SEO title override (falls back to title). */
+  metaTitle?: string;
+  metaDescription?: string;
+  coverImageAlt?: string;
+  /** Rich body for SEO articles; falls back to content[] paragraphs. */
+  blocks?: ArticleBlock[];
+  faqs?: ArticleFaq[];
 }
 
 export type TourCategory =
