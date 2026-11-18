@@ -300,4 +300,32 @@ describe("admin store workflows", () => {
     expect(deposits.advanceDeposit).toBe(700);
     expect(deposits.smallCarDeposit).toBe(3500);
   });
+
+  it("can upgrade a one-way booking to round-trip via updateBooking", () => {
+    const oneWay = useAdminStore.getState().bookings.find((b) => b.type === "one-way");
+    expect(oneWay).toBeTruthy();
+    const outbound = oneWay!.legs[0];
+    const returnLeg = {
+      ...outbound,
+      id: "leg-return-test",
+      fromId: outbound.toId,
+      toId: outbound.fromId,
+      time: "14:00",
+      price: outbound.price,
+    };
+
+    useAdminStore.getState().updateBooking(oneWay!.id, {
+      type: "round-trip",
+      legs: [outbound, returnLeg],
+      totalPrice: outbound.price * 2,
+    });
+
+    const updated = useAdminStore
+      .getState()
+      .bookings.find((b) => b.id === oneWay!.id);
+    expect(updated?.type).toBe("round-trip");
+    expect(updated?.legs).toHaveLength(2);
+    expect(updated?.legs[1].fromId).toBe(outbound.toId);
+    expect(updated?.totalPrice).toBe(outbound.price * 2);
+  });
 });

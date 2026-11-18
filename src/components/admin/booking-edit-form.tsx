@@ -15,7 +15,11 @@ import { LocationSelect } from "@/components/booking/location-select";
 import { useAdminStore } from "@/lib/admin/store";
 import type { AdminBooking, AdminBookingPatch } from "@/lib/admin/types";
 import { legsAtTariff, tariffTotal } from "@/lib/booking/admin-price";
-import { getNightDriverSurcharge } from "@/lib/booking/booking-rules";
+import {
+  getNightDriverSurcharge,
+  legPickupInstant,
+} from "@/lib/booking/booking-rules";
+import { createReturnLegFromOutbound } from "@/lib/booking/return-leg";
 import {
   isBookingRemoteEnabled,
   statusUrl,
@@ -26,7 +30,7 @@ import { getBankAccounts, getPromptPay } from "@/lib/data/payment";
 import { getLocation } from "@/lib/data/locations";
 import { tariffVehicleCodes } from "@/lib/data/vehicles";
 import { useLocationName } from "@/lib/i18n-labels";
-import type { BookingLeg, VehicleCode } from "@/lib/types";
+import type { BookingLeg, BookingType, VehicleCode } from "@/lib/types";
 
 function isCashBooking(booking: AdminBooking) {
   return booking.paymentPlan === "pay-driver" || booking.payment?.method === "cash";
@@ -116,6 +120,7 @@ export function BookingEditForm({
   const [infants, setInfants] = useState(String(booking.infantCount ?? 0));
   const [carSeat, setCarSeat] = useState(Boolean(booking.carSeatRequested));
   const [notes, setNotes] = useState(booking.notes ?? "");
+  const [bookingType, setBookingType] = useState<BookingType>(booking.type);
   const [legs, setLegs] = useState<BookingLeg[]>(booking.legs ?? []);
   const [price, setPrice] = useState(
     String((booking.totalPrice ?? 0) + (booking.discountAmount ?? 0))
@@ -153,13 +158,28 @@ export function BookingEditForm({
     [listPrice, discountAmount, netPrice, depositAmount, balanceAfterDeposit]
   );
 
-  const reprice = (next: BookingLeg[], changedTariff: boolean) => {
+  const canConvertToRoundTrip =
+    priceEditable &&
+    booking.service !== "rental" &&
+    (bookingType === "one-way" ||
+      (bookingType === "round-trip" && legs.length === 1));
+  const canRemoveReturn =
+    priceEditable &&
+    booking.service !== "rental" &&
+    bookingType === "round-trip" &&
+    legs.length > 1;
+
+  const reprice = (
+    next: BookingLeg[],
+    type: BookingType,
+    changedTariff: boolean
+  ) => {
     if (!changedTariff || !priceEditable) {
       setLegs(next);
       return;
     }
-    const total = tariffTotal(booking.type, booking.service, next);
-    const priced = total == null ? null : legsAtTariff(booking.type, booking.service, next);
+    const total = tariffTotal(type, booking.service, next);
+    const priced = total == null ? null : legsAtTariff(type, booking.service, next);
     if (total == null || !priced) {
       setLegs(next);
       setPriceNote("missing");
@@ -171,13 +191,50 @@ export function BookingEditForm({
   };
 
   const updateLeg = (id: string, patch: Partial<BookingLeg>) => {
-    const next = legs.map((leg) => (leg.id === id ? { ...leg, ...patch } : leg));
+    const index = legs.findIndex((leg) => leg.id === id);
+    let next = legs.map((leg) => (leg.id === id ? { ...leg, ...patch } : leg));
+
+    // Keep the return route mirrored when editing the outbound leg.
+    if (bookingType === "round-trip" && index === 0 && next[1]) {
+      const back = next[1];
+      const mirrored: Partial<BookingLeg> = {};
+      if (patch.fromId !== undefined) mirrored.toId = patch.fromId;
+      if (patch.toId !== undefined) mirrored.fromId = patch.toId;
+      if (patch.pickupPlace !== undefined) mirrored.hotelName = patch.pickupPlace;
+      if (patch.hotelName !== undefined) mirrored.pickupPlace = patch.hotelName;
+      if (patch.vehicleCode !== undefined) mirrored.vehicleCode = patch.vehicleCode;
+      if (Object.keys(mirrored).length) {
+        next = next.map((leg, i) => (i === 1 ? { ...back, ...mirrored } : leg));
+      }
+    }
+
     const changedTariff =
       patch.vehicleCode !== undefined ||
       patch.time !== undefined ||
       patch.fromId !== undefined ||
       patch.toId !== undefined;
-    reprice(next, changedTariff);
+    reprice(next, bookingType, changedTariff);
+  };
+
+  const addReturnTrip = () => {
+    const outbound = legs[0];
+    if (!outbound?.fromId || !outbound?.toId) {
+      toast.error(t("editRequired"));
+      return;
+    }
+    const nextType: BookingType = "round-trip";
+    const next = [outbound, createReturnLegFromOutbound(outbound)];
+    setBookingType(nextType);
+    reprice(next, nextType, true);
+  };
+
+  const removeReturnTrip = () => {
+    const outbound = legs[0];
+    if (!outbound) return;
+    const nextType: BookingType = "one-way";
+    const next = [outbound];
+    setBookingType(nextType);
+    reprice(next, nextType, true);
   };
 
   const buildPatch = (): AdminBookingPatch | null => {
@@ -188,6 +245,18 @@ export function BookingEditForm({
     if (legs.some((leg) => !leg.date || !leg.time)) {
       toast.error(t("editRequired"));
       return null;
+    }
+    if (bookingType === "round-trip" && legs.length >= 2) {
+      const outboundAt = legPickupInstant(legs[0].date, legs[0].time);
+      const returnAt = legPickupInstant(legs[1].date, legs[1].time);
+      if (
+        outboundAt &&
+        returnAt &&
+        returnAt.getTime() < outboundAt.getTime()
+      ) {
+        toast.error(t("editReturnBeforeOutbound"));
+        return null;
+      }
     }
     const adultN = Math.max(1, Number.parseInt(adults, 10) || 1);
     const childN = Math.max(0, Number.parseInt(children, 10) || 0);
@@ -203,6 +272,7 @@ export function BookingEditForm({
       passengerCount: adultN + childN + infantN,
       carSeatRequested: carSeat || undefined,
       notes: notes.trim() || undefined,
+      type: bookingType,
       legs: legs.map((leg) => ({
         ...leg,
         pickupPlace: leg.pickupPlace?.trim() || undefined,
@@ -377,7 +447,11 @@ export function BookingEditForm({
       {legs.map((leg, index) => (
         <section key={leg.id} className="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3">
           <p className="text-xs font-semibold text-zinc-700">
-            {legs.length > 1 ? `${index + 1}. ` : ""}
+            {bookingType === "round-trip" && legs.length > 1
+              ? `${index === 0 ? t("editOutboundLeg") : t("editReturnLeg")} · `
+              : legs.length > 1
+                ? `${index + 1}. `
+                : ""}
             {locName(getLocation(leg.fromId))} → {locName(getLocation(leg.toId))}
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -440,6 +514,32 @@ export function BookingEditForm({
           </div>
         </section>
       ))}
+
+      {canConvertToRoundTrip || canRemoveReturn ? (
+        <section className="space-y-2 rounded-xl border border-rose-200 bg-rose-50/60 p-3">
+          <p className="text-xs leading-relaxed text-rose-900">{t("editRoundTripHint")}</p>
+          {canConvertToRoundTrip ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-rose-300 bg-white text-rose-900 hover:bg-rose-50"
+              onClick={addReturnTrip}
+            >
+              {t("editAddReturn")}
+            </Button>
+          ) : null}
+          {canRemoveReturn ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-zinc-300 bg-white"
+              onClick={removeReturnTrip}
+            >
+              {t("editRemoveReturn")}
+            </Button>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3">
         <div className="grid gap-3 sm:grid-cols-2">

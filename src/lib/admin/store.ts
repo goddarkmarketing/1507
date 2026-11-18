@@ -197,6 +197,7 @@ export const useAdminStore = create<AdminState>()(
             patch.serviceCharge !== undefined ||
             patch.priceStatus !== undefined ||
             patch.legs !== undefined ||
+            patch.type !== undefined ||
             patch.amountDueNow !== undefined ||
             patch.balanceDue !== undefined ||
             "customerName" in patch ||

@@ -41,6 +41,7 @@ export type AdminBookingPatch = Partial<
     | "discountAmount"
     | "serviceCharge"
     | "priceStatus"
+    | "type"
     | "legs"
     | "amountDueNow"
     | "balanceDue"

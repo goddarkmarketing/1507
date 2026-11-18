@@ -1478,6 +1478,13 @@
     "editNotifyWhatsapp": "Open WhatsApp with an update message",
     "editRequired": "Please fill in name, phone, date and time",
     "editBadPrice": "Invalid price",
+    "editAddReturn": "Add return trip (round-trip)",
+    "editRemoveReturn": "Remove return · keep one-way",
+    "editOutboundLeg": "Outbound",
+    "editReturnLeg": "Return",
+    "editReturnBeforeOutbound": "Return date/time must be after the outbound trip",
+    "editRoundTripHint": "Add a return leg on this booking when a one-way customer also wants the way back",
+
     "payment": "Payment",
     "paymentPaid": "Paid",
     "paymentAwaiting": "Awaiting verification",
