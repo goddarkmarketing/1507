@@ -41,4 +41,12 @@ describe("official Set 1 tariff prices", () => {
     const quote = calculatePrice("krabi-town", "emerald-pool", "ECO");
     expect(quote.isOfficial).toBe(false);
   });
+
+  it("keeps matrix distance but treats blank Excel fares as quote-pending", () => {
+    // A non-airport matrix pair that has no fare in the latest sheet.
+    const quote = calculatePrice("krabi-town", "patong-beach", "ECO");
+    expect(quote.distanceKm).toBeGreaterThan(0);
+    expect(quote.isOfficial).toBe(false);
+    expect(quote.totalPrice).toBe(0);
+  });
 });

@@ -1,7 +1,10 @@
 import { getLocation } from "@/lib/data/locations";
+import { getImportedTransferRoutes } from "@/lib/admin/catalog-store";
 import {
-  getActiveOfficialRoutes,
   getOfficialRoute,
+  officialTransferRoutes,
+  routeHasPositiveFare,
+  type OfficialTransferRoute,
 } from "@/lib/data/transfer-routes";
 import { getVehicle } from "@/lib/data/vehicles";
 import type { RoutePrice, TransferCategory, VehicleCode } from "@/lib/types";
@@ -80,15 +83,29 @@ export function calculatePrice(
   const priceToId = pricingLocationId(toId);
   const official = getOfficialRoute(priceFromId, priceToId);
   if (official) {
+    const fare = official.prices[vehicleCode] ?? 0;
+    // Matrix rows with blank Excel prices stay bookable, but fare is admin-quoted.
+    if (routeHasPositiveFare(official, vehicleCode)) {
+      return {
+        fromId,
+        toId,
+        basePrice: official.prices.ECO,
+        durationMin: official.durationMin,
+        distanceKm: official.distanceKm,
+        category: official.category,
+        totalPrice: fare,
+        isOfficial: true,
+      };
+    }
     return {
       fromId,
       toId,
-      basePrice: official.prices.ECO,
+      basePrice: 0,
       durationMin: official.durationMin,
       distanceKm: official.distanceKm,
       category: official.category,
-      totalPrice: official.prices[vehicleCode],
-      isOfficial: true,
+      totalPrice: 0,
+      isOfficial: false,
     };
   }
 
@@ -109,16 +126,33 @@ export function calculatePrice(
   };
 }
 
-/** Customer-facing sell prices — only locked official tariff rows. */
+/**
+ * Full Excel matrix in sheet order (incl. blank fares → “on request”).
+ * Admin CSV imports overlay matching pairs without dropping unpriced rows.
+ */
 export function getSampleRoutes(): RoutePrice[] {
-  return getActiveOfficialRoutes().map((route) => ({
-    fromId: route.fromId,
-    toId: route.toId,
-    basePrice: route.prices.ECO,
-    durationMin: route.durationMin,
-    distanceKm: route.distanceKm,
-    category: route.category,
-  }));
+  const imported = getImportedTransferRoutes();
+  const overlay = new Map<string, OfficialTransferRoute>();
+  if (imported?.length) {
+    for (const route of imported) {
+      overlay.set(`${route.fromId}>${route.toId}`, route);
+    }
+  }
+
+  return officialTransferRoutes.map((route) => {
+    const hit =
+      overlay.get(`${route.fromId}>${route.toId}`) ??
+      overlay.get(`${route.toId}>${route.fromId}`);
+    const src = hit ?? route;
+    return {
+      fromId: route.fromId,
+      toId: route.toId,
+      basePrice: src.prices.ECO,
+      durationMin: src.durationMin,
+      distanceKm: src.distanceKm,
+      category: src.category,
+    };
+  });
 }
 
 export function routeHasOfficialPrice(

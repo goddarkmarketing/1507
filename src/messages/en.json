@@ -999,7 +999,7 @@
     "fromPerDay": "From ฿{price}/day",
     "notes": "Notes: Prices are per day (THB) based on rental duration. Hyundai H-1 capacity varies by layout.",
     "transferTitle": "Transfer Routes",
-    "transferSubtitle": "Official one-way prices from KRABI LINKS TAXI Set 1 (Krabi Airport 55 routes) and Set 2 — same rates as booking",
+    "transferSubtitle": "One-way fares for the full pickup–drop-off matrix (Excel order). Priced rows show amounts; blank fares show as –",
     "allRoutes": "All routes",
     "route": "Route",
     "emptyRental": "No rental packages match your filters.",

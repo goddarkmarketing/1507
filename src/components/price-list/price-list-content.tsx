@@ -430,9 +430,11 @@ export function PriceListContent() {
                           );
                           return (
                             <td key={v.code} className="px-3 py-3 text-right">
-                              {price.isOfficial
-                                ? `฿${price.totalPrice.toLocaleString("en-US")}`
-                                : tFleet("onRequest")}
+                              {price.isOfficial ? (
+                                `฿${price.totalPrice.toLocaleString("en-US")}`
+                              ) : (
+                                <span className="text-zinc-400">–</span>
+                              )}
                             </td>
                           );
                         })}
