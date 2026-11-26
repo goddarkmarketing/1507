@@ -16,7 +16,7 @@ export type OfficialTransferRoute = {
   name?: string;
 };
 
-/** Full directional matrix from KRABI_LINKS_TAXI_3080_Routes_Origin_Category_First.xlsx */
+/** Full directional matrix from data/ราคาใหม่.xlsx (3,080 priced routes). */
 export const officialTransferRoutes: OfficialTransferRoute[] =
   transferRoutesData as OfficialTransferRoute[];
 
