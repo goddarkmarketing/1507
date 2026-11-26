@@ -83,17 +83,6 @@ function recentRange(days: number): { from: string; to: string } {
   return { from: localYmd(start), to: localYmd(end) };
 }
 
-function datePresetLabel(
-  preset: DatePreset,
-  t: (key: string, values?: Record<string, number>) => string
-) {
-  if (preset === "latest") return t("filterDateLatest");
-  if (preset === "today") return t("filterDateToday");
-  if (preset === "yesterday") return t("filterDateYesterday");
-  if (preset === "custom") return t("filterDateCustom");
-  return t("filterDateDays", { n: Number(preset) });
-}
-
 function bookingMatchesDateRange(
   booking: AdminBooking,
   from: string,
@@ -449,6 +438,17 @@ export function AdminBookingsPage() {
     }
   };
 
+  const datePresetLabel =
+    datePreset === "latest"
+      ? t("filterDateLatest")
+      : datePreset === "today"
+        ? t("filterDateToday")
+        : datePreset === "yesterday"
+          ? t("filterDateYesterday")
+          : datePreset === "custom"
+            ? t("filterDateCustom")
+            : t("filterDateDays", { n: Number(datePreset) });
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const confirm = params.get("confirm")?.trim().toUpperCase();
@@ -790,7 +790,7 @@ export function AdminBookingsPage() {
               className="h-9 min-h-9 w-auto min-w-[8rem] rounded-full border-zinc-200 bg-white px-3 text-xs shadow-sm data-[size=default]:h-9"
             >
               <SelectValue placeholder={t("filterDateRange")}>
-                {datePresetLabel(datePreset, t)}
+                {datePresetLabel}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -957,7 +957,7 @@ export function AdminBookingsPage() {
               onValueChange={(v) => v && applyDatePreset(v as DatePreset)}
             >
               <SelectTrigger className="h-10 w-full rounded-full border-zinc-200 bg-white text-xs">
-                <SelectValue>{datePresetLabel(datePreset, t)}</SelectValue>
+                <SelectValue>{datePresetLabel}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="latest">{t("filterDateLatest")}</SelectItem>
