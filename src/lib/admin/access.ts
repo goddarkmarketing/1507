@@ -8,6 +8,7 @@ export function canSeeAdminNav(role: StaffRole | null, href: string): boolean {
       "/admin/dashboard",
       "/admin/payments",
       "/admin/prices",
+      "/admin/rental-cars",
     ].includes(href);
   }
   if (role === "driver") {

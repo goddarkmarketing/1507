@@ -1035,6 +1035,7 @@
       "drivers": "Förare",
       "customers": "Kunder",
       "prices": "Pristabeller",
+      "rentalCars": "Hyrbilsfoton",
       "vehicles": "Fordon",
       "settings": "Inställningar"
     },

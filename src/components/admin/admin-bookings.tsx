@@ -58,6 +58,61 @@ type DetailStatus = (typeof DETAIL_STATUSES)[number];
 
 type MobileChip = "all" | "payment" | "confirmed" | "traveling" | "cancelled";
 
+type DatePreset = "latest" | "today" | "yesterday" | "5" | "7" | "custom";
+
+function localYmd(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function dayOffset(offset: number) {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + offset);
+  return localYmd(date);
+}
+
+/** Inclusive window ending today, e.g. days=7 → today and the previous 6 days. */
+function recentRange(days: number): { from: string; to: string } {
+  const end = new Date();
+  end.setHours(12, 0, 0, 0);
+  const start = new Date(end);
+  start.setDate(start.getDate() - (days - 1));
+  return { from: localYmd(start), to: localYmd(end) };
+}
+
+function datePresetLabel(
+  preset: DatePreset,
+  t: (key: string, values?: Record<string, number>) => string
+) {
+  if (preset === "latest") return t("filterDateLatest");
+  if (preset === "today") return t("filterDateToday");
+  if (preset === "yesterday") return t("filterDateYesterday");
+  if (preset === "custom") return t("filterDateCustom");
+  return t("filterDateDays", { n: Number(preset) });
+}
+
+function bookingMatchesDateRange(
+  booking: AdminBooking,
+  from: string,
+  to: string
+) {
+  if (!from && !to) return true;
+  const start = from || to;
+  const end = to || from;
+  const days = new Set<string>();
+  for (const leg of booking.legs ?? []) {
+    if (leg.date) days.add(leg.date);
+  }
+  if (booking.createdAt) days.add(booking.createdAt.slice(0, 10));
+  for (const day of days) {
+    if (day >= start && day <= end) return true;
+  }
+  return false;
+}
+
 function cardStatus(booking: AdminBooking): "payment" | DetailStatus {
   if (booking.status === "cancelled" || booking.opsStatus === "cancelled") {
     return "cancelled";
@@ -338,11 +393,61 @@ export function AdminBookingsPage() {
   const [paymentFilter, setPaymentFilter] = useState<PaymentMethod | "all">(
     "all"
   );
+  const [datePreset, setDatePreset] = useState<DatePreset>("latest");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [mobileChip, setMobileChip] = useState<MobileChip>("all");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  const activeDateRange = useMemo(() => {
+    if (datePreset === "today") {
+      const day = dayOffset(0);
+      return { from: day, to: day };
+    }
+    if (datePreset === "yesterday") {
+      const day = dayOffset(-1);
+      return { from: day, to: day };
+    }
+    if (datePreset === "5") return recentRange(5);
+    if (datePreset === "7") return recentRange(7);
+    if (datePreset === "custom") return { from: dateFrom, to: dateTo };
+    return { from: "", to: "" };
+  }, [datePreset, dateFrom, dateTo]);
+
+  const applyDatePreset = (preset: DatePreset) => {
+    setDatePreset(preset);
+    if (preset === "today") {
+      const day = dayOffset(0);
+      setDateFrom(day);
+      setDateTo(day);
+      return;
+    }
+    if (preset === "yesterday") {
+      const day = dayOffset(-1);
+      setDateFrom(day);
+      setDateTo(day);
+      return;
+    }
+    if (preset === "5" || preset === "7") {
+      const range = recentRange(Number(preset));
+      setDateFrom(range.from);
+      setDateTo(range.to);
+      return;
+    }
+    if (preset === "latest") {
+      setDateFrom("");
+      setDateTo("");
+      return;
+    }
+    if (preset === "custom" && !dateFrom && !dateTo) {
+      const today = localYmd();
+      setDateFrom(today);
+      setDateTo(today);
+    }
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -377,15 +482,28 @@ export function AdminBookingsPage() {
         serviceFilter === "all" || b.service === serviceFilter;
       const paymentOk =
         paymentFilter === "all" || b.payment?.method === paymentFilter;
+      const dateOk = bookingMatchesDateRange(
+        b,
+        activeDateRange.from,
+        activeDateRange.to
+      );
       const textOk =
         !q ||
         b.bookingNumber.toLowerCase().includes(q) ||
         b.customerName.toLowerCase().includes(q) ||
         b.customerPhone.toLowerCase().includes(q) ||
         b.customerEmail.toLowerCase().includes(q);
-      return statusOk && serviceOk && paymentOk && textOk;
+      return statusOk && serviceOk && paymentOk && dateOk && textOk;
     });
-  }, [bookings, query, filter, serviceFilter, paymentFilter]);
+  }, [
+    bookings,
+    query,
+    filter,
+    serviceFilter,
+    paymentFilter,
+    activeDateRange.from,
+    activeDateRange.to,
+  ]);
 
   const deepLinkId = confirmTarget
     ? (bookings.find((b) => b.bookingNumber === confirmTarget)?.id ?? null)
@@ -662,17 +780,58 @@ export function AdminBookingsPage() {
             {t("bookingsSubtitle")}
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-9 shrink-0 rounded-full border-zinc-200 bg-white px-3 text-zinc-800 shadow-sm"
-          disabled={filtered.length === 0}
-          onClick={exportBookings}
-        >
-          <Download className="size-3.5" />
-          {t("exportBookings")}
-        </Button>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+          <Select
+            value={datePreset}
+            onValueChange={(v) => v && applyDatePreset(v as DatePreset)}
+          >
+            <SelectTrigger
+              size="default"
+              className="h-9 min-h-9 w-auto min-w-[8rem] rounded-full border-zinc-200 bg-white px-3 text-xs shadow-sm data-[size=default]:h-9"
+            >
+              <SelectValue placeholder={t("filterDateRange")}>
+                {datePresetLabel(datePreset, t)}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="latest">{t("filterDateLatest")}</SelectItem>
+              <SelectItem value="today">{t("filterDateToday")}</SelectItem>
+              <SelectItem value="yesterday">{t("filterDateYesterday")}</SelectItem>
+              <SelectItem value="5">{t("filterDateDays", { n: 5 })}</SelectItem>
+              <SelectItem value="7">{t("filterDateDays", { n: 7 })}</SelectItem>
+              <SelectItem value="custom">{t("filterDateCustom")}</SelectItem>
+            </SelectContent>
+          </Select>
+          {datePreset === "custom" ? (
+            <>
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                aria-label={t("filterDateFrom")}
+                className="h-9 min-h-9 w-auto min-w-[8.5rem] rounded-full border-zinc-200 bg-white px-3 text-xs shadow-sm"
+              />
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                aria-label={t("filterDateTo")}
+                className="h-9 min-h-9 w-auto min-w-[8.5rem] rounded-full border-zinc-200 bg-white px-3 text-xs shadow-sm"
+              />
+            </>
+          ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 shrink-0 rounded-full border-zinc-200 bg-white px-3 text-zinc-800 shadow-sm"
+            disabled={filtered.length === 0}
+            onClick={exportBookings}
+          >
+            <Download className="size-3.5" />
+            {t("exportBookings")}
+          </Button>
+        </div>
       </div>
 
       <div className="hidden gap-2 lg:flex lg:h-9 lg:flex-row lg:flex-nowrap lg:items-stretch lg:gap-1.5 lg:overflow-x-auto">
@@ -794,6 +953,22 @@ export function AdminBookingsPage() {
         {mobileFiltersOpen ? (
           <div className="grid grid-cols-2 gap-2">
             <Select
+              value={datePreset}
+              onValueChange={(v) => v && applyDatePreset(v as DatePreset)}
+            >
+              <SelectTrigger className="h-10 w-full rounded-full border-zinc-200 bg-white text-xs">
+                <SelectValue>{datePresetLabel(datePreset, t)}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="latest">{t("filterDateLatest")}</SelectItem>
+                <SelectItem value="today">{t("filterDateToday")}</SelectItem>
+                <SelectItem value="yesterday">{t("filterDateYesterday")}</SelectItem>
+                <SelectItem value="5">{t("filterDateDays", { n: 5 })}</SelectItem>
+                <SelectItem value="7">{t("filterDateDays", { n: 7 })}</SelectItem>
+                <SelectItem value="custom">{t("filterDateCustom")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
               value={serviceFilter}
               onValueChange={(v) => v && setServiceFilter(v as BookingService | "all")}
             >
@@ -830,6 +1005,24 @@ export function AdminBookingsPage() {
                 <SelectItem value="cash">{t("settingsMethod.cash")}</SelectItem>
               </SelectContent>
             </Select>
+            {datePreset === "custom" ? (
+              <>
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  aria-label={t("filterDateFrom")}
+                  className="h-10 rounded-full border-zinc-200 bg-white px-3 text-xs"
+                />
+                <Input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  aria-label={t("filterDateTo")}
+                  className="h-10 rounded-full border-zinc-200 bg-white px-3 text-xs"
+                />
+              </>
+            ) : null}
           </div>
         ) : null}
         <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

@@ -1035,6 +1035,7 @@
       "drivers": "Conductores",
       "customers": "Clientes",
       "prices": "Tablas de precios",
+      "rentalCars": "Fotos alquiler",
       "vehicles": "Vehículos",
       "settings": "Configuración"
     },

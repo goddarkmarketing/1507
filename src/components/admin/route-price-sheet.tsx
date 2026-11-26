@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, ChevronDown, Plus, Search } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,6 +24,7 @@ import type { Location, VehicleCode } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const PRICE_KEYS = ["ECO", "PREM", "SUV", "VAN", "EXE", "VIP", "BUS"] as const;
+const PAGE_SIZE = 500;
 
 /** Tariff places — hotels/provinces stay out; parks like Khao Sok stay in. */
 const EXCLUDED_TYPES = new Set(["hotel", "province"]);
@@ -272,6 +273,7 @@ export function RoutePriceSheet({
     >
   );
   const [addError, setAddError] = useState("");
+  const [page, setPage] = useState(1);
   const saving = useRef(false);
   const tableTopRef = useRef<HTMLDivElement>(null);
 
@@ -288,6 +290,21 @@ export function RoutePriceSheet({
 
   const placeOptions = useMemo(() => buildPlaceOptions(extraIds), [extraIds]);
 
+  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageStart = (safePage - 1) * PAGE_SIZE;
+  const pageRows = useMemo(
+    () =>
+      rows
+        .slice(pageStart, pageStart + PAGE_SIZE)
+        .map((row, i) => ({ row, index: pageStart + i })),
+    [rows, pageStart]
+  );
+
+  useEffect(() => {
+    if (page !== safePage) setPage(safePage);
+  }, [page, safePage]);
+
   useEffect(() => {
     if (saving.current) {
       saving.current = false;
@@ -295,6 +312,7 @@ export function RoutePriceSheet({
     }
     setRows(sheetSource());
     setDirty(false);
+    setPage(1);
   }, [transferImportedAt]);
 
   const patch = (index: number, next: Partial<OfficialTransferRoute>) => {
@@ -380,6 +398,7 @@ export function RoutePriceSheet({
         )
       );
       setDirty(true);
+      setPage(Math.floor(existingIndex / PAGE_SIZE) + 1);
       setAddError(t("routeSheetUpdated"));
       return;
     }
@@ -397,6 +416,7 @@ export function RoutePriceSheet({
       ...current,
     ]);
     setDirty(true);
+    setPage(1);
     setDistanceKm("");
     setDurationMin("");
     setDraftPrices(
@@ -407,6 +427,13 @@ export function RoutePriceSheet({
     );
     requestAnimationFrame(() => {
       tableTopRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  };
+
+  const goPage = (next: number) => {
+    setPage(Math.min(pageCount, Math.max(1, next)));
+    requestAnimationFrame(() => {
+      tableTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
 
@@ -506,29 +533,76 @@ export function RoutePriceSheet({
         {addError ? <p className="text-xs text-amber-800">{addError}</p> : null}
       </div>
 
-      <div
-        ref={tableTopRef}
-        className="mt-4 max-h-[70vh] overflow-auto rounded-lg border border-zinc-300"
-      >
-        <table className="w-max min-w-full border-collapse text-xs">
-          <thead className="sticky top-0 z-20 bg-zinc-100">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs text-zinc-500">
+          {rows.length === 0
+            ? t("routeSheetPageRange", { from: 0, to: 0, total: 0 })
+            : t("routeSheetPageRange", {
+                from: pageStart + 1,
+                to: Math.min(pageStart + PAGE_SIZE, rows.length),
+                total: rows.length,
+              })}
+          <span className="mx-2 text-zinc-300">·</span>
+          {t("routeSheetPerPage", { n: PAGE_SIZE })}
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-8 rounded-lg"
+            disabled={safePage <= 1}
+            onClick={() => goPage(safePage - 1)}
+          >
+            <ChevronLeft className="size-3.5" />
+            {t("routeSheetPrev")}
+          </Button>
+          <span className="min-w-24 text-center text-xs tabular-nums text-zinc-600">
+            {t("routeSheetPage", { page: safePage, pages: pageCount })}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-8 rounded-lg"
+            disabled={safePage >= pageCount}
+            onClick={() => goPage(safePage + 1)}
+          >
+            {t("routeSheetNext")}
+            <ChevronRight className="size-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      <div ref={tableTopRef} className="mt-3 overflow-hidden rounded-lg border border-zinc-300">
+        <table className="w-full table-fixed border-collapse text-[11px]">
+          <colgroup>
+            <col className="w-9" />
+            <col className="w-[28%]" />
+            <col className="w-14" />
+            <col className="w-14" />
+            {PRICE_KEYS.map((key) => (
+              <col key={key} className="w-[7%]" />
+            ))}
+          </colgroup>
+          <thead className="bg-zinc-100">
             <tr>
-              <th className="sticky left-0 z-30 w-10 border border-zinc-300 bg-zinc-100 px-2 py-2 text-center font-semibold">
+              <th className="border border-zinc-300 bg-zinc-100 px-1 py-2 text-center font-semibold">
                 #
               </th>
-              <th className="sticky left-10 z-30 min-w-64 border border-zinc-300 bg-zinc-100 px-2 py-2 text-left font-semibold">
+              <th className="border border-zinc-300 bg-zinc-100 px-1.5 py-2 text-left font-semibold">
                 {t("routeSheetName")}
               </th>
-              <th className="border border-zinc-300 px-2 py-2 font-semibold">
+              <th className="border border-zinc-300 px-0.5 py-2 text-center font-semibold">
                 {t("routeSheetKm")}
               </th>
-              <th className="border border-zinc-300 px-2 py-2 font-semibold">
+              <th className="border border-zinc-300 px-0.5 py-2 text-center font-semibold">
                 {t("routeSheetMin")}
               </th>
               {PRICE_KEYS.map((key) => (
                 <th
                   key={key}
-                  className="min-w-20 border border-zinc-300 px-2 py-2 text-right font-semibold"
+                  className="border border-zinc-300 px-0.5 py-2 text-center font-semibold"
                 >
                   {key}
                 </th>
@@ -536,16 +610,19 @@ export function RoutePriceSheet({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
-              <tr key={`${row.fromId}-${row.toId}-${index}`} className="odd:bg-white even:bg-zinc-50">
-                <td className="sticky left-0 z-10 border border-zinc-300 bg-inherit px-2 text-center text-zinc-500">
+            {pageRows.map(({ row, index }) => (
+              <tr
+                key={`${row.fromId}-${row.toId}-${index}`}
+                className="odd:bg-white even:bg-zinc-50"
+              >
+                <td className="border border-zinc-300 px-1 text-center text-zinc-500">
                   {index + 1}
                 </td>
-                <td className="sticky left-10 z-10 border border-zinc-300 bg-inherit p-0">
+                <td className="border border-zinc-300 p-0">
                   <input
                     value={row.name ?? routeSheetName(row, "th")}
                     onChange={(e) => patch(index, { name: e.target.value })}
-                    className="h-8 w-full min-w-64 bg-transparent px-2 outline-none focus:bg-amber-50"
+                    className="h-8 w-full truncate bg-transparent px-1.5 outline-none focus:bg-amber-50"
                   />
                 </td>
                 <td className="border border-zinc-300 p-0">
@@ -576,7 +653,7 @@ export function RoutePriceSheet({
                       inputMode="numeric"
                       value={String(row.prices[key] ?? "")}
                       onChange={(e) => patchPrice(index, key, e.target.value)}
-                      className={cellInput("text-right")}
+                      className={cellInput()}
                     />
                   </td>
                 ))}
@@ -585,13 +662,45 @@ export function RoutePriceSheet({
           </tbody>
         </table>
       </div>
+
+      {pageCount > 1 ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-zinc-500">
+            {t("routeSheetPage", { page: safePage, pages: pageCount })}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-8 rounded-lg"
+              disabled={safePage <= 1}
+              onClick={() => goPage(safePage - 1)}
+            >
+              <ChevronLeft className="size-3.5" />
+              {t("routeSheetPrev")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-8 rounded-lg"
+              disabled={safePage >= pageCount}
+              onClick={() => goPage(safePage + 1)}
+            >
+              {t("routeSheetNext")}
+              <ChevronRight className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
 
 function cellInput(extra?: string) {
   return cn(
-    "h-8 w-full min-w-16 bg-transparent px-2 text-right tabular-nums outline-none focus:bg-amber-50",
+    "h-8 w-full bg-transparent px-0.5 text-center tabular-nums outline-none focus:bg-amber-50",
     extra
   );
 }

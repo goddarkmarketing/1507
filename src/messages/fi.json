@@ -1035,6 +1035,7 @@
       "drivers": "Kuljettajat",
       "customers": "Asiakkaat",
       "prices": "Hintataulukot",
+      "rentalCars": "Vuokra-autofotot",
       "vehicles": "Ajoneuvot",
       "settings": "Asetukset"
     },

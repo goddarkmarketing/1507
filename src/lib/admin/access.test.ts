@@ -10,6 +10,7 @@ describe("canSeeAdminNav", () => {
   it("limits finance to money menus", () => {
     expect(canSeeAdminNav("finance", "/admin/payments")).toBe(true);
     expect(canSeeAdminNav("finance", "/admin/prices")).toBe(true);
+    expect(canSeeAdminNav("finance", "/admin/rental-cars")).toBe(true);
     expect(canSeeAdminNav("finance", "/admin/bookings")).toBe(false);
     expect(canSeeAdminNav("finance", "/admin/settings")).toBe(false);
   });

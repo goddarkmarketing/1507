@@ -7,6 +7,7 @@ import {
   ClipboardList,
   CreditCard,
   ExternalLink,
+  Images,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -34,6 +35,7 @@ const NAV_MAIN = [
   { href: "/admin/payments", key: "payments", icon: CreditCard },
   { href: "/admin/schedule", key: "schedule", icon: CalendarDays },
   { href: "/admin/prices", key: "prices", icon: Table2 },
+  { href: "/admin/rental-cars", key: "rentalCars", icon: Images },
   { href: "/admin/vehicles", key: "vehicles", icon: Truck },
 ] as const;
 
